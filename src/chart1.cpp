@@ -10393,7 +10393,7 @@ void ocpnToolBarSimple::OnMouseEvent(wxMouseEvent & event)
             GetParent()->GetEventHandler()->AddPendingEvent(*pev);
             wxDELETE(pev);
 
-            return;
+	    return;
       }
 
     // Left button pressed.
