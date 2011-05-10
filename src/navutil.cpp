@@ -4960,20 +4960,56 @@ void MyConfig::ImportGPX ( wxWindow* parent, bool islayer, wxString dirpath, boo
                     //wxLogMessage(impmsg);
 
 
-      if (!islayer || dirpath.IsSameAs(_T(""))) {
+      if (!islayer || dirpath.IsSameAs(_T(""))) 
+      {
+            wxString cmd = wxT("gpsbabel -h");
+            wxArrayString output, errors, filetypes;
+            int code = wxExecute(cmd, output, errors);
+            wxString extensions;
+            if (code != -1)
+            {
+                  wxString line;
+                  //TODO: add them to list
+                  size_t count = output.GetCount();                  if ( !count )                  {                        extensions = wxT ( "GPX files (*.gpx)|*.gpx|All files (*.*)|*.*" );                  }                  else                  {                        bool collecttypes = false;                        extensions = wxT ( "GPX files (*.gpx)|*.gpx|" );                        for ( size_t n = 0; n < count; n++ )                        {                              line = output[n];                              if (line.StartsWith(wxT("File Types (-i and -o options):")))                                    collecttypes = true;                              if (line.StartsWith(wxT("Supported data filters:")))                                    collecttypes = false;                              if (collecttypes && line.StartsWith(wxT("\t")) && !line.StartsWith(wxT("\t  ")))                              {                                    while(line.Replace(wxT("  "), wxT(" "))) {}                                    filetypes.Add(line.Remove(0,1).BeforeFirst(' '));                                    extensions.Append(line.Append(wxT("|*.*|")));                              }                        }
+                        extensions.Append(wxT ( "All files (*.*)|*.*" ));
+                  }
+            }
+            else
+            {
+                  extensions = wxT ( "GPX files (*.gpx)|*.gpx|All files (*.*)|*.*" );
+            }
             //FIXME: unite the loading itself with NavObjectCollection::LoadAllGPXObjects()
             wxFileDialog openDialog( parent, _( "Import GPX file" ), m_gpx_path, wxT ( "" ),
-                                     wxT ( "GPX files (*.gpx)|*.gpx|All files (*.*)|*.*" ), wxFD_OPEN | wxFD_MULTIPLE );
+                                     extensions, wxFD_OPEN | wxFD_MULTIPLE );
             response = openDialog.ShowModal();
             if ( response == wxID_OK )
             {
-                  openDialog.GetPaths(file_array);
-
-                  //    Record the currently selected directory for later use
-                  if(file_array.GetCount())
+                  if (filetypes.GetCount() != 0 && openDialog.GetFilterIndex() != 0) 
                   {
-                        wxFileName fn ( file_array[0] );
-                        m_gpx_path = fn.GetPath();
+                        wxArrayString orig_files;
+                        openDialog.GetPaths(orig_files);
+                        wxString inputformat = filetypes[openDialog.GetFilterIndex() - 1];
+                        for (size_t i = 0; i < orig_files.GetCount(); i++)
+                        {
+                              //do the conversion
+                              wxString tmpfile = wxFileName::CreateTempFileName(wxT("opencpntmp"));
+                              cmd = wxString::Format( wxT("gpsbabel -i %s -f \"%s\" -o gpx -F %s"), inputformat.c_str(), orig_files[i].c_str(), tmpfile.c_str());
+                              int code = wxExecute(cmd, output, errors);
+                              if (code != -1)
+                              {
+                                    file_array.Add(tmpfile);
+                              }
+                        }
+                  }
+                  else //Don't convert anything, we are opening GPX
+                  {
+                        openDialog.GetPaths(file_array);
+			//    Record the currently selected directory for later use
+	                if(file_array.GetCount())
+                	{
+        	              wxFileName fn ( file_array[0] );
+                              m_gpx_path = fn.GetPath();
+			}
                   }
             }
 
@@ -5090,6 +5126,8 @@ void MyConfig::ImportGPX ( wxWindow* parent, bool islayer, wxString dirpath, boo
                         }
                         pXMLNavObj->Clear();
                         delete pXMLNavObj;
+                        if (path.Contains(_T("opencpntmp")))
+                              ::wxRemoveFile(path);
                   }
             }
       }
