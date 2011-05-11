@@ -4986,18 +4986,26 @@ void MyConfig::ImportGPX ( wxWindow* parent, bool islayer, wxString dirpath, boo
             {
                   if (filetypes.GetCount() != 0 && openDialog.GetFilterIndex() != 0) 
                   {
+                        int code;
                         wxArrayString orig_files;
                         openDialog.GetPaths(orig_files);
                         wxString inputformat = filetypes[openDialog.GetFilterIndex() - 1];
                         for (size_t i = 0; i < orig_files.GetCount(); i++)
                         {
-                              //do the conversion
+                              wxFileName fns(orig_files[i]);
                               wxString tmpfile = wxFileName::CreateTempFileName(wxT("opencpntmp"));
-                              cmd = wxString::Format( wxT("gpsbabel -i %s -f \"%s\" -o gpx -F %s"), inputformat.c_str(), orig_files[i].c_str(), tmpfile.c_str());
-                              int code = wxExecute(cmd, output, errors);
+                              cmd = wxString::Format( wxT("gpsbabel -i %s -f %s -o gpx -F %s"), inputformat.c_str(), fns.GetShortPath().c_str(), tmpfile.c_str());
+                              code = wxExecute(cmd, output, errors);
                               if (code != -1)
                               {
                                     file_array.Add(tmpfile);
+                              }
+                              else
+                              {
+                                    if (output.GetCount() > 0)
+                                          ::wxMessageBox(output[0]);
+                                    if (errors.GetCount() > 0)
+                                          ::wxMessageBox(errors[0]);
                               }
                         }
                   }
