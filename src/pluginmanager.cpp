@@ -656,7 +656,10 @@ void PlugInManager::SendMessageToAllPlugins(wxString &message_id, wxString &mess
       }
 }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> minimal communication framework implementation
 void PlugInManager::SendAISSentenceToAllPlugIns(wxString &sentence)
 {
       for(unsigned int i = 0 ; i < plugin_array.GetCount() ; i++)
@@ -1153,7 +1156,10 @@ void SendPluginMessage( wxString message_id, wxString message_body )
 {
       s_ppim->SendMessageToAllPlugins(message_id, message_body);
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> minimal communication framework implementation
 //-----------------------------------------------------------------------------------------
 //    The opencpn_plugin base class implementation
 //-----------------------------------------------------------------------------------------

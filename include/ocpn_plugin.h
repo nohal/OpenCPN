@@ -387,6 +387,8 @@ public:
       virtual wxArrayString GetDynamicChartClassNameArray(void);
       virtual void SetPluginMessage(wxString &message_id, wxString &message_body);
 
+      virtual void SetPluginMessage(wxString &message_id, wxString &message_body);
+
  };
 
 
@@ -447,6 +449,7 @@ extern  DECL_EXP bool UpdateChartDBInplace(wxArrayString dir_array,
                           bool b_ProgressDialog);
 extern  DECL_EXP wxArrayString GetChartDBDirArrayString();
 
+extern "C"  DECL_EXP void SendPluginMessage( wxString message_id, wxString message_body );
 
 #endif            // _PLUGIN_H_
 
