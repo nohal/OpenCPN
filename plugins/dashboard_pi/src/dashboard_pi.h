@@ -135,6 +135,7 @@ public:
       void SetColorScheme(PI_ColorScheme cs);
       void OnPaneClose( wxAuiManagerEvent& event );
       void UpdateAuiStatus(void);
+      void SetPluginMessage(wxString &message_id, wxString &message_body);
 
 private:
       bool LoadConfig(void);
@@ -188,6 +189,8 @@ public:
       wxFontPickerCtrl             *m_pFontPickerData;
       wxFontPickerCtrl             *m_pFontPickerLabel;
       wxFontPickerCtrl             *m_pFontPickerSmall;
+      
+      wxCheckBox                   *m_pcbMagnetic;
 
 private:
       void UpdateDashboardButtonsState(void);

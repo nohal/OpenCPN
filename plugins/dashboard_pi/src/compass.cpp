@@ -60,6 +60,7 @@ void DashboardInstrument_Compass::SetData(int st, double data, wxString unit)
             m_AngleStart = -data;
             // Required to display data
             m_MainValue = data;
+            m_MainValueFormat = wxString::Format(_T("%s %s"), _T("%5.0f"), unit);
 
             Refresh(false);
       }

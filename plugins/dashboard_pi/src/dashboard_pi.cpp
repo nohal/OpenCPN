@@ -37,10 +37,15 @@
 #include "dashboard_pi.h"
 #include "icons.h"
 
+#include "jsonreader.h"
+
 wxFont *g_pFontTitle;
 wxFont *g_pFontData;
 wxFont *g_pFontLabel;
 wxFont *g_pFontSmall;
+
+bool    g_bUseMagnetic;
+int     g_iVariation = 999;
 
 // the class factories, used to create and destroy instances of the PlugIn
 
@@ -245,7 +250,8 @@ int dashboard_pi::Init(void)
            WANTS_CONFIG              |
            WANTS_NMEA_SENTENCES      |
            WANTS_NMEA_EVENTS         |
-           USES_AUI_MANAGER
+           USES_AUI_MANAGER          |
+           WANTS_PLUGIN_MESSAGING
             );
 }
 
@@ -796,7 +802,15 @@ void dashboard_pi::SetPositionFix(PlugIn_Position_Fix &pfix)
       {
             mPriCOGSOG = 1;
             SendSentenceToAllInstruments(OCPN_DBP_STC_SOG, pfix.Sog, _T("Kts"));
-            SendSentenceToAllInstruments(OCPN_DBP_STC_COG, pfix.Cog, _T("Deg"));
+            if (g_bUseMagnetic && g_iVariation != 999)
+            {
+                  int cog = pfix.Cog + g_iVariation;
+                  if (cog >= 360)
+                        cog -= 360;
+                  SendSentenceToAllInstruments(OCPN_DBP_STC_COG, cog, _T("Deg M"));
+            }
+            else
+                  SendSentenceToAllInstruments(OCPN_DBP_STC_COG, pfix.Cog, _T("Deg T"));
       }
       if (mPriVar >= 1)
       {
@@ -844,6 +858,8 @@ void dashboard_pi::ShowPreferencesDialog( wxWindow* parent )
             g_pFontLabel = new wxFont( dialog->m_pFontPickerLabel->GetSelectedFont() );
             delete g_pFontSmall;
             g_pFontSmall = new wxFont( dialog->m_pFontPickerSmall->GetSelectedFont() );
+
+            g_bUseMagnetic = dialog->m_pcbMagnetic->GetValue();
 
             // OnClose should handle that for us normally but it doesn't seems to do so
             // We must save changes first
@@ -1009,6 +1025,8 @@ bool dashboard_pi::LoadConfig(void)
             if ( !config.IsEmpty() )
                   g_pFontSmall->SetNativeFontInfo( config );
 
+            pConf->Read( _T("UseMagnetic"), &g_bUseMagnetic, false );
+
             int d_cnt;
             pConf->Read( _T("DashboardCount"), &d_cnt, -1 );
             // TODO: Memory leak? We should destroy everything first
@@ -1084,6 +1102,8 @@ bool dashboard_pi::SaveConfig(void)
             pConf->Write( _T("FontData"), g_pFontData->GetNativeFontInfoDesc() );
             pConf->Write( _T("FontLabel"), g_pFontLabel->GetNativeFontInfoDesc() );
             pConf->Write( _T("FontSmall"), g_pFontSmall->GetNativeFontInfoDesc() );
+
+            pConf->Write( _T("UseMagnetic"), g_bUseMagnetic );
 
             pConf->Write( _T("DashboardCount" ), (int)m_ArrayOfDashboardWindow.GetCount() );
             for (size_t i = 0; i < m_ArrayOfDashboardWindow.GetCount(); i++)
@@ -1324,6 +1344,15 @@ DashboardPreferencesDialog::DashboardPreferencesDialog( wxWindow *parent, wxWind
       m_pFontPickerSmall = new wxFontPickerCtrl( itemPanelNotebook02, wxID_ANY, *g_pFontSmall, wxDefaultPosition, wxDefaultSize );
       itemFlexGridSizer03->Add(m_pFontPickerSmall, 0, wxALIGN_RIGHT|wxALL, 0);
 //      wxColourPickerCtrl
+      wxStaticBox* itemStaticBox04 = new wxStaticBox( itemPanelNotebook02, wxID_ANY, _("Settings") );
+      wxStaticBoxSizer* itemStaticBoxSizer04 = new wxStaticBoxSizer(itemStaticBox04, wxHORIZONTAL);
+      itemBoxSizer05->Add( itemStaticBoxSizer04, 0, wxEXPAND|wxALL, border_size );
+      wxFlexGridSizer *itemFlexGridSizer04 = new wxFlexGridSizer(2);
+      itemFlexGridSizer04->AddGrowableCol(1);
+      itemStaticBoxSizer04->Add(itemFlexGridSizer04, 1, wxEXPAND|wxALL, 0);
+      m_pcbMagnetic = new wxCheckBox(itemPanelNotebook02, wxID_ANY, _("Use magnetic instead of true when possible"), wxDefaultPosition, wxDefaultSize, 0);
+      m_pcbMagnetic->SetValue(g_bUseMagnetic);
+      itemFlexGridSizer04->Add(m_pcbMagnetic, 0, wxEXPAND|wxALL, border_size);
 
       wxStdDialogButtonSizer* DialogButtonSizer = CreateStdDialogButtonSizer(wxOK|wxCANCEL);
       itemBoxSizerMainPanel->Add(DialogButtonSizer, 0, wxALIGN_RIGHT|wxALL, 5);
@@ -1643,7 +1672,7 @@ void DashboardWindow::SetInstrumentList(wxArrayInt list)
                   ((DashboardInstrument_Dial *)instrument)->SetOptionExtraValue(OCPN_DBP_STC_STW, _T("STW: %2.2f Kts"), DIAL_POSITION_BOTTOMLEFT);
                   break;
             case ID_DBP_I_COG:
-                  instrument = new DashboardInstrument_Single(this, wxID_ANY, getInstrumentCaption(id), OCPN_DBP_STC_COG, _T("%5.0f Deg"));
+                  instrument = new DashboardInstrument_Single(this, wxID_ANY, getInstrumentCaption(id), OCPN_DBP_STC_COG, _T("%5.0f %s"));
                   break;
             case ID_DBP_D_COG:
                   instrument = new DashboardInstrument_Compass(this, wxID_ANY, getInstrumentCaption(id), OCPN_DBP_STC_COG);
@@ -1656,7 +1685,7 @@ void DashboardWindow::SetInstrumentList(wxArrayInt list)
                   break;
             case ID_DBP_I_HDG:
                   // TODO: Option True or Magnetic
-                  instrument = new DashboardInstrument_Single(this, wxID_ANY, getInstrumentCaption(id), OCPN_DBP_STC_HDT, _T("%5.0f Deg"));
+                  instrument = new DashboardInstrument_Single(this, wxID_ANY, getInstrumentCaption(id), OCPN_DBP_STC_HDT, _T("%5.0f Deg M"));
                   break;
             case ID_DBP_D_AW:
                   instrument = new DashboardInstrument_Wind(this, wxID_ANY, getInstrumentCaption(id), OCPN_DBP_STC_AWA);
@@ -1779,6 +1808,23 @@ void DashboardWindow::SendUtcTimeToAllInstruments(int st, wxDateTime value)
             if ((m_ArrayOfInstrument.Item(i)->m_cap_flag & OCPN_DBP_STC_CLK) &&
                         (m_ArrayOfInstrument.Item(i)->m_pInstrument->IsKindOf(CLASSINFO(DashboardInstrument_Clock)) || m_ArrayOfInstrument.Item(i)->m_pInstrument->IsKindOf(CLASSINFO(DashboardInstrument_Sun))))
                   ((DashboardInstrument_Clock*)m_ArrayOfInstrument.Item(i)->m_pInstrument)->SetUtcTime(st, value);
+      }
+}
+
+void dashboard_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
+{
+      if(message_id == _T("WMM_VARIATION_BOAT"))
+      {
+            wxJSONReader r;
+            wxJSONValue v;
+            r.Parse(message_body, &v);
+            double d = v[_T("Decl")].AsDouble();
+            g_iVariation = int (d);
+      }
+
+      if(message_id == _T("WMM_WINDOW_HIDDEN"))
+      {
+            g_iVariation = 999;
       }
 }
 

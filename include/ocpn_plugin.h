@@ -386,9 +386,6 @@ public:
 
       virtual wxArrayString GetDynamicChartClassNameArray(void);
       virtual void SetPluginMessage(wxString &message_id, wxString &message_body);
-
-      virtual void SetPluginMessage(wxString &message_id, wxString &message_body);
-
  };
 
 
