@@ -206,7 +206,11 @@ extern bool             g_bUseGreenShip;
 extern ChartCanvas      *cc1;
 
 extern bool             g_bshow_overzoom_emboss;
-extern int              g_n_ownship_meters;
+extern int              g_n_ownship_length_meters;
+extern int              g_n_ownship_beam_meters;
+extern int              g_n_gps_antenna_offset_y;
+extern int              g_n_gps_antenna_offset_x;
+extern int              g_n_ownship_min_mm;
 
 extern wxPlatformInfo   *g_pPlatform;
 
@@ -1393,7 +1397,7 @@ int Quilt::AdjustRefOnZoomIn(double proposed_scale_onscreen)
                   }
             }
       }
-      printf("\n");
+//      printf("\n");
       return m_refchart_dbIndex;
 }
 
@@ -3613,7 +3617,6 @@ ChartCanvas::ChartCanvas ( wxFrame *frame ) :
         m_bmTideNight = CreateDimBitmap(m_bmTideDay, .20);
 
 //    Build Dusk/Night  ownship icons
-#ifdef USE_PNG_OWNSHIP
         double factor_dusk = 0.5;
         double factor_night = 0.25;
 
@@ -3676,7 +3679,6 @@ ChartCanvas::ChartCanvas ( wxFrame *frame ) :
         }
 
 
-#endif
         //  Set initial pointers to ownship images
         m_pos_image_red   = &m_os_image_red_day;
 
@@ -5271,43 +5273,29 @@ bool ChartCanvas::SetViewPoint ( double lat, double lon, double scale_ppm, doubl
 //      This icon was adapted and scaled from the S52 Presentation Library version 3_03.
 //     Symbol VECGND02
 
-#ifndef USE_PNG_OWNSHIP
-static int s_pred_icon[] = {
-                      0,0,
-                      10,10,
-                      0,0,
-                      -10,10,
-                      0,8,
-                      7,15,
-                      0,8,
-                      -7,15
-};
-
-//      This ownship icon was adapted and scaled from the S52 Presentation Library version 3_03
-//      Symbol OWNSHP05
-static int s_ownship_icon[] = {
-      5, -50,
-      11, -36,
-      11, 34,
-      -11, 34,
-      -11, -36,
-      -5, -50,
-      -11, 0,
-      11, 0,
-      0, 34,
-      0, -50
-};
-
-#else
 static int s_png_pred_icon[] = {
       -10,-10,
       -10,10,
       10,10,
       10,-10
 };
-#endif
 
-
+//      This ownship icon was adapted and scaled from the S52 Presentation Library version 3_03
+//      Symbol OWNSHP05
+static int s_ownship_icon[] = {
+      5, -42,
+      11, -28,
+      11, 42,
+      -11, 42,
+      -11, -28,
+      -5, -42,
+      -11, 0,
+      11, 0,
+      0, 42,
+      0, -42
+};
+#define OWNSHIP_WIDTH  22
+#define OWNSHIP_LENGTH 84
 
 wxPoint transrot(wxPoint pt, double theta, wxPoint offset)
 {
@@ -5429,95 +5417,183 @@ void ChartCanvas::ShipDraw ( ocpnDC& dc )
 //    Do the draw if either the ship or prediction is within the current VPoint
         if ( drawit )
         {
+              int img_width, img_height;
 
-#ifdef USE_PNG_OWNSHIP
-             /* could optimize in opengl by doing scaling and rotation as a texture */
+              wxColour pred_colour;
+              pred_colour = GetGlobalColor ( _T ( "URED" ) );
+              if(SHIP_NORMAL != m_ownship_state)
+                    pred_colour = GetGlobalColor ( _T ( "GREY1" ) );
 
-                wxImage *pos_image;
-                wxColour pred_colour;
+              //      Establish ship color
+              //     It changes color based on GPS and Chart accuracy/availability
+              wxColour ship_color(GetGlobalColor ( _T ( "URED" )));         // default is OK
 
-                pos_image = m_pos_image_red;
-                pred_colour = GetGlobalColor ( _T ( "URED" ) );
+              if(SHIP_NORMAL != m_ownship_state)
+                    ship_color = GetGlobalColor ( _T ( "GREY1" ) );
 
-                if(SHIP_NORMAL != m_ownship_state)
-                {
-                      pos_image = m_pos_image_grey;
-                      pred_colour = GetGlobalColor ( _T ( "GREY1" ) );
-                }
+              if(SHIP_LOWACCURACY == m_ownship_state)
+                    ship_color = GetGlobalColor ( _T ( "YELO1" ) );
+
+              wxPoint lShipMidPoint = lShipPoint;
+
+              if(GetVP().chart_scale > 300000)             // According to S52, this should be 50,000
+              {
+                    dc.SetPen ( wxPen ( pred_colour , 2 ) );
+
+                    if(SHIP_NORMAL == m_ownship_state)
+                          dc.SetBrush ( wxBrush ( ship_color, wxTRANSPARENT ) );
+                    else
+                          dc.SetBrush ( wxBrush ( GetGlobalColor ( _T ( "YELO1" )) ) );
+
+                    dc.DrawEllipse ( lShipPoint.x - 10, lShipPoint.y - 10, 20, 20 );
+                    dc.DrawEllipse ( lShipPoint.x -  6, lShipPoint.y -  6, 12, 12 );
+
+                    dc.DrawLine ( lShipPoint.x - 12, lShipPoint.y, lShipPoint.x + 12, lShipPoint.y);
+                    dc.DrawLine ( lShipPoint.x, lShipPoint.y - 12, lShipPoint.x, lShipPoint.y + 12);
+              }
+              else
+              {
+                    double sf_pix_per_mm = (double)::wxGetDisplaySize().y / ::wxGetDisplaySizeMM().y;
+
+                    //  Calculate the true ship length in exact pixels
+                    double ship_bow_lat, ship_bow_lon;
+                    ll_gc_ll ( gLat, gLon, icon_hdt, g_n_ownship_length_meters/1852., &ship_bow_lat, &ship_bow_lon );
+                    wxPoint lShipBowPoint;
+                    wxPoint2DDouble b_point = GetVP().GetDoublePixFromLL(ship_bow_lat, ship_bow_lon);
+                    wxPoint2DDouble a_point = GetVP().GetDoublePixFromLL(gLat, gLon);
+
+                    double ship_scale_pix = sqrt(pow((double)(b_point.m_x - a_point.m_x), 2) + pow((double)(b_point.m_y - a_point.m_y), 2));
+
+                    //  And in mm
+                    double ship_scale_mm = ship_scale_pix / sf_pix_per_mm;
+
+                    //  Set minimum ownship drawing size
+                    double ownship_min_mm = g_n_ownship_min_mm;
+                    ownship_min_mm = wxMax(ownship_min_mm, 1.0);
 
 
-                //      Substitute user ownship image if found
-                if(m_pos_image_user)
-                {
-                      pos_image = m_pos_image_user;
-                      pred_colour = GetGlobalColor ( _T ( "URED" ) );
+                    //  Calculate pixel distance from midships to gps antenna
+                    //  by two traverses
+                    double hdt_ant = icon_hdt + 180.;
+                    double dy = (g_n_ownship_length_meters/2 - g_n_gps_antenna_offset_y)/1852.;
+                    double dx = g_n_gps_antenna_offset_x/1852.;
+                    if(g_n_gps_antenna_offset_y > g_n_ownship_length_meters/2)      //reverse?
+                    {
+                          hdt_ant = icon_hdt;
+                          dy = -dy;
+                    }
 
-                      if(SHIP_NORMAL != m_ownship_state)
-                      {
-                            pos_image = m_pos_image_user_grey;
-                            pred_colour = GetGlobalColor ( _T ( "GREY1" ) );
-                      }
+                    //  If the drawn ship size is going to be clamped, adjust the gps antenna offsets
+                    if(ship_scale_mm < ownship_min_mm)
+                    {
+                          dy /= ship_scale_mm/ownship_min_mm;
+                          dx /= ship_scale_mm/ownship_min_mm;
+                    }
 
-                }
+                    double ship_mid_lat, ship_mid_lon, ship_mid_lat1, ship_mid_lon1;
+                    ll_gc_ll ( gLat, gLon, hdt_ant, dy, &ship_mid_lat, &ship_mid_lon );
+                    ll_gc_ll ( ship_mid_lat, ship_mid_lon, icon_hdt - 90., dx, &ship_mid_lat1, &ship_mid_lon1 );
+                    GetCanvasPointPix ( ship_mid_lat1, ship_mid_lon1, &lShipMidPoint );
 
 
-                int img_width = pos_image->GetWidth();
-                int img_height = pos_image->GetHeight();
+                    if(g_n_ownship_beam_meters && g_n_ownship_length_meters)           // use large ship
+                    {
+                          double scale_factor = ship_scale_pix / OWNSHIP_LENGTH;
+
+                          //  Calculate a scale factor that would produce a reasonably sized icon
+                          double scale_factor_min = ownship_min_mm / (OWNSHIP_LENGTH / sf_pix_per_mm);
+
+                          //  And choose the correct one
+                          scale_factor = wxMax(scale_factor, scale_factor_min);
+
+                          double scale_factor_y = scale_factor;
+                          double scale_factor_x = scale_factor_y * ((double)OWNSHIP_LENGTH/ OWNSHIP_WIDTH)
+                                            / ((double)g_n_ownship_length_meters / g_n_ownship_beam_meters);
+
+                          wxPoint ownship_icon[10];
+                          for ( int i=0; i<10 ; i++ )
+                          {
+                                int j = i * 2;
+                                double pxa = ( double ) (s_ownship_icon[j]  );
+                                double pya = ( double ) (s_ownship_icon[j+1]);
+                                pya *= scale_factor_y;
+                                pxa *= scale_factor_x;
+
+                                double px = ( pxa * sin ( icon_rad ) ) + ( pya * cos ( icon_rad ) );
+                                double py = ( pya * sin ( icon_rad ) ) - ( pxa * cos ( icon_rad ) );
+
+                                ownship_icon[i].x = ( int ) (px ) + lShipMidPoint.x;
+                                ownship_icon[i].y = ( int ) (py ) + lShipMidPoint.y;
+                          }
+
+                          wxPen ppPen1 ( GetGlobalColor ( _T ( "UBLCK" ) ), 1, wxSOLID );
+                          dc.SetPen ( ppPen1 );
+                          dc.SetBrush ( wxBrush ( ship_color ) );
+
+                          dc.DrawPolygon ( 6, &ownship_icon[0], 0, 0 );
+
+                          //     draw reference point (midships) cross
+                          dc.DrawLine ( ownship_icon[6].x ,ownship_icon[6].y, ownship_icon[7].x,ownship_icon[7].y );
+                          dc.DrawLine ( ownship_icon[8].x ,ownship_icon[8].y, ownship_icon[9].x,ownship_icon[9].y );
+
+                          img_height = OWNSHIP_LENGTH * scale_factor_y;
+                    }
+                    else
+                    {
+                        wxImage *pos_image;
+                        pos_image = m_pos_image_red;
+                        if(SHIP_NORMAL != m_ownship_state)
+                              pos_image = m_pos_image_grey;
 
 
-                //      Possibly scale the onwship image if not user defined.
-                if(m_pos_image_user == NULL)
-                {
-                        //      calculate true ship size in pixels
-                        int ship_pix = (int)/*rint*/(g_n_ownship_meters * GetVP().view_scale_ppm);
-
-                        //      Grow the ship icon if needed, will only happen on big overzoom
-                        if(ship_pix > img_height)
+                        //      Substitute user ownship image if found
+                        if(m_pos_image_user)
                         {
-                              //      Make a new member image under some conditions
-                              if((m_cur_ship_pix != ship_pix) || ((SHIP_NORMAL == m_ownship_state) && m_cur_ship_pix_isgrey) || !m_ship_pix_image.IsOk())
-                              {
-                                    int nh = ship_pix;
-                                    int nw = img_width * ship_pix / img_height;
-                                    m_ship_pix_image =   pos_image->Scale(nw, nh, wxIMAGE_QUALITY_HIGH);
-                                    m_cur_ship_pix_isgrey = (SHIP_NORMAL != m_ownship_state);
-                                    m_cur_ship_pix = ship_pix;
-                              }
-                              pos_image = &m_ship_pix_image;
+                               pos_image = m_pos_image_user;
+                               if(SHIP_NORMAL != m_ownship_state)
+                                    pos_image = m_pos_image_user_grey;
                         }
-                }
+
+
+                        img_width = pos_image->GetWidth();
+                        img_height = pos_image->GetHeight();
+
+                        //    Calculate some scale factors
+                        //      using only ownship_length
+
+                        double scale_factor = ship_scale_pix / img_height;
+
+                        //  Calculate a scale factor that would produce an reasonable size icon
+                        double scale_factor_min = ownship_min_mm / (img_height / sf_pix_per_mm);
+
+                          //  And choose the correct one
+                        scale_factor = wxMax(scale_factor, scale_factor_min);
+
+                        //      Make a new member image under some conditions
+                        if((m_cur_ship_pix != ship_scale_pix) || ((SHIP_NORMAL == m_ownship_state) && m_cur_ship_pix_isgrey) || !m_ship_pix_image.IsOk() || (m_ship_cs != m_cs))
+                        {
+                              int nh = img_height * scale_factor;
+                              int nw = img_width * scale_factor;
+                              m_ship_pix_image =   pos_image->Scale(nw, nh, wxIMAGE_QUALITY_HIGH);
+                              m_cur_ship_pix_isgrey = (SHIP_NORMAL != m_ownship_state);
+                              m_cur_ship_pix = ship_scale_pix;
+                              m_ship_cs = m_cs;
+                        }
+                        pos_image = &m_ship_pix_image;
 
                 //      Draw the ownship icon
-                if(GetVP().chart_scale < 300000)             // According to S52, this should be 50,000
-                {
-                     wxPoint rot_ctr(1 + img_width/2, 1 + img_height/2);
+                        wxPoint rot_ctr(img_width/2, img_height/2);
+                        wxImage rot_image = pos_image->Rotate(-(icon_rad - (PI / 2.)), rot_ctr, true);
+                        wxBitmap os_bm(rot_image);
 
-                     wxImage rot_image = pos_image->Rotate(-(icon_rad - (PI / 2.)), rot_ctr, true);
-                     wxBitmap os_bm(rot_image);
+                        int w =  os_bm.GetWidth();
+                        int h = os_bm.GetHeight();
 
-                     int w =  os_bm.GetWidth();
-                     int h = os_bm.GetHeight();
+                        dc.DrawBitmap(os_bm, lShipMidPoint.x - w/2 - 1, lShipMidPoint.y - h/2 - 1, true);
 
-                     dc.DrawBitmap(os_bm, lShipPoint.x - w/2, lShipPoint.y - h/2, true);
-
-                     dc.CalcBoundingBox( lShipPoint.x - w/2, lShipPoint.y - h/2 );
-                     dc.CalcBoundingBox( lShipPoint.x - w/2 + w, lShipPoint.y - h/2 + h );        // Maintain dirty box,, missing in __WXMSW__ library
-                }
-                else
-                {
-                      dc.SetPen ( wxPen ( pred_colour , 2 ) );
-
-                      if(SHIP_NORMAL == m_ownship_state)
-                            dc.SetBrush ( wxBrush ( pred_colour, wxTRANSPARENT ) );
-                      else
-                            dc.SetBrush ( wxBrush ( GetGlobalColor ( _T ( "YELO1" )) ) );
-
-                      dc.DrawEllipse ( lShipPoint.x - 10, lShipPoint.y - 10, 20, 20 );
-                      dc.DrawEllipse ( lShipPoint.x -  6, lShipPoint.y -  6, 12, 12 );
-
-                      dc.DrawLine ( lShipPoint.x - 12, lShipPoint.y, lShipPoint.x + 12, lShipPoint.y);
-                      dc.DrawLine ( lShipPoint.x, lShipPoint.y - 12, lShipPoint.x, lShipPoint.y + 12);
-
+                        // Maintain dirty box,, missing in __WXMSW__ library
+                        dc.CalcBoundingBox( lShipMidPoint.x - w/2 - 1, lShipMidPoint.y - h/2 - 1);
+                        dc.CalcBoundingBox( lShipMidPoint.x - w/2 + w +1, lShipMidPoint.y - h/2 + h +1);
                 }
 
                 // draw course over ground if they are longer than the ship
@@ -5547,6 +5623,10 @@ void ChartCanvas::ShipDraw ( ocpnDC& dc )
                      wxDash dash_long[2];
                      dash_long[0] = ( int ) ( 3.0 * m_pix_per_mm );  //8// Long dash  <---------+
                      dash_long[1] = ( int ) ( 1.5 * m_pix_per_mm );  //2// Short gap            |
+
+                     //       If COG is unknown, render the predictor in grey
+                     if(wxIsNaN(gCog))
+                           pred_colour = GetGlobalColor ( _T ( "GREY1" ) );
 
                      wxPen ppPen2 ( pred_colour, 3, wxUSER_DASH );
                      ppPen2.SetDashes( 2, dash_long );
@@ -5589,112 +5669,13 @@ void ChartCanvas::ShipDraw ( ocpnDC& dc )
                      dc.StrokeCircle(lHeadPoint.x, lHeadPoint.y, 4);
                 }
 
-#else  //USE_PNG_OWNSHIP
-                //      Establish ship color
-                 //     It changes color based on GPS and Chart accuracy/availability
-                wxColour ship_color(GetGlobalColor ( _T ( "URED" )));         // default is OK
-
-                if(SHIP_LOWACCURACY == m_ownship_state)
-                {
-                      ship_color = GetGlobalColor ( _T ( "YELO1" ) );
-                }
-
-                if(SHIP_INVALID == m_ownship_state)
-                {
-                      ship_color = GetGlobalColor ( _T ( "YELO1" ) );
-                }
-
-                dc.SetBrush ( wxBrush ( ship_color ) );
-
-                //      Draw the COG predictor
-
-                //      First, however, scale the predictor icon by an empirical factor
-                //      If the predictor length is less than 10 mm, scale further
-                GetClientSize ( &canvas_width, &canvas_height );
-                double x_mm = wxGetDisplaySizeMM().GetWidth();         // gives client width in mm
-                double pix_per_mm = canvas_width / x_mm;
-
-                double llmm = lpp / pix_per_mm;
-
-                double pred_icon_scale_factor = 1.25;
-                if(llmm < 10)
-                      pred_icon_scale_factor *= llmm / 10;
+                //      Reference point, where the GPS antenna is
+                dc.SetPen( wxPen( GetGlobalColor ( _T ( "UBLCK" ) ), 1 ));
+                dc.SetBrush(wxBrush(GetGlobalColor ( _T ( "UIBCK" ) )));
+                dc.StrokeCircle(lShipPoint.x, lShipPoint.y, 4);
+              }         // ownship draw
 
 
-
-                wxPen ppPen2 ( GetGlobalColor ( _T ( "UBLCK" ) ), 3, wxSOLID );
-                dc.SetPen ( ppPen2 );
-                dc.DrawLine ( lShipPoint.x, lShipPoint.y, lPredPoint.x, lPredPoint.y );
-
-                wxPoint icon[10];
-
-                for ( int i=0; i<8; i++ )
-                {
-                      int j = i * 2;
-                      double pxa = ( double ) (s_pred_icon[j]  );
-                      double pya = ( double ) (s_pred_icon[j+1]);
-
-                      pya *=  pred_icon_scale_factor;
-                      pxa *=  pred_icon_scale_factor;
-
-                      double px = ( pxa * sin ( cog_rad ) ) + ( pya * cos ( cog_rad ) );
-                      double py = ( pya * sin ( cog_rad ) ) - ( pxa * cos ( cog_rad ) );
-
-
-                      icon[i].x = ( int ) ( px ) + lPredPoint.x;
-                      icon[i].y = ( int ) ( py ) + lPredPoint.y;
-                }
-
-                wxPen ppPen1 ( GetGlobalColor ( _T ( "UBLCK" ) ), 3, wxSOLID );
-                dc.SetPen ( ppPen1 );
-
-                dc.DrawLine ( icon[0].x,icon[0].y, icon[1].x ,icon[1].y );
-                dc.DrawLine ( icon[2].x,icon[2].y, icon[3].x ,icon[3].y  );
-                dc.DrawLine ( icon[4].x,icon[4].y, icon[5].x ,icon[5].y );
-                dc.DrawLine ( icon[6].x,icon[6].y, icon[7].x ,icon[7].y  );
-
-                //      Now draw the ownship icon
-
-                if(GetVP().chart_scale < 50000)
-                {
-                        wxPoint ownship_icon[10];
-                        for ( int i=0; i<10 ; i++ )
-                        {
-                              int j = i * 2;
-                              double pxa = ( double ) (s_ownship_icon[j]  );
-                              double pya = ( double ) (s_ownship_icon[j+1]);
-                                pya /= 1.5;
-                                pxa /= 1.5;
-
-                                double px = ( pxa * sin ( icon_rad ) ) + ( pya * cos ( icon_rad ) );
-                                double py = ( pya * sin ( icon_rad ) ) - ( pxa * cos ( icon_rad ) );
-
-                                ownship_icon[i].x = ( int ) ( px ) + lShipPoint.x;
-                                ownship_icon[i].y = ( int ) ( py ) + lShipPoint.y;
-                        }
-
-                        wxPen ppPen1 ( GetGlobalColor ( _T ( "UBLCK" ) ), 1, wxSOLID );
-                        dc.SetPen ( ppPen1 );
-                        dc.DrawPolygon ( 6, &ownship_icon[0], 0, 0 );
-
-                        //                 //     draw reference point cross
-                        dc.DrawLine ( ownship_icon[6].x ,ownship_icon[6].y, ownship_icon[7].x,ownship_icon[7].y );
-                        dc.DrawLine ( ownship_icon[8].x ,ownship_icon[8].y, ownship_icon[9].x,ownship_icon[9].y );
-                }
-                else
-                {
-                      dc.SetPen ( wxPen ( GetGlobalColor ( _T ( "URED" ) ) , 2 ) );
-
-                      if(SHIP_NORMAL == m_ownship_state)
-                            dc.SetBrush ( wxBrush ( ship_color, wxTRANSPARENT ) );
-                      else
-                            dc.SetBrush ( wxBrush ( GetGlobalColor ( _T ( "YELO1" )) ) );
-
-                      dc.DrawEllipse ( lShipPoint.x - 10, lShipPoint.y - 10, 20, 20 );
-                      dc.DrawEllipse ( lShipPoint.x -  6, lShipPoint.y -  6, 12, 12 );
-                }
-
-#endif      //USE_PNG_OWNSHIP
 
 
 //    Test code to draw CEP circle based on chart scale
@@ -8918,6 +8899,7 @@ void ChartCanvas::PopupMenuHandler ( wxCommandEvent& event )
                                 SetCursor(wxCURSOR_ARROW);
                                 pdialog->ShowModal();
                                 gFrame->SurfaceToolbar();
+                                gFrame->Raise();
 
                                 delete rule_list;
                                 delete pdialog;
@@ -8932,19 +8914,12 @@ void ChartCanvas::PopupMenuHandler ( wxCommandEvent& event )
                         break;
                 }
 #endif
-                case ID_DEF_MENU_AIS_QUERY:
-
-                      if(NULL == g_pais_query_dialog_active)
-                      {
-                            g_pais_query_dialog_active = new AISTargetQueryDialog();
-                            g_pais_query_dialog_active->Create ( this, -1, _( "AIS Target Query" ), wxPoint(g_ais_query_dialog_x, g_ais_query_dialog_y));
-                      }
-
-                      g_pais_query_dialog_active->SetMMSI(m_FoundAIS_MMSI);
-                      g_pais_query_dialog_active->UpdateText();
-                      g_pais_query_dialog_active->Show();
-
-                      break;
+              case ID_DEF_MENU_AIS_QUERY:
+              {
+                    wxWindow *pwin = wxDynamicCast(this, wxWindow);
+                    ShowAISTargetQueryDialog(pwin, m_FoundAIS_MMSI);
+                    break;
+              }
 
               case ID_DEF_MENU_QUILTREMOVE:
               {
@@ -11904,14 +11879,14 @@ void glChartCanvas::BuildFBO(void)
 
 }
 
+int s_in_glpaint;
+
 void glChartCanvas::OnPaint(wxPaintEvent &event)
 {
 
     wxPaintDC dc(this);
 
-#ifndef __WXMOTIF__
     if (!GetContext()) return;
-#endif
 
     SetCurrent();
 
@@ -12053,7 +12028,17 @@ void glChartCanvas::OnPaint(wxPaintEvent &event)
 //          g_bDebugOGL = true;
      }
 
+     //      Recursion test, sometimes seen on GTK systems when wxBusyCursor is activated
+     if(s_in_glpaint)
+     {
+           return;
+     }
+     s_in_glpaint++;
+
      render();
+
+     s_in_glpaint--;
+
 }
 
 
@@ -12612,7 +12597,9 @@ void glChartCanvas::RenderQuiltViewGL(ViewPort &vp, wxRegion Region)
                               {
                                     ChartBaseBSB *Patch_Ch_BSB = dynamic_cast<ChartBaseBSB*>(pch);
                                     if(Patch_Ch_BSB)
+                                    {
                                           RenderChartRegion(Patch_Ch_BSB, cc1->VPoint, get_region);
+                                    }
                                     else if(pch->GetChartFamily() == CHART_FAMILY_VECTOR)
                                     {
                                           get_region.Offset ( cc1->VPoint.rv_rect.x, cc1->VPoint.rv_rect.y );
@@ -14982,6 +14969,67 @@ void AISTargetQueryDialog::OnMove( wxMoveEvent& event )
       g_ais_query_dialog_y = p.y;
       event.Skip();
 }
+
+void ShowAISTargetQueryDialog(wxWindow *win, int mmsi)
+{
+      if(!win)
+            return;
+
+      if(NULL == g_pais_query_dialog_active)
+      {
+            int pos_x = g_ais_query_dialog_x;
+            int pos_y = g_ais_query_dialog_y;
+
+            g_pais_query_dialog_active = new AISTargetQueryDialog();
+            g_pais_query_dialog_active->Create ( win, -1, _( "AIS Target Query" ), wxPoint(pos_x, pos_y));
+
+            g_pais_query_dialog_active->SetMMSI(mmsi);
+            g_pais_query_dialog_active->UpdateText();
+            wxSize sz = g_pais_query_dialog_active->GetSize();
+
+            bool b_reset_pos = false;
+#ifdef __WXMSW__
+        //  Support MultiMonitor setups which an allow negative window positions.
+        //  If the requested window title bar does not intersect any installed monitor,
+        //  then default to simple primary monitor positioning.
+            RECT frame_title_rect;
+            frame_title_rect.left   = pos_x;
+            frame_title_rect.top    = pos_y;
+            frame_title_rect.right  = pos_x + sz.x;
+            frame_title_rect.bottom = pos_y + 30;
+
+            if(NULL == MonitorFromRect(&frame_title_rect, MONITOR_DEFAULTTONULL))
+                  b_reset_pos = true;
+#else
+
+            //    Make sure drag bar (title bar) of window intersects wxClient Area of screen, with a little slop...
+            wxRect window_title_rect;                    // conservative estimate
+            window_title_rect.x = pos_x;
+            window_title_rect.y = pos_y;
+            window_title_rect.width = sz.x;
+            window_title_rect.height = 30;
+
+            wxRect ClientRect = wxGetClientDisplayRect();
+            ClientRect.Deflate(60, 60);                     // Prevent the new window from being too close to the edge
+            if(!ClientRect.Intersects(window_title_rect))
+                  b_reset_pos = true;
+
+#endif
+
+            if(b_reset_pos)
+                  g_pais_query_dialog_active->Move(50, 200);
+
+      }
+      else
+      {
+            g_pais_query_dialog_active->SetMMSI(mmsi);
+            g_pais_query_dialog_active->UpdateText();
+      }
+
+      g_pais_query_dialog_active->Show();
+}
+
+
 
 #ifdef USE_S57
 //---------------------------------------------------------------------------------------

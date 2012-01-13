@@ -44,6 +44,9 @@
 #include "chart1.h"                 // for enum types
 #include "ocpndc.h"
 
+//    Useful static routines
+void ShowAISTargetQueryDialog(wxWindow *parent, int mmsi);
+
 //--------------------------------------------------------
 //    Screen Brightness Control Support Routines
 //
@@ -484,6 +487,7 @@ private:
       wxImage     m_ship_pix_image;             //cached ship draw image for high overzoom
       int         m_cur_ship_pix;
       bool        m_cur_ship_pix_isgrey;
+      ColorScheme m_ship_cs;
 
       Quilt       *m_pQuilt;
 
