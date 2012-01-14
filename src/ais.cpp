@@ -607,8 +607,8 @@ wxString AIS_Target_Data::BuildQueryResult( void )
             {
                   wxDateTime eta(ETA_Day, wxDateTime::Month(ETA_Mo-1), now.GetYear(), ETA_Hr, ETA_Min);
                   line.Printf(_("ETA:                  "));
-                  line.Append( eta.FormatISODate());
-                  line.Append(_T("  "));
+                  line.Append( eta.Format(_T("%b %e")));
+                  line.Append(_T(",  "));
                   line.Append( eta.FormatISOTime());
                   line.Append(_T("\n"));
             }
@@ -1755,6 +1755,7 @@ bool AIS_Decoder::Parse_VDXBitstring(AIS_Bitstring *bstr, AIS_Target_Data *ptd)
                 ptd->Class = AIS_CLASS_B;
 
                 parse_result = true;                // so far so good
+                b_posn_report = true;
 
                 break;
           }
@@ -2721,7 +2722,7 @@ void AIS_Decoder::OnTimerAIS(wxTimerEvent& event)
           {
                 if(target_posn_age > removelost_Mins * 60)
                 {
-                      //      So mark the target as lost, with unknown position
+                      //      So mark the target as lost, with unknown position, and make it not selectable
                       td->b_lost = true;
                       td->b_positionOnceValid = false;
                       td->COG = 360.0;
@@ -2729,11 +2730,11 @@ void AIS_Decoder::OnTimerAIS(wxTimerEvent& event)
                       td->HDG = 511.0;
                       td->ROTAIS = -128;
 
+                      long mmsi_long = td->MMSI;
+                      pSelectAIS->DeleteSelectablePoint((void *)mmsi_long, SELTYPE_AISTARGET);
 
                       if(target_static_age > removelost_Mins * 60 * 3)
                       {
-                        long mmsi_long = td->MMSI;
-                        pSelectAIS->DeleteSelectablePoint((void *)mmsi_long, SELTYPE_AISTARGET);
                         current_targets->erase(it);
                         delete td;
 
@@ -4447,15 +4448,7 @@ void AISTargetListDialog::OnTargetSelected( wxListEvent &event )
 
 void AISTargetListDialog::DoTargetQuery( int mmsi )
 {
-      if(NULL == g_pais_query_dialog_active)
-      {
-            g_pais_query_dialog_active = new AISTargetQueryDialog();
-            g_pais_query_dialog_active->Create ( m_pparent, -1, _( "AIS Target Query" ), wxPoint(g_ais_query_dialog_x, g_ais_query_dialog_y));
-      }
-
-      g_pais_query_dialog_active->SetMMSI(mmsi);
-      g_pais_query_dialog_active->UpdateText();
-      g_pais_query_dialog_active->Show();
+      ShowAISTargetQueryDialog(m_pparent, mmsi);
 }
 
 /*

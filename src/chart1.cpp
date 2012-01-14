@@ -518,7 +518,11 @@ wxString         g_AW2GUID;
 bool             g_b_overzoom_x;                      // Allow high overzoom
 bool             g_bshow_overzoom_emboss;
 
-int              g_n_ownship_meters;
+int              g_n_ownship_length_meters;
+int              g_n_ownship_beam_meters;
+int              g_n_gps_antenna_offset_y;
+int              g_n_gps_antenna_offset_x;
+int              g_n_ownship_min_mm;
 
 int              g_nautosave_interval_seconds;
 
@@ -2558,6 +2562,10 @@ bool MyApp::OnInit()
         wxPoint position(0,0);
         wxSize dsize = wxGetDisplaySize();
 
+#ifdef __WXMAC__
+        g_nframewin_posy = wxMax(g_nframewin_posy, 22);
+#endif
+
         if((g_nframewin_posx < dsize.x) && (g_nframewin_posy < dsize.y))
               position = wxPoint(g_nframewin_posx, g_nframewin_posy);
 
@@ -2574,6 +2582,7 @@ bool MyApp::OnInit()
         if(NULL == MonitorFromRect(&frame_rect, MONITOR_DEFAULTTONULL))
               position = wxPoint(10, 10);
 #endif
+
 
         //  For Windows and GTK, provide the expected application Minimize/Close bar
         long app_style = wxDEFAULT_FRAME_STYLE;
@@ -3612,7 +3621,7 @@ ocpnToolBarSimple *MyFrame::CreateAToolbar()
     }
 
     if(pConfig)
-        tb->ToggleTool(ID_FOLLOW, pConfig->st_bFollow);
+          tb->ToggleTool(ID_FOLLOW, cc1->m_bFollow);
 
 #ifdef USE_S57
     if((pConfig) && (ps52plib))
@@ -4121,9 +4130,7 @@ void MyFrame::DeleteToolbarBitmaps()
 
     delete _img_opencpn;
 
-    delete _img_ship_green;
     delete _img_ship_red;
-    delete _img_ship_grey;
 
     delete _img_redX;
     delete _img_viz;

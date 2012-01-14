@@ -222,7 +222,11 @@ extern bool             g_bUseGreenShip;
 extern bool             g_b_overzoom_x;                      // Allow high overzoom
 extern bool             g_bshow_overzoom_emboss;
 extern int              g_nautosave_interval_seconds;
-extern int              g_n_ownship_meters;
+extern int              g_n_ownship_length_meters;
+extern int              g_n_ownship_beam_meters;
+extern int              g_n_gps_antenna_offset_y;
+extern int              g_n_gps_antenna_offset_x;
+extern int              g_n_ownship_min_mm;
 
 extern bool             g_bPreserveScaleOnX;
 
@@ -2793,7 +2797,12 @@ int MyConfig::LoadMyConfig ( int iteration )
       Read ( _T ( "AllowExtremeOverzoom" ),  &g_b_overzoom_x, 1 );
       Read ( _T ( "ShowOverzoomEmbossWarning" ),  &g_bshow_overzoom_emboss, 1 );
       Read ( _T ( "AutosaveIntervalSeconds" ),  &g_nautosave_interval_seconds, 300 );
-      Read ( _T ( "OwnshipLengthMeters" ),  &g_n_ownship_meters, 12 );
+      Read ( _T ( "OwnshipLengthMeters" ),  &g_n_ownship_length_meters, 12 );
+      Read ( _T ( "OwnshipBeamMeters" ),  &g_n_ownship_beam_meters, 0 );
+      Read ( _T ( "OwnshipGPSOffsetY" ),  &g_n_gps_antenna_offset_y, g_n_ownship_length_meters/2 );
+      Read ( _T ( "OwnshipGPSOffsetX" ),  &g_n_gps_antenna_offset_x, 0 );
+      Read ( _T ( "OwnshipMinMM" ),  &g_n_ownship_min_mm, 10 );
+
       Read ( _T ( "UseNMEA_RMC" ),  &g_bUseRMC, 1 );
       Read ( _T ( "UseNMEA_GLL" ),  &g_bUseGLL, 1 );
       Read ( _T ( "UseBigRedX" ),  &g_bbigred, 0 );
@@ -4823,8 +4832,7 @@ void MyConfig::ImportGPX ( wxWindow* parent, bool islayer, wxString dirpath, boo
                                                       }
                                                       else
                                                             pWp->m_LayerID = 0;
-                                                      if (!g_bIsNewLayer || g_bLayerViz)
-                                                            pSelect->AddSelectableRoutePoint ( pWp->m_lat, pWp->m_lon, pWp );
+                                                      pSelect->AddSelectableRoutePoint ( pWp->m_lat, pWp->m_lon, pWp );
                                                       pWp->m_ConfigWPNum = m_NextWPNum;
                                                       m_NextWPNum++;
                                                 }
@@ -5753,7 +5761,7 @@ void GPXLoadTrack ( GpxTrkElement* trknode, bool b_fullviz )
                                     TiXmlAttribute * attr;
                                     for ( attr = ((TiXmlElement*)ext_child)->FirstAttribute(); attr != 0; attr = attr->Next())
                                     {
-                                          if (attr) 
+                                          if (attr)
                                           {
                                                 if (strcmp(attr->Name(), "style") == 0)
                                                       pTentTrack->m_style = atoi(attr->Value());
@@ -6085,7 +6093,7 @@ Route *LoadGPXRoute(GpxRteElement *rtenode, int routenum, bool b_fullviz)
                               TiXmlAttribute * attr;
                               for ( attr = ((TiXmlElement*)ext_child)->FirstAttribute(); attr != 0; attr = attr->Next())
                               {
-                                    if (attr) 
+                                    if (attr)
                                     {
                                           if (strcmp(attr->Name(), "style") == 0)
                                                 pTentRoute->m_style = atoi(attr->Value());
