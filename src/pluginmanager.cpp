@@ -132,6 +132,7 @@ PlugInManager::~PlugInManager()
 bool PlugInManager::LoadAllPlugIns(wxString &plugin_dir)
 {
       m_plugin_location = plugin_dir;
+      m_plugin_location = _T("C:\\work\\opencpn\\source\\opencpn\\build\\plugins\\wmm_pi\\Debug");
 
       wxString msg(_T("PlugInManager searching for PlugIns in location "));
       msg += m_plugin_location;
