@@ -18,7 +18,7 @@
 ## *   You should have received a copy of the GNU General Public License     *
 ## *   along with this program; if not, write to the                         *
 ## *   Free Software Foundation, Inc.,                                       *
-## *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,  USA.             *
+## *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,  USA.         *
 ## ***************************************************************************
 
 
@@ -225,8 +225,6 @@ ENDIF(UNIX)
 # header files and cpp/c files and CMake will sort them out
 
 SET(SRC_NMEA0183
-		include/nmea.h
-		src/nmea.cpp
 		src/nmea0183/LatLong.hpp
 		src/nmea0183/latlong.cpp
 		src/nmea0183/long.cpp
@@ -294,8 +292,8 @@ ENDIF (NOT WIN32)
 
 #FILE(GLOB_RECURSE SRCS *.cpp *.c)
 SET(HDRS
-        include/ocpn_types.h
-        include/ocpndc.h
+        	include/ocpn_types.h
+        	include/ocpndc.h
 		include/chart1.h
 		include/bbox.h
 		include/ocpn_pixel.h
@@ -331,13 +329,15 @@ SET(HDRS
 		include/toolbar.h
 		include/compasswin.h
 		include/geodesic.h
+		include/datastream.h
+                include/multiplexer.h
 )
 
 SET(SRCS
 		src/chart1.cpp
 		src/bbox.cpp
 		src/ocpn_pixel.cpp
-        src/ocpndc.cpp
+        	src/ocpndc.cpp
 		src/chartdb.cpp
 		src/chartdbs.cpp
 		src/chartimg.cpp
@@ -369,6 +369,8 @@ SET(SRCS
 		src/toolbar.cpp
 		src/compasswin.cpp
 		src/geodesic.cpp
+		src/datastream.cpp
+                src/multiplexer.cpp
     )
 
 IF(wx_Version MATCHES "2.9")
