@@ -172,6 +172,7 @@ void DataStream::Open(void)
             m_pSecondary_Thread->Run();
 
             m_bok = true;
+            m_bsec_thread_active = true;
         }
         else if(m_portstring.Contains(_T("GPSD")) || m_portstring.StartsWith(_T("TCP"))) {
 
@@ -208,7 +209,7 @@ void DataStream::Open(void)
             m_addr.Hostname(m_gpsd_addr);
             m_addr.Service(m_gpsd_port);
             m_sock->Connect(m_addr, FALSE);       // Non-blocking connect
-
+            m_bok = true;
         }
     }
 }
@@ -216,6 +217,7 @@ void DataStream::Open(void)
 
 DataStream::~DataStream()
 {
+    Close();
 }
 
 void DataStream::Close()
@@ -228,17 +230,15 @@ void DataStream::Close()
                 wxLogMessage(_T("Stopping Secondary Thread"));
 
                 m_Thread_run_flag = 0;
-                int tsec = 5;
+                int tsec = 10;
                 while((m_Thread_run_flag >= 0) && (tsec--))
-                {
                     wxSleep(1);
-                }
 
                 wxString msg;
                 if(m_Thread_run_flag < 0)
-                      msg.Printf(_T("Stopped in %d sec."), 5 - tsec);
+                      msg.Printf(_T("Stopped in %d sec."), 10 - tsec);
                 else
-                     msg.Printf(_T("Not Stopped after 5 sec."));
+                     msg.Printf(_T("Not Stopped after 10 sec."));
                 wxLogMessage(msg);
 
           }
@@ -267,7 +267,7 @@ void DataStream::OnSocketEvent(wxSocketEvent& event)
         {
             // TODO determine if the follwing SetFlags needs to be done at every socket event or only once when socket is created, it it needs to be done at all!
             //m_sock->SetFlags(wxSOCKET_WAITALL | wxSOCKET_BLOCK);      // was (wxSOCKET_NOWAIT);
-            
+
             // We use wxSOCKET_BLOCK to avoid Yield() reentrancy problems
             // if a long ProgressDialog is active, as in S57 SENC creation.
 
@@ -291,10 +291,10 @@ void DataStream::OnSocketEvent(wxSocketEvent& event)
             }
             
             bool done = false;
-            
+
             while(!done)
             {
-                
+
                 size_t nmea_start = m_sock_buffer.find_first_of(_T("$!")); // detect the potential start of a NMEA string
                 size_t nmea_end = wxString::npos;
                 if(nmea_start != wxString::npos)
@@ -318,13 +318,13 @@ void DataStream::OnSocketEvent(wxSocketEvent& event)
                         Nevent.SetPriority(m_priority);
                         m_consumer->AddPendingEvent(Nevent);
                     }
-                        
+
                 }
                 else
                     done = true;
             }
-            
-            
+
+
             break;
         }
 
@@ -363,6 +363,9 @@ bool DataStream::SentencePassesFilter(const wxString& sentence, FilterDirection 
     wxArrayString filter;
     bool listype = false;
 
+    if (filter.Count() == 0) //Empty list means everything passes
+        return true;
+
     if (direction == INPUT)
     {
         filter = m_input_filter;
@@ -400,19 +403,22 @@ bool DataStream::SentencePassesFilter(const wxString& sentence, FilterDirection 
 
 bool DataStream::ChecksumOK( const wxString &sentence )
 {
+    if (!m_bchecksumCheck)
+        return true;
+
     size_t check_start = sentence.find('*');
     if(check_start == wxString::npos || check_start > sentence.size() - 3)
         return false; // * not found, or it didn't have 2 characters following it.
-        
+
     wxString check_str = sentence.substr(check_start+1,2);
     unsigned long checksum;
     if(!check_str.ToULong(&checksum,16))
         return false;
-    
+
     unsigned char calculated_checksum = 0;
     for(wxString::const_iterator i = sentence.begin()+1; i != sentence.end() && *i != '*'; ++i)
         calculated_checksum ^= *i;
-    
+
     return calculated_checksum == checksum;
 }
 
@@ -420,7 +426,16 @@ bool DataStream::SendSentence( const wxString &sentence )
 {
     if( m_io_select == DS_TYPE_INPUT || !SentencePassesFilter( sentence, OUTPUT ) ) //Output forbidden for this port or sentence filtered out
         return false;
-    m_pSecondary_Thread->SendMsg(sentence);
+    if (m_pSecondary_Thread)
+        return m_pSecondary_Thread->SendMsg(sentence) > 0;
+    else
+        if(m_sock)
+        {
+            if (m_sock->IsDisconnected())
+                m_sock->Connect(m_addr, FALSE);
+            else
+                m_sock->Write(sentence.mb_str(), strlen(sentence.mb_str()));
+        }
     return true;
 }
 
@@ -533,7 +548,6 @@ void *OCP_DataStreamInput_Thread::Entry()
 
               //  Now try to regain the Mutex
               while(wxMUTEX_BUSY == m_pPortMutex->TryLock()){};
-
               //  Re-initialize the port
               if ((m_gps_fd = OpenComPortPhysical(m_PortName, m_baud)) < 0)
               {
@@ -550,7 +564,6 @@ void *OCP_DataStreamInput_Thread::Entry()
       //    Storing incoming characters in circular buffer
       //    And watching for new line character
       //     On new line character, send notification to parent
-
             char next_byte = 0;
             ssize_t newdata;
             newdata = read(m_gps_fd, &next_byte, 1);            // read of one char
@@ -590,7 +603,6 @@ void *OCP_DataStreamInput_Thread::Entry()
 
             // free old unplug current port
                               CloseComPortPhysical(m_gps_fd);
-
             //    Request the com port from the comm manager
                               if ((m_gps_fd = OpenComPortPhysical(m_PortName, m_baud)) < 0)  {
                                     wxString msg(_T("NMEA input device open failed (will retry): "));
@@ -599,13 +611,11 @@ void *OCP_DataStreamInput_Thread::Entry()
                               } else {
                                     wxString msg(_T("NMEA input device open on hotplug OK: "));
                               }
-
             //      Reset the log flag
 //                              m_pCommMan->SetLogFlag(blog);
                         }
                   }
             } // end Fulup hack
-
 
             //  And process any character
 
@@ -645,7 +655,6 @@ void *OCP_DataStreamInput_Thread::Entry()
                         wxASSERT_MSG((ptmpbuf - temp_buf) < DS_RX_BUFFER_SIZE, (const wxChar *)"temp_buf overrun1");
 
                   }
-
                   if((*tptr == 0x0a) && (tptr != put_ptr))    // well formed sentence
                   {
                         *ptmpbuf++ = *tptr++;
@@ -666,14 +675,10 @@ void *OCP_DataStreamInput_Thread::Entry()
                   }                   //if nl
             }                       // if newdata > 0
       //              ThreadMessage(_T("Timeout 1"));
-
     }                          // the big while...
-
 
 //          Close the port cleanly
     CloseComPortPhysical(m_gps_fd);
-
-
 
 thread_exit:
     m_launcher->SetSecThreadInActive();             // I am dead
@@ -1490,6 +1495,7 @@ int OCP_DataStreamInput_Thread::OpenComPortPhysical(wxString &com_name, int baud
 
 int OCP_DataStreamInput_Thread::CloseComPortPhysical(int fd)
 {
+    wxLogMessage("CloseComPortPhysical");
       if((HANDLE)fd != INVALID_HANDLE_VALUE)
             CloseHandle((HANDLE)fd);
       return 0;
@@ -1728,7 +1734,7 @@ wxString ConnectionParams::GetFiltersStr()
 wxString ConnectionParams::GetDSPort()
 {
     if ( Type == Serial )
-        return wxString::Format( _T("%s"), Port.c_str() );
+        return wxString::Format( _T("Serial:%s"), Port.c_str() );
     else
     {
         wxString proto;
