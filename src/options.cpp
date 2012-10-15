@@ -3439,7 +3439,6 @@ void options::ShowNMEACommon(bool visible)
         m_cbOutput->Hide();
         m_choicePriority->Hide();
         m_stPriority->Hide();
-        m_cbCheckCRC->Hide();
         sbSizerOutFilter->SetDimension(0,0,0,0);
         sbSizerInFilter->SetDimension(0,0,0,0);
         sbSizerConnectionProps->SetDimension(0,0,0,0);

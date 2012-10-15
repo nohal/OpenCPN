@@ -289,7 +289,7 @@ void DataStream::OnSocketEvent(wxSocketEvent& event)
                     m_sock_buffer.Append(wxString::FromAscii(&data.front()));
                 }
             }
-
+            
             bool done = false;
 
             while(!done)
