@@ -2870,6 +2870,8 @@ void MyFrame::OnCloseWindow( wxCloseEvent& event )
     }
 
     if( g_pAIS ) {
+        if(g_pMUX)
+            g_pMUX->SetAISHandler(NULL);
         delete g_pAIS;
         g_pAIS = NULL;
     }
