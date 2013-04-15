@@ -971,7 +971,7 @@ ChartCanvas::ChartCanvas ( wxFrame *frame ) :
     m_bzooming_out = false;;
 
     EnableAutoPan(true);
-    
+
     undo = new Undo;
 
     VPoint.Invalidate();
@@ -1672,7 +1672,7 @@ void ChartCanvas::OnKeyDown( wxKeyEvent &event )
     case WXK_F12: {
         if( m_modkeys == wxMOD_ALT )
             m_nMeasureState = *(int *)(0);          // generate a fault for testing
-            
+
         parent_frame->ToggleChartOutlines();
         break;
     }
@@ -1977,7 +1977,7 @@ void ChartCanvas::Do_Pankeys( wxTimerEvent& event )
 
     if( !m_benable_autopan )
         return;
-    
+
     const int slowpan = 2, maxpan = 100;
     int repeat = 100;
 
@@ -3871,7 +3871,7 @@ void ChartCanvas::AISDrawTarget( AIS_Target_Data *td, ocpnDC& dc )
 
         //   If this is an AIS Class B target, so symbolize it differently
         if( td->Class == AIS_CLASS_B ) ais_quad_icon[3].y = 0;
-        if( td->Class == AIS_GPSG_BUDDY ) {
+        else if( td->Class == AIS_GPSG_BUDDY ) {
             ais_quad_icon[0].x = -5;
             ais_quad_icon[0].y = -12;
             ais_quad_icon[1].x = -3;
@@ -3881,10 +3881,20 @@ void ChartCanvas::AISDrawTarget( AIS_Target_Data *td, ocpnDC& dc )
             ais_quad_icon[3].x = 5;
             ais_quad_icon[3].y = -12;
         }
-        if( td->Class == AIS_DSC ) {
+        else if( td->Class == AIS_DSC ) {
             ais_quad_icon[0].y = 0;
             ais_quad_icon[1].y = 8;
             ais_quad_icon[2].y = 0;
+            ais_quad_icon[3].y = -8;
+        }
+        else if( td->Class == AIS_APRS ) {
+            ais_quad_icon[0].x = -8;
+            ais_quad_icon[0].y = -8;
+            ais_quad_icon[1].x = -8;
+            ais_quad_icon[1].y = 8;
+            ais_quad_icon[2].x = 8;
+            ais_quad_icon[2].y = 8;
+            ais_quad_icon[3].x = 8;
             ais_quad_icon[3].y = -8;
         }
 
@@ -4076,8 +4086,23 @@ void ChartCanvas::AISDrawTarget( AIS_Target_Data *td, ocpnDC& dc )
         }
 
         //        Actually Draw the target
+        if( td->Class == AIS_ARPA ) {
+            wxPen target_pen( GetGlobalColor( _T ( "UBLCK" ) ), 2 );
 
-        if( td->Class == AIS_ATON ) {                   // Aid to Navigation
+            dc.SetPen( target_pen );
+            dc.SetBrush( target_brush );
+
+            dc.StrokeCircle( TargetPoint.x, TargetPoint.y, 9 );
+            dc.StrokeCircle( TargetPoint.x, TargetPoint.y, 1 );
+            //        Draw the inactive cross-out line
+            if( !td->b_active ) {
+                dc.SetPen( wxPen( GetGlobalColor( _T ( "UBLCK" ) ), 2 ) );
+                dc.StrokeLine( TargetPoint.x - 14, TargetPoint.y, TargetPoint.x + 14, TargetPoint.y );
+                dc.CalcBoundingBox( TargetPoint.x - 14, TargetPoint.y );
+                dc.CalcBoundingBox( TargetPoint.x + 14, TargetPoint.y );
+                dc.SetPen( wxPen( GetGlobalColor( _T ( "UBLCK" ) ), 1 ) );
+            }
+        } else if( td->Class == AIS_ATON ) {                   // Aid to Navigation
             wxPen aton_pen;
             if( ( td->NavStatus == ATON_VIRTUAL_OFFPOSITION ) || ( td->NavStatus == ATON_REAL_OFFPOSITION ) )
                 aton_pen = wxPen( GetGlobalColor( _T ( "URED" ) ), 2 );
@@ -4822,8 +4847,8 @@ void ChartCanvas::EnableAutoPan(bool b_enable )
         m_pany = 0;
         m_panspeed = 0;
     }
-}  
-    
+}
+
 bool ChartCanvas::CheckEdgePan( int x, int y, bool bdragging )
 {
     bool bft = false;
