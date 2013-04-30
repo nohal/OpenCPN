@@ -1291,14 +1291,19 @@ bool MyApp::OnInit()
 //  or if the version string has changed at all
 //  We defer until here to allow for localization of the message
     if( !n_NavMessageShown || ( vs != g_config_version_string ) ) {
-        if( wxID_CANCEL == ShowNavWarning() ) return false;
+        if( wxID_CANCEL == ShowNavWarning() )
+        {
+            wxLogMessage(_T("Cancel on version query"));
+            return false;
+        }
+        wxLogMessage(_T("OK on version query"));
         n_NavMessageShown = 1;
     }
 
     g_config_version_string = vs;
 
  #ifdef USE_S57
-
+    wxLogMessage(_T("going to init s57"));
 //      Set up a useable CPL library error handler for S57 stuff
     CPLSetErrorHandler( MyCPLErrorHandler );
 
@@ -1331,7 +1336,7 @@ bool MyApp::OnInit()
 //      Otherwise, default to conditionally set spot under g_pcsv_locn
     wxString plib_data;
     bool b_force_legacy = false;
-
+    wxLogMessage(_T("going to init s52preslib"));
     if( g_UserPresLibData.IsEmpty() ) {
         plib_data = g_csv_locn;
         appendOSDirSlash( &plib_data );
@@ -1342,7 +1347,7 @@ bool MyApp::OnInit()
     }
 
     ps52plib = new s52plib( plib_data, b_force_legacy );
-
+    wxLogMessage(_T("s52preslib initialized"));
     //  If the library load failed, try looking for the s57 data elsewhere
 
     //  First, look in UserDataDir
@@ -1358,7 +1363,7 @@ bool MyApp::OnInit()
 
     if( !ps52plib->m_bOK ) {
         delete ps52plib;
-
+        wxLogMessage(_T("s52 preslib not ok"));
         wxString look_data_dir;
         look_data_dir.Append( std_path.GetUserDataDir() );
         appendOSDirSlash( &look_data_dir );
@@ -1383,7 +1388,7 @@ bool MyApp::OnInit()
 
     if( !ps52plib->m_bOK ) {
         delete ps52plib;
-
+        wxLogMessage(_T("s53preslib still not ok"));
         wxString look_data_dir;
         look_data_dir = g_SData_Locn;
         look_data_dir.Append( _T("s57data") );
@@ -1460,10 +1465,12 @@ if( 0 == g_memCacheLimit )
 //      Reload the config data, to pick up any missing data class configuration info
 //      e.g. s52plib, which could not be created until first config load completes
 //      Think catch-22
+    wxLogMessage( _T ( "Going to load config" ) );
     pConfig->LoadMyConfig( 1 );
-
+    wxLogMessage( _T ( "config loaded" ) );
     //  Override some config options for initial user startup with empty config file
     if( b_novicemode ) {
+        wxLogMessage( _T ( "setting novice mode params" ) );
         g_bShowOutlines = true;
 
         g_CPAMax_NM = 20.;
@@ -1488,6 +1495,7 @@ if( 0 == g_memCacheLimit )
 
 #ifdef USE_S57
         if( ps52plib && ps52plib->m_bOK ) {
+            wxLogMessage( _T ( "preset s52" ) );
             ps52plib->m_bShowSoundg = true;
             ps52plib->m_nDisplayCategory = (enum _DisCat) STANDARD;
             ps52plib->m_nSymbolStyle = (LUPname) PAPER_CHART;
@@ -1507,7 +1515,7 @@ if( 0 == g_memCacheLimit )
 #endif
 
     }
-
+    wxLogMessage( _T ( "tides" ) );
     //  Check the global Tide/Current data source array
     //  If empty, preset one default (US) Ascii data source
     if(!TideCurrentDataSet.GetCount())
@@ -1515,7 +1523,7 @@ if( 0 == g_memCacheLimit )
             _T("tcdata") +
             wxFileName::GetPathSeparator() +
             _T("HARMONIC.IDX"));
-
+    wxLogMessage( _T ( "ais sounds" ) );
    //  Check the global AIS alarm sound file
     //  If empty, preset default
     if(g_sAIS_Alert_Sound_File.IsEmpty()) {
@@ -1530,7 +1538,7 @@ if( 0 == g_memCacheLimit )
             g_sAIS_Alert_Sound_File = default_sound ;
     }
 
-
+    wxLogMessage( _T ( "going to init gui" ) );
     g_StartTime = wxInvalidDateTime;
     g_StartTimeTZ = 1;				// start with local times
     gpIDX = NULL;
@@ -1543,7 +1551,7 @@ if( 0 == g_memCacheLimit )
     ::wxClientDisplayRect( &cx, &cy, &cw, &ch );
 
     InitializeUserColors();
-
+    wxLogMessage( _T ( "colors inited" ) );
     if( ( g_nframewin_x > 100 ) && ( g_nframewin_y > 100 ) && ( g_nframewin_x <= cw )
             && ( g_nframewin_y <= ch ) ) new_frame_size.Set( g_nframewin_x, g_nframewin_y );
     else
@@ -1592,7 +1600,7 @@ if( 0 == g_memCacheLimit )
     //  For Windows and GTK, provide the expected application Minimize/Close bar
     long app_style = wxDEFAULT_FRAME_STYLE;
     app_style |= wxWANTS_CHARS;
-
+    wxLogMessage( _T ( "Going to create main window" ) );
 // Create the main frame window
     wxString myframe_window_title = wxT("OpenCPN ") + str_version_major + wxT(".")
             + str_version_minor + wxT(".") + str_version_patch; //Gunther
@@ -1604,7 +1612,7 @@ if( 0 == g_memCacheLimit )
     }
 
     gFrame = new MyFrame( NULL, myframe_window_title, position, new_frame_size, app_style ); //Gunther
-
+    wxLogMessage( _T ( "gFrame created" ) );
     g_pauimgr = new wxAuiManager;
 //        g_pauidockart= new wxAuiDefaultDockArt;
 //        g_pauimgr->SetArtProvider(g_pauidockart);
@@ -1616,7 +1624,7 @@ if( 0 == g_memCacheLimit )
 //              n.b.  if only one child exists, wxWindows expands the child
 //                        to the parent client area automatically, (as a favor?)
 //                        Here, we'll do explicit sizing on SIZE events
-
+    wxLogMessage( _T ( "aui mgr created" ) );
     cc1 = new ChartCanvas( gFrame );                         // the chart display canvas
     gFrame->SetCanvasWindow( cc1 );
 
@@ -1657,7 +1665,7 @@ if( 0 == g_memCacheLimit )
     g_pauimgr->GetPane( cc1 ).CaptionVisible( false );
     g_pauimgr->GetPane( cc1 ).CenterPane();
     g_pauimgr->GetPane( cc1 ).BestSize( cc1->GetSize() );
-
+    wxLogMessage( _T ( "Going to load plugins" ) );
 //      Load and initialize any PlugIns
     g_pi_manager = new PlugInManager( gFrame );
     g_pi_manager->LoadAllPlugIns( g_Plugin_Dir );
@@ -1666,7 +1674,7 @@ if( 0 == g_memCacheLimit )
 
     gFrame->ClearBackground();
     gFrame->Show( TRUE );
-
+    wxLogMessage( _T ( "gFrame shown." ) );
     if( g_bframemax ) gFrame->Maximize( true );
 
     stats = new StatWin( cc1 );
