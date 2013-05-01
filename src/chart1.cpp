@@ -1626,21 +1626,30 @@ if( 0 == g_memCacheLimit )
 //                        Here, we'll do explicit sizing on SIZE events
     wxLogMessage( _T ( "aui mgr created" ) );
     cc1 = new ChartCanvas( gFrame );                         // the chart display canvas
+    wxLogMessage( _T ( "CC created" ) );
     gFrame->SetCanvasWindow( cc1 );
+    wxLogMessage( _T ( "CC window set" ) );
 
     cc1->SetQuiltMode( g_bQuiltEnable );                     // set initial quilt mode
+    wxLogMessage( _T ( "quilt mode set" ) );
     cc1->m_bFollow = pConfig->st_bFollow;               // set initial state
     cc1->SetViewPoint( vLat, vLon, initial_scale_ppm, 0., 0. );
+    wxLogMessage( _T ( "VP set" ) );
 
     gFrame->Enable();
+    wxLogMessage( _T ( "frame enabled" ) );
 
     cc1->SetFocus();
+    wxLogMessage( _T ( "focus set" ) );
 
     console = new ConsoleCanvas( gFrame );                    // the console
+    wxLogMessage( _T ( "console created" ) );
 
     pthumbwin = new ThumbWin( cc1 );
+    wxLogMessage( _T ( "thumbwin created" ) );
 
     gFrame->ApplyGlobalSettings( 1, false );               // done once on init with resize
+    wxLogMessage( _T ( "global settings applied" ) );
 
     g_toolbar_x = wxMax(g_toolbar_x, 0);
     g_toolbar_y = wxMax(g_toolbar_y, 0);
@@ -1650,9 +1659,11 @@ if( 0 == g_memCacheLimit )
 
     g_FloatingToolbarDialog = new ocpnFloatingToolbarDialog( cc1,
             wxPoint( g_toolbar_x, g_toolbar_y ), g_toolbar_orient );
+    wxLogMessage( _T ( "toolbar created" ) );
     g_FloatingToolbarDialog->LockPosition(true);
-
+    wxLogMessage( _T ( "toolbar position locked" ) );
     gFrame->SetAndApplyColorScheme( global_color_scheme );
+    wxLogMessage( _T ( "color scheme set" ) );
 
     //  The position and size of the static frame children (i.e. the canvas, and the status bar) are now set
     //  So now we can establish the AUI panes for them.
@@ -1660,6 +1671,7 @@ if( 0 == g_memCacheLimit )
     //  so that the pane.BestSize values are correctly captured by the AuiManager.
 
     g_pauimgr->AddPane( cc1 );
+    wxLogMessage( _T ( "aui pane added" ) );
     g_pauimgr->GetPane( cc1 ).Name( _T("ChartCanvas") );
     g_pauimgr->GetPane( cc1 ).Fixed();
     g_pauimgr->GetPane( cc1 ).CaptionVisible( false );
