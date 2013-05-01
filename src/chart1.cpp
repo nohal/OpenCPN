@@ -1979,7 +1979,8 @@ if( 0 == g_memCacheLimit )
     //  We need a deferred resize to get glDrawPixels() to work right.
     //  So we set a trigger to generate a resize after 5 seconds....
     //  See the "UniChrome" hack elsewhere
-    glChartCanvas *pgl = (glChartCanvas *) cc1->GetglCanvas();
+//    glChartCanvas *pgl = (glChartCanvas *) cc1->GetglCanvas();
+    glChartCanvas *pgl = NULL;
     if( pgl && ( pgl->GetRendererString().Find( _T("UniChrome") ) != wxNOT_FOUND ) ) {
         gFrame->m_defer_size = gFrame->GetSize();
         gFrame->SetSize( gFrame->m_defer_size.x - 10, gFrame->m_defer_size.y );

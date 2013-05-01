@@ -3237,15 +3237,16 @@ ChartCanvas::ChartCanvas ( wxFrame *frame ) :
     wxLogMessage( _T ( "vpoint invalidated" ) );
     m_bpan_enable = true;
 
-    m_glcc = new glChartCanvas(this);
+    //m_glcc = new glChartCanvas(this);
     wxLogMessage( _T ( "gl canvas created" ) );
 #if wxCHECK_VERSION(2, 9, 0)
-    m_pGLcontext = new wxGLContext(m_glcc);
+    //m_pGLcontext = new wxGLContext(m_glcc);
     wxLogMessage( _T ( "gl context created" ) );
-    m_glcc->SetContext(m_pGLcontext);
+    //m_glcc->SetContext(m_pGLcontext);
 #else
-    m_pGLcontext = m_glcc->GetContext();
+    //m_pGLcontext = m_glcc->GetContext();
 #endif
+    m_glcc = NULL;
 
     wxLogMessage( _T ( "gl context set" ) );
     singleClickEventIsValid = false;
@@ -10117,7 +10118,8 @@ void ChartCanvas::OnPaint( wxPaintEvent& event )
 
     wxPaintDC dc( this );
 
-    m_glcc->Show( g_bopengl );
+    if (m_glcc)
+        m_glcc->Show( g_bopengl );
 
     if( g_bopengl ) {
         if( !s_in_update ) {          // no recursion allowed, seen on lo-spec Mac
