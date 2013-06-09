@@ -392,47 +392,60 @@ Route *GPXLoadRoute1( pugi::xml_node &wpt_node, bool b_fullviz,
             
             else
             if( ChildName == _T ( "extensions" ) ) {
-                        TiXmlNode *ext_child;
-                        for( pugi::xml_node ext_child = tschild.first_child(); ext_child; ext_child = ext_child.next_sibling() ) {
-                            wxString ext_name = wxString::FromUTF8( ext_child.name() );
- 
-                            if( ext_name == _T ( "opencpn:start" ) ) {
-                                pTentRoute->m_RouteStartString = wxString::FromUTF8(ext_child.first_child().value());
-                            }
-                            else
-                            if( ext_name == _T ( "opencpn:end" ) ) {
-                                pTentRoute->m_RouteEndString = wxString::FromUTF8(ext_child.first_child().value());
-                            }
-                                
-                            else
-                            if( ext_name == _T ( "opencpn:viz" ) ) {
-                                        wxString viz = wxString::FromUTF8(ext_child.first_child().value());
-                                        b_propviz = true;
-                                        b_viz = ( viz == _T("1") );
-                            }
-                            
-                            else
-                            if( ext_name == _T ( "opencpn:style" ) ) {
-                                for (pugi::xml_attribute attr = ext_child.first_attribute(); attr; attr = attr.next_attribute())
-                                {
-                                    if( !strcmp( attr.name(), "style" ) )
-                                        pTentRoute->m_style = attr.as_int();
-                                    else
-                                    if( !strcmp( attr.name(), "width" ) )
-                                        pTentRoute->m_width = attr.as_int();
-                                }
-                             }
-                             
-                             else
-                             if( ext_name == _T ( "opencpn:guid" ) ) {
-                                //if ( !g_bIsNewLayer ) ) 
-                                pTentRoute->m_GUID =  wxString::FromUTF8(ext_child.first_child().value());
-                             }
-            
-                               
-                        } //extensions
-                        }
+                TiXmlNode *ext_child;
+                for( pugi::xml_node ext_child = tschild.first_child(); ext_child; ext_child = ext_child.next_sibling() ) {
+                    wxString ext_name = wxString::FromUTF8( ext_child.name() );
+
+                    if( ext_name == _T ( "opencpn:start" ) ) {
+                        pTentRoute->m_RouteStartString = wxString::FromUTF8(ext_child.first_child().value());
                     }
+                    else
+                    if( ext_name == _T ( "opencpn:end" ) ) {
+                        pTentRoute->m_RouteEndString = wxString::FromUTF8(ext_child.first_child().value());
+                    }
+                        
+                    else
+                    if( ext_name == _T ( "opencpn:viz" ) ) {
+                                wxString viz = wxString::FromUTF8(ext_child.first_child().value());
+                                b_propviz = true;
+                                b_viz = ( viz == _T("1") );
+                    }
+                    
+                    else
+                    if( ext_name == _T ( "opencpn:style" ) ) {
+                        for (pugi::xml_attribute attr = ext_child.first_attribute(); attr; attr = attr.next_attribute())
+                        {
+                            if( !strcmp( attr.name(), "style" ) )
+                                pTentRoute->m_style = attr.as_int();
+                            else
+                            if( !strcmp( attr.name(), "width" ) )
+                                pTentRoute->m_width = attr.as_int();
+                        }
+                     }
+                     
+                     else
+                     if( ext_name == _T ( "opencpn:guid" ) ) {
+                        //if ( !g_bIsNewLayer ) ) 
+                        pTentRoute->m_GUID =  wxString::FromUTF8(ext_child.first_child().value());
+                     }
+                     
+                     else
+                     if( ext_name == _T ( "opencpn:planned_speed" ) ) {
+                        pTentRoute->m_PlannedSpeed = atof( ext_child.first_child().value() );
+                     }
+                     
+                     else
+                     if( ext_name == _T ( "opencpn:planned_departure" ) ) {
+                        ParseGPXDateTime( pTentRoute->m_PlannedDeparture, wxString::FromUTF8(ext_child.first_child().value()) );
+                     }
+                     
+                     else
+                     if( ext_name == _T ( "opencpn:time_display" ) ) {
+                        pTentRoute->m_TimeDisplayFormat, wxString::FromUTF8(ext_child.first_child().value());
+                     }
+                } //extensions
+            }
+        }
                     
         pTentRoute->m_RouteNameString = RouteName;
                     
@@ -688,6 +701,24 @@ bool GPXCreateRoute( pugi::xml_node node, Route *pRoute )
         }
     }
     
+    if( pRoute->m_PlannedSpeed != ROUTE_DEFAULT_SPEED ) {
+        child = child_ext.append_child("opencpn:planned_speed");
+        wxString s;
+        s.Printf(_T("%.2f"), pRoute->m_PlannedSpeed);
+        child.append_child(pugi::node_pcdata).set_value(s.mb_str());
+    }
+    
+    if( pRoute->m_PlannedDeparture != RTE_UNDEF_DEPARTURE ) {
+        child = child_ext.append_child("opencpn:planned_departure");
+        wxString t = pRoute->m_PlannedDeparture.FormatISODate().Append(_T("T")).Append(pRoute->m_PlannedDeparture.FormatISOTime()).Append(_T("Z"));
+        child.append_child(pugi::node_pcdata).set_value(t.mb_str());
+    }
+
+    if( pRoute->m_TimeDisplayFormat != RTE_TIME_DISP_UTC ) {
+        child = child_ext.append_child("opencpn:time_display");
+        child.append_child(pugi::node_pcdata).set_value(pRoute->m_TimeDisplayFormat.mb_str());
+    }                        
+    
     if( pRoute->m_width != STYLE_UNDEFINED || pRoute->m_style != STYLE_UNDEFINED ) {
         child = child_ext.append_child("opencpn:style");
         
@@ -697,14 +728,12 @@ bool GPXCreateRoute( pugi::xml_node node, Route *pRoute )
             child.append_attribute("style") = pRoute->m_style;
     }
     
-    
     if( pRoute->m_Colour != wxEmptyString ) {
         pugi::xml_node gpxx_ext = node.append_child("gpxx:RouteExtension");
         child = gpxx_ext.append_child("gpxx:DisplayColor");
         child.append_child(pugi::node_pcdata).set_value(pRoute->m_Colour.mb_str());
     }
-    
-    
+                                 
     RoutePointList *pRoutePointList = pRoute->pRoutePointList;
     wxRoutePointListNode *node2 = pRoutePointList->GetFirst();
     RoutePoint *prp;

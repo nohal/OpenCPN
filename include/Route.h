@@ -32,6 +32,12 @@
 
 #define STYLE_UNDEFINED -1
 
+#define ROUTE_DEFAULT_SPEED 5.0
+#define RTE_TIME_DISP_UTC _T("UTC")
+#define RTE_TIME_DISP_PC _T("PC")
+#define RTE_TIME_DISP_LOCAL _T("LOCAL")
+#define RTE_UNDEF_DEPARTURE wxInvalidDateTime
+
 class ocpnDC;
 
 class Route : public wxObject
@@ -110,6 +116,9 @@ public:
       int         m_style;
       int         m_lastMousePointIndex;
       bool        m_NextLegGreatCircle;
+      double      m_PlannedSpeed;
+      wxDateTime  m_PlannedDeparture;
+      wxString    m_TimeDisplayFormat;
 
       wxArrayString      RoutePointGUIDList;
       RoutePointList     *pRoutePointList;

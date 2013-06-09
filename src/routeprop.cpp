@@ -1207,11 +1207,20 @@ void RouteProp::SetRouteAndUpdate( Route *pR )
     } else {
         g_StartTime = wxInvalidDateTime;
         g_StartTimeTZ = 1;
-        m_starttime = g_StartTime;
-        m_tz_selection = g_StartTimeTZ;
+        if( pR->m_PlannedDeparture != RTE_UNDEF_DEPARTURE )
+            m_starttime = pR->m_PlannedDeparture;
+        else
+            m_starttime = g_StartTime;
+        if( pR->m_TimeDisplayFormat == RTE_TIME_DISP_UTC)
+            m_tz_selection = 0;
+        else if( pR->m_TimeDisplayFormat == RTE_TIME_DISP_LOCAL )
+            m_tz_selection = 2;
+        else
+            m_tz_selection = g_StartTimeTZ;
         gStart_LMT_Offset = 0;
         m_pEnroutePoint = NULL;
         m_bStartNow = false;
+        m_planspeed = pR->m_PlannedSpeed;
     }
 
     m_pRoute = pR;
@@ -1778,6 +1787,18 @@ bool RouteProp::SaveChanges( void )
             m_pRoute->m_Colour = ::GpxxColorNames[m_chColor->GetSelection() - 1];
         m_pRoute->m_style = ::StyleValues[m_chStyle->GetSelection()];
         m_pRoute->m_width = ::WidthValues[m_chWidth->GetSelection()];
+        m_pRoute->m_PlannedDeparture = g_StartTime;
+        m_pRoute->m_PlannedSpeed = m_planspeed;
+        switch( g_StartTimeTZ ) {
+            case 1 : 
+                m_pRoute->m_TimeDisplayFormat = RTE_TIME_DISP_PC;
+                break;
+            case 2 : 
+                m_pRoute->m_TimeDisplayFormat = RTE_TIME_DISP_LOCAL;
+                break;
+            default:
+                m_pRoute->m_TimeDisplayFormat = RTE_TIME_DISP_UTC;
+        }
 
         pConfig->UpdateRoute( m_pRoute );
         pConfig->UpdateSettings();
