@@ -49,7 +49,6 @@
  */
 
 class   wxListCtrl;
-class   OCPNTrackListCtrl;
 class   Route;
 class   RoutePoint;
 class   LinkPropImpl;
@@ -162,7 +161,6 @@ public:
     void OnRoutePropRightClick( wxListEvent &event );
     void OnRoutePropMenuSelected( wxCommandEvent &event );
     bool IsThisRouteExtendable();
-    bool IsThisTrackExtendable();
     void OnEvtColDragEnd(wxListEvent& event);
     void InitializeList();
 
@@ -190,7 +188,6 @@ public:
     wxTextCtrl  *m_RouteDestCtl;
 
     wxListCtrl        *m_wpList;
-    OCPNTrackListCtrl *m_wpTrackList;
 
     wxButton*     m_CancelButton;
     wxButton*     m_OKButton;
