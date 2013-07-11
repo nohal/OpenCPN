@@ -1251,6 +1251,10 @@ IF(APPLE)
 # -- Run the BundleUtilities cmake code
   SET(CPACK_BUNDLE_PLIST "${CMAKE_SOURCE_DIR}/buildosx/Info.plist")
   SET(MACOSX_BUNDLE_BUNDLE_NAME "OpenCPN")
+  #The DMG "installer" background image
+  SET(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_SOURCE_DIR}/data/dmg_bgd.png")
+  #DS_Store file
+  SET(CPACK_DMG_DS_STORE "${CMAKE_SOURCE_DIR}/data/DS_Store")
 
   SET(APPS "\${CMAKE_INSTALL_PREFIX}/bin/OpenCPN.app")
   SET(DIRS "")
