@@ -106,6 +106,7 @@ public:
       wxString    m_RouteNameString;
       wxString    m_RouteStartString;
       wxString    m_RouteEndString;
+      wxString    m_RouteDescription;
       bool        m_bIsTrack;             //TODO should use class type instead
       RoutePoint  *m_pLastAddedPoint;
       bool        m_bDeleteOnArrival;
@@ -119,6 +120,7 @@ public:
       double      m_PlannedSpeed;
       wxDateTime  m_PlannedDeparture;
       wxString    m_TimeDisplayFormat;
+      HyperlinkList     *m_HyperlinkList;
 
       wxArrayString      RoutePointGUIDList;
       RoutePointList     *pRoutePointList;
