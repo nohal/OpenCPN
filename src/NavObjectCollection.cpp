@@ -370,6 +370,11 @@ Track *GPXLoadTrack1( pugi::xml_node &trk_node, bool b_fullviz,
                 
                 
     }
+    
+    if( linklist ) {
+        delete pTentTrack->m_HyperlinkList;                    // created in RoutePoint ctor
+        pTentTrack->m_HyperlinkList = linklist;
+    }
     return pTentTrack;
 }
 
@@ -525,7 +530,10 @@ Route *GPXLoadRoute1( pugi::xml_node &wpt_node, bool b_fullviz,
         }            
  
     }
-
+    if( linklist ) {
+        delete pTentRoute->m_HyperlinkList;                    // created in RoutePoint ctor
+        pTentRoute->m_HyperlinkList = linklist;
+    }
     return pTentRoute;
 }
 

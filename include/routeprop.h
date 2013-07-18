@@ -37,6 +37,7 @@
 #include <wx/bmpcbox.h>
 #include <wx/notebook.h>
 #include <wx/filesys.h>
+#include "LinkPropDlg.h"
 
 #if wxCHECK_VERSION(2, 9, 0)
 #include <wx/dialog.h>
@@ -51,7 +52,6 @@
 class   wxListCtrl;
 class   Route;
 class   RoutePoint;
-class   LinkPropImpl;
 class   HyperlinkList;
 
 /*!
@@ -318,36 +318,6 @@ class MarkInfoDef : public wxDialog
 
 };
 
-///////////////////////////////////////////////////////////////////////////////
-/// Class LinkPropDlgDef
-///////////////////////////////////////////////////////////////////////////////
-class LinkPropDlgDef : public wxDialog
-{
-	private:
-
-	protected:
-		wxStaticText* m_staticTextLinkDesc;
-		wxStaticText* m_staticTextLinkUrl;
-		wxButton* m_buttonBrowseLocal;
-		wxStdDialogButtonSizer* m_sdbSizerButtons;
-		wxButton* m_sdbSizerButtonsOK;
-		wxButton* m_sdbSizerButtonsCancel;
-
-		// Virtual event handlers, overide them in your derived class
-		virtual void OnLocalFileClick( wxCommandEvent& event ) { event.Skip(); }
-		virtual void OnCancelClick( wxCommandEvent& event ) { event.Skip(); }
-		virtual void OnOkClick( wxCommandEvent& event ) { event.Skip(); }
-
-
-	public:
-		wxTextCtrl* m_textCtrlLinkDescription;
-		wxTextCtrl* m_textCtrlLinkUrl;
-
-		LinkPropDlgDef( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Link Properties"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 468,247 ), long style = wxDEFAULT_DIALOG_STYLE );
-		~LinkPropDlgDef();
-
-};
-
 class MarkInfoImpl : public MarkInfoDef
 {
 public :
@@ -370,8 +340,8 @@ public :
 protected :
       virtual void OnPositionCtlUpdated( wxCommandEvent& event );
       void OnDeleteLink( wxCommandEvent& event );
-	void OnEditLink( wxCommandEvent& event );
-	void OnAddLink( wxCommandEvent& event );
+      void OnEditLink( wxCommandEvent& event );
+      void OnAddLink( wxCommandEvent& event );
       void OnEditLinkToggle( wxCommandEvent& event );
       void OnDescChangedBasic( wxCommandEvent& event );
       void OnDescChangedExt( wxCommandEvent& event );
@@ -383,6 +353,7 @@ private :
       void OnHyperLinkClick(wxHyperlinkEvent &event);
       LinkPropImpl* m_pLinkProp;
       bool SaveChanges();
+      wxHyperlinkCtrl* m_pEditedLink;
 
       int           m_current_icon_Index;
       double        m_lat_save;
@@ -390,15 +361,6 @@ private :
       wxString      m_IconName_save;
       bool          m_bShowName_save;
       bool          m_bIsVisible_save;
-};
-
-class LinkPropImpl : public LinkPropDlgDef
-{
-public :
-      LinkPropImpl( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Link Properties"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 468,247 ), long style = wxDEFAULT_DIALOG_STYLE );
-private :
-      void OnLocalFileClick( wxCommandEvent& event );
-      void OnOkClick( wxCommandEvent& event );
 };
 
 #endif // _ROUTEPROP_H_
