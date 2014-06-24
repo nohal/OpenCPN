@@ -1316,6 +1316,8 @@ bool MyApp::OnInit()
         g_Plugin_Dir = *pHome_Locn;
         g_Plugin_Dir += _T("plugins");
     }
+    
+    g_Plugin_Dir = _T("/home/nohal/source/opencpn/build/plugins/piman_pi");
 
 //      Create an array string to hold repeating messages, so they don't
 //      overwhelm the log
