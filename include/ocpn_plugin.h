@@ -335,9 +335,16 @@ class DECL_EXP PlugInChartBase : public wxObject
 
 };
 
+class PI_Plugin
+{
+public:
+    wxString    Name;
+    int         VersionMajor;
+    int         VersionMinor;
+    bool        Enabled;
+};
 
-
-
+WX_DEFINE_ARRAY_PTR(PI_Plugin *, ArrayOfPI_Plugins);
 
 //    Declare an array of PlugIn_AIS_Targets
 WX_DEFINE_ARRAY_PTR(PlugIn_AIS_Target *, ArrayOfPlugIn_AIS_Targets);
@@ -923,5 +930,9 @@ extern DECL_EXP void PlugInNormalizeViewport ( PlugIn_ViewPort *vp );
 class wxPoint2DDouble;
 extern "C"  DECL_EXP void GetDoubleCanvasPixLL(PlugIn_ViewPort *vp, wxPoint2DDouble *pp, double lat, double lon);
 
+extern "C"  DECL_EXP int GetCoreAPIVersionMajor();
+extern "C"  DECL_EXP int GetCoreAPIVersionMinor();
+
+extern "C"  DECL_EXP ArrayOfPI_Plugins *GetInstalledPlugins(void);
 
 #endif //_PLUGIN_H_

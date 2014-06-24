@@ -214,10 +214,8 @@ PlugInManager::~PlugInManager()
 
 bool PlugInManager::LoadAllPlugIns(const wxString &plugin_dir, bool load_enabled)
 {
-    m_plugin_location = plugin_dir;
-
     wxString msg(_T("PlugInManager searching for PlugIns in location "));
-    msg += m_plugin_location;
+    msg += plugin_dir;
     wxLogMessage(msg);
 
 #ifdef __WXMSW__
@@ -230,14 +228,16 @@ bool PlugInManager::LoadAllPlugIns(const wxString &plugin_dir, bool load_enabled
 #endif
 #endif
 
-    if(!::wxDirExists(m_plugin_location))
+    if(!::wxDirExists(plugin_dir))
     {
-        msg = m_plugin_location;
+        msg = plugin_dir;
         msg.Prepend(_T("   Directory "));
         msg.Append(_T(" does not exist."));
         wxLogMessage(msg);
         return false;
     }
+    
+    wxLocale::AddCatalogLookupPathPrefix(plugin_dir);
 
     wxArrayString file_list;
         
@@ -248,7 +248,7 @@ bool PlugInManager::LoadAllPlugIns(const wxString &plugin_dir, bool load_enabled
 #endif        
 #endif        
     
-    wxDir::GetAllFiles( m_plugin_location, &file_list, pispec, get_flags );
+    wxDir::GetAllFiles( plugin_dir, &file_list, pispec, get_flags );
     
     for(unsigned int i=0 ; i < file_list.GetCount() ; i++) {
         wxString file_name = file_list[i];
@@ -4033,3 +4033,38 @@ int PI_PLIBRenderObjectToGL( const wxGLContext &glcc, PI_S57Obj *pObj,
     
 }
 
+int GetCoreAPIVersionMajor()
+{
+    return API_VERSION_MAJOR;
+}
+
+int GetCoreAPIVersionMinor()
+{
+    return API_VERSION_MINOR;
+}
+
+ArrayOfPI_Plugins *GetInstalledPlugins(void)
+{
+    if ( !g_pi_manager )
+        return NULL;
+
+    ArrayOfPI_Plugins *pret = new ArrayOfPI_Plugins();
+
+    ArrayOfPlugIns::iterator it;
+
+    ArrayOfPlugIns *plugins = g_pi_manager->GetPlugInArray();
+
+    for ( it = ( *plugins ).begin(); it != ( *plugins ).end(); ++it )
+    {
+        PlugInContainer *pd = *it;
+        PI_Plugin *pp = new PI_Plugin;
+        pp->Name = wxString::FromAscii(typeid(*pd->m_pplugin).name());
+        pp->Enabled = pd->m_bEnabled;
+        pp->VersionMajor = pd->m_version_major;
+        pp->VersionMinor = pd->m_version_minor;
+        
+        pret->Add(pp);
+    }
+
+    return pret;
+}

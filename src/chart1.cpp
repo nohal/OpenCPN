@@ -1939,6 +1939,34 @@ if( 0 == g_memCacheLimit )
 //      Load and initialize any PlugIns
     g_pi_manager = new PlugInManager( gFrame );
     g_pi_manager->LoadAllPlugIns( g_Plugin_Dir, true );
+    
+    //Load the plugins managed by the plug-in manager
+    wxString plugin_location = g_PrivateDataDir;
+    plugin_location.Append(wxFileName::GetPathSeparator()).Append(_T("plugins"));//.Append(wxFileName::GetPathSeparator());
+    wxString pispec = _T("*_pi");
+    
+    if(!::wxDirExists(plugin_location))
+    {
+        wxString msg = plugin_location;
+        msg.Prepend(_T("   Directory "));
+        msg.Append(_T(" does not exist."));
+        wxLogMessage(msg);
+    }
+    else
+    {    
+        wxDir dir;
+        wxString dirname;
+
+        if ( dir.Open( plugin_location ) )
+        {
+            bool cont = dir.GetFirst(&dirname, pispec, wxDIR_DIRS);
+            while ( cont )
+            {
+                g_pi_manager->LoadAllPlugIns( plugin_location + wxFileName::GetPathSeparator() + dirname, true );
+                cont = dir.GetNext(&dirname);
+            }
+        }
+    }
 
 // Show the frame
 

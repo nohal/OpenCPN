@@ -291,14 +291,9 @@ private:
       ArrayOfPlugInMenuItems        m_PlugInMenuItems;
       ArrayOfPlugInToolbarTools     m_PlugInToolbarTools;
 
-      wxString          m_plugin_location;
-
       int               m_plugin_tool_id_next;
       int               m_plugin_menu_item_id_next;
       wxBitmap          m_cached_overlay_bm;
-
-
-
 };
 
 WX_DEFINE_ARRAY_PTR(PluginPanel *, ArrayOfPluginPanel);
