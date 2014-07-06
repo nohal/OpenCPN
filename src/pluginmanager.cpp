@@ -242,7 +242,7 @@ bool PlugInManager::LoadAllPlugIns(const wxString &plugin_dir, bool load_enabled
         return false;
     }
     
-    wxLocale::AddCatalogLookupPathPrefix(plugin_dir);
+    wxLocale::AddCatalogLookupPathPrefix(plugin_dir + wxPATH_SEP + _T("locale"));
 
     wxArrayString file_list;
         
