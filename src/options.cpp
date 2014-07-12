@@ -74,6 +74,7 @@ wxString GetOCPNKnownLanguage(wxString lang_canonical, wxString *lang_dir);
 
 extern MyFrame          *gFrame;
 extern ChartCanvas      *cc1;
+extern wxString         g_PrivateDataDir;
 
 extern bool             g_bShowOutlines;
 extern bool             g_bShowDepthUnits;
@@ -2370,12 +2371,32 @@ void options::OnOpenGLOptions( wxCommandEvent& event )
         if(g_bopengl &&
            g_GLOptions.m_bTextureCompression != dlg.m_cbTextureCompression->GetValue()) {
             cc1->GetglCanvas()->ClearAllRasterTextures(); 
+            g_GLOptions.m_bTextureCompression = dlg.m_cbTextureCompression->GetValue();
             cc1->GetglCanvas()->SetupCompression();
         }
 
         g_GLOptions.m_bTextureCompression = dlg.m_cbTextureCompression->GetValue();
         g_GLOptions.m_bTextureCompressionCaching = dlg.m_cbTextureCompressionCaching->GetValue();
         g_GLOptions.m_iTextureMemorySize = dlg.m_sTextureMemorySize->GetValue();
+
+        if(g_GLOptions.m_bTextureCompressionCaching && dlg.m_cbClearTextureCache->GetValue()){
+            wxString path =  g_PrivateDataDir + wxFileName::GetPathSeparator() + _T("raster_texture_cache");
+            if(::wxDirExists( path )){
+                wxArrayString files;
+                size_t nfiles = wxDir::GetAllFiles(path, &files);
+                for(unsigned int i=0 ; i < files.GetCount() ; i++){
+                    ::wxRemoveFile(files[i]);
+                }
+            }
+        }
+            
+        if(g_GLOptions.m_bTextureCompressionCaching && dlg.m_cbRebuildTextureCache->GetValue()){
+            this->Hide();
+            cc1->Disable();
+            BuildCompressedCache();
+            cc1->Enable();
+            this->Show();
+        }
     }
 #endif
 }
@@ -2550,19 +2571,16 @@ ConnectionParams *options::CreateConnectionParamsFromSelectedItem()
             wxMessageBox( _("You must enter a port..."), _("Error!") );
             return NULL;
         }
-        if (m_rbNetProtoUDP->GetValue() && (!m_cbOutput->GetValue())) {
-            m_tNetAddress->SetValue(_T("0.0.0.0"));
+        if (m_tNetAddress->GetValue() == wxEmptyString) {
+            if ((m_rbNetProtoGPSD->GetValue()) ||
+                (m_rbNetProtoUDP->GetValue() && m_cbOutput->GetValue()))
+            {
+                wxMessageBox( _("You must enter the address..."), _("Error!") );
+                return NULL;
+            } else {
+                m_tNetAddress->SetValue(_T("0.0.0.0"));
+            }
         }
-        else if (((m_rbNetProtoGPSD->GetValue()) ||
-                (m_rbNetProtoUDP->GetValue() && m_cbOutput->GetValue())) &&
-                wxStrpbrk(m_tNetAddress->GetValue(),_T("123456789")) == NULL )
-        {
-            wxMessageBox( _("You must enter the address..."), _("Error!") );
-            return NULL;
-        }
-
-        if (!m_tNetAddress->GetValue())
-            m_tNetAddress->SetValue(_T("0.0.0.0"));
     }
 
     ConnectionParams * pConnectionParams = new ConnectionParams();
@@ -4812,6 +4830,7 @@ OpenGLOptionsDlg::OpenGLOptionsDlg( wxWindow* parent ) :
     m_cbTextureCompressionCaching = new wxCheckBox(this, wxID_ANY, _("Texture Compression Caching") );
     m_cbTextureCompressionCaching->SetValue(g_GLOptions.m_bTextureCompressionCaching);
 
+    
     /* disable caching if unsupported */
     extern PFNGLCOMPRESSEDTEXIMAGE2DPROC s_glCompressedTexImage2D;
     if(!s_glCompressedTexImage2D) {
@@ -4831,6 +4850,12 @@ OpenGLOptionsDlg::OpenGLOptionsDlg( wxWindow* parent ) :
     m_sTextureMemorySize->SetValue(g_GLOptions.m_iTextureMemorySize);
     m_bSizer1->Add(m_sTextureMemorySize, 0, wxALL | wxEXPAND, 5);
 
+    m_cbRebuildTextureCache = new wxCheckBox(this, wxID_ANY, _("Rebuild Texture Cache") );
+    m_bSizer1->Add(m_cbRebuildTextureCache, 0, wxALL | wxEXPAND, 5);
+    
+    m_cbClearTextureCache = new wxCheckBox(this, wxID_ANY, _("Clear Texture Cache") );
+    m_bSizer1->Add(m_cbClearTextureCache, 0, wxALL | wxEXPAND, 5);
+    
     wxStdDialogButtonSizer * m_sdbSizer4 = new wxStdDialogButtonSizer();
     wxButton *bOK = new wxButton( this, wxID_OK );
     m_sdbSizer4->AddButton( bOK );
