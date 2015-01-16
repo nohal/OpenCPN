@@ -31,6 +31,8 @@
 
 #include "GribRequestDialog.h"
 
+#define RESOLUTIONS 4
+
 enum { SAILDOCS,ZYGRIB };                   //grib providers
 enum { GFS,COAMPS,RTOFS };                  //forecast models
 
@@ -306,10 +308,10 @@ void GribRequestSetting::OnVpChange(PlugIn_ViewPort *vp)
 void GribRequestSetting::ApplyRequestConfig( unsigned rs, unsigned it, unsigned tr )
 {
     //some useful  strings
-    const wxString res[][3] = {
-        {_T("0.5"), _T("1.0"), _T("2.0")},
-        {_T("0.2"), _T("0.8"), _T("1.6")},
-        {_T("0.05"), _T("0.25"), _T("1.0")}
+    const wxString res[][RESOLUTIONS] = {
+        {_T("0.25"), _T("0.5"), _T("1.0"), _T("2.0")},
+        {_T("0.2"), _T("0.8"), _T("1.6"), wxEmptyString},
+        {_T("0.05"), _T("0.25"), _T("1.0"), wxEmptyString}
     };
 
     IsZYGRIB = m_pMailTo->GetCurrentSelection() == ZYGRIB;
@@ -319,8 +321,9 @@ void GribRequestSetting::ApplyRequestConfig( unsigned rs, unsigned it, unsigned 
 
     //populate resolution choice
     m_pResolution->Clear();
-    for( int i = 0; i<3; i++ ) {
-        m_pResolution->Append(res[m_pModel->GetCurrentSelection()][i]);
+    for( int i = 0; i < RESOLUTIONS; i++ ) {
+        if( res[m_pModel->GetCurrentSelection()][i] != wxEmptyString )
+            m_pResolution->Append(res[m_pModel->GetCurrentSelection()][i]);
     }
      m_pResolution->SetSelection(rs);
 
