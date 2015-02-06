@@ -4886,7 +4886,7 @@ void ChartCanvas::OnSize( wxSizeEvent& event )
 
 #ifdef ocpnUSE_GL
     if( /*g_bopengl &&*/ m_glcc ) {
-        m_glcc->OnSize( event );
+        m_glcc->OnSize( );
     }
 #endif
     //  Invalidate the whole window
@@ -4998,7 +4998,7 @@ bool ChartCanvas::CheckEdgePan( int x, int y, bool bdragging, int margin, int de
         if( !g_btouch )
         {
             wxMouseState state = ::wxGetMouseState();
-            if( !state.LeftDown() )
+            if( !state.LeftIsDown() )
                 bft = false;
         }
     }
@@ -6851,7 +6851,7 @@ void ChartCanvas::CanvasPopupMenu( int x, int y, int seltype )
         {
             if( pimis->b_viz ) {
                 wxMenuItem *pmi = new wxMenuItem( contextMenu, pimis->id,
-                                                  pimis->pmenu_item->GetLabel(), pimis->pmenu_item->GetHelp(),
+                                                  pimis->pmenu_item->GetItemLabel(), pimis->pmenu_item->GetHelp(),
                                                   pimis->pmenu_item->GetKind(), pimis->pmenu_item->GetSubMenu() );
 #ifdef __WXMSW__
                 pmi->SetFont(pimis->pmenu_item->GetFont());
@@ -9071,7 +9071,7 @@ void ChartCanvas::OnPaint( wxPaintEvent& event )
 
             //    Associate with temp_dc
             wxRegion *clip_region = backgroundRegion.GetNew_wxRegion();
-            temp_dc.SetClippingRegion( *clip_region );
+            temp_dc.SetDeviceClippingRegion( *clip_region );
             delete clip_region;
 
             ocpnDC bgdc( temp_dc );
@@ -9167,7 +9167,7 @@ void ChartCanvas::OnPaint( wxPaintEvent& event )
 
     mscratch_dc.ResetBoundingBox();
     mscratch_dc.DestroyClippingRegion();
-    mscratch_dc.SetClippingRegion( rgn_chart );
+    mscratch_dc.SetDeviceClippingRegion( rgn_chart );
 
     //    Blit the externally invalidated areas of the chart onto the scratch dc
     rgn_blit = ru;

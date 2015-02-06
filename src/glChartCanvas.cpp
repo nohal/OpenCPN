@@ -710,13 +710,12 @@ static void GetglEntryPoints( void )
 int attribs[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
 BEGIN_EVENT_TABLE ( glChartCanvas, wxGLCanvas ) EVT_PAINT ( glChartCanvas::OnPaint )
     EVT_ACTIVATE ( glChartCanvas::OnActivate )
-    EVT_SIZE ( glChartCanvas::OnSize )
     EVT_MOUSE_EVENTS ( glChartCanvas::MouseEvent )
 END_EVENT_TABLE()
 
 glChartCanvas::glChartCanvas( wxWindow *parent ) :
-    wxGLCanvas( parent, wxID_ANY, wxDefaultPosition, wxSize( 256, 256 ),
-                wxFULL_REPAINT_ON_RESIZE | wxBG_STYLE_CUSTOM, _T(""), attribs ),
+    wxGLCanvas( parent, wxID_ANY, attribs, wxDefaultPosition, wxSize( 256, 256 ),
+                wxFULL_REPAINT_ON_RESIZE | wxBG_STYLE_CUSTOM, _T("") ),
     m_data( NULL ), m_datasize( 0 ), m_bsetup( false )
 {
     SetBackgroundStyle ( wxBG_STYLE_CUSTOM );  // on WXMSW, this prevents flashing
@@ -783,16 +782,15 @@ void glChartCanvas::OnActivate( wxActivateEvent& event )
     cc1->OnActivate( event );
 }
 
-void glChartCanvas::OnSize( wxSizeEvent& event )
+void glChartCanvas::OnSize( )
 {
     if( !g_bopengl ) {
         SetSize( cc1->GetVP().pix_width, cc1->GetVP().pix_height );
-        event.Skip();
         return;
     }
 
     // this is also necessary to update the context on some platforms
-    wxGLCanvas::OnSize( event );
+    //wxGLCanvas::OnSize( event );
 
     /* expand opengl widget to fill viewport */
     ViewPort &VP = cc1->GetVP();
@@ -2003,7 +2001,7 @@ void glChartCanvas::DrawFloatingOverlayObjects( ocpnDC &dc, OCPNRegion &region )
 
     if( g_pi_manager ) {
         g_pi_manager->SendViewPortToRequestingPlugIns( vp );
-        g_pi_manager->RenderAllGLCanvasOverlayPlugIns( GetContext(), vp );
+        g_pi_manager->RenderAllGLCanvasOverlayPlugIns( m_pcontext, vp );
     }
 
     // all functions called with cc1-> are still slow because they go through ocpndc

@@ -84,7 +84,7 @@ public:
     void OnEraseBG(wxEraseEvent& evt);
     void Render();
     void OnActivate ( wxActivateEvent& event );
-    void OnSize ( wxSizeEvent& event );
+    void OnSize ( );
     void MouseEvent(wxMouseEvent& event);
 
     wxString GetRendererString(){ return m_renderer; }
