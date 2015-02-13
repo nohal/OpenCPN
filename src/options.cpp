@@ -67,6 +67,7 @@ extern GLuint g_raster_format;
 #include "ais.h"
 #include "AIS_Decoder.h"
 #include "AIS_Target_Data.h"
+#include "OCPN_Base.h"
 
 #include "navutil.h"
 
@@ -109,33 +110,6 @@ extern ocpnStyle::StyleManager*   g_StyleManager;
 extern wxString         g_SData_Locn;
 
 extern bool             g_bDisplayGrid;
-
-//    AIS Global configuration
-extern bool             g_bCPAMax;
-extern double           g_CPAMax_NM;
-extern bool             g_bCPAWarn;
-extern double           g_CPAWarn_NM;
-extern bool             g_bTCPA_Max;
-extern double           g_TCPA_Max;
-extern bool             g_bMarkLost;
-extern double           g_MarkLost_Mins;
-extern bool             g_bRemoveLost;
-extern double           g_RemoveLost_Mins;
-extern bool             g_bShowCOG;
-extern double           g_ShowCOG_Mins;
-extern bool             g_bAISShowTracks;
-extern double           g_AISShowTracks_Mins;
-extern bool             g_bShowMoored;
-extern double           g_ShowMoored_Kts;
-extern bool             g_bAIS_CPA_Alert;
-extern bool             g_bAIS_CPA_Alert_Audio;
-extern wxString         g_sAIS_Alert_Sound_File;
-extern bool             g_bAIS_CPA_Alert_Suppress_Moored;
-extern bool             g_bShowAreaNotices;
-extern bool             g_bDrawAISSize;
-extern bool             g_bShowAISName;
-extern int              g_Show_Target_Name_Scale;
-extern bool             g_bWplIsAprsPosition;
 
 extern int              g_iNavAidRadarRingsNumberVisible;
 extern float            g_fNavAidRadarRingsStep;
@@ -216,7 +190,7 @@ extern s52plib          *ps52plib;
 extern wxString         g_locale;
 extern bool             g_bportable;
 extern bool             g_bdisable_opengl;
-extern wxString         *pHome_Locn;
+extern OCPN_Base        *g_pBASE;
 extern wxString         g_Plugin_Dir;
 
 extern ChartGroupArray  *g_pGroupArray;
@@ -2626,9 +2600,9 @@ void options::CreatePanel_AIS( size_t parent, int border_size, int group_item_sp
     wxStaticText *pStatic_Dummy2 = new wxStaticText( panelAIS, -1, _T("") );
     pAlertGrid->Add( pStatic_Dummy2, 1, wxALL | wxALL, group_item_spacing );
 
-    m_pCheck_Ack_Timout = new wxCheckBox( panelAIS, -1,
+    m_pCheck_Ack_Timeout = new wxCheckBox( panelAIS, -1,
             _("Enable Target Alert Acknowledge timeout (min)") );
-    pAlertGrid->Add( m_pCheck_Ack_Timout, 1, wxALL, group_item_spacing );
+    pAlertGrid->Add( m_pCheck_Ack_Timeout, 1, wxALL, group_item_spacing );
 
     m_pText_ACK_Timeout = new wxTextCtrl( panelAIS, -1 );
     pAlertGrid->Add( m_pText_ACK_Timeout, 1, wxALL | wxALIGN_RIGHT, group_item_spacing );
@@ -3099,77 +3073,77 @@ void options::SetInitialSettings()
 
     //    AIS Parameters
     //      CPA Box
-    m_pCheck_CPA_Max->SetValue( g_bCPAMax );
+    m_pCheck_CPA_Max->SetValue( g_pAIS->CPAMax() );
 
-    s.Printf( _T("%4.1f"), g_CPAMax_NM );
+    s.Printf( _T("%4.1f"), g_pAIS->CPAMax_NM() );
     m_pText_CPA_Max->SetValue( s );
 
-    m_pCheck_CPA_Warn->SetValue( g_bCPAWarn );
+    m_pCheck_CPA_Warn->SetValue( g_pAIS->CPAWarn() );
 
-    s.Printf( _T("%4.1f"), g_CPAWarn_NM );
+    s.Printf( _T("%4.1f"), g_pAIS->CPAWarn_NM() );
     m_pText_CPA_Warn->SetValue( s );
 
     if(  m_pCheck_CPA_Warn->GetValue() ) {
         m_pCheck_CPA_WarnT->Enable();
-        m_pCheck_CPA_WarnT->SetValue( g_bTCPA_Max );
+        m_pCheck_CPA_WarnT->SetValue( g_pAIS->TCPAMax() );
     }
     else
         m_pCheck_CPA_WarnT->Disable();
     
-    s.Printf( _T("%4.0f"), g_TCPA_Max );
+    s.Printf( _T("%4.0f"), g_pAIS->TCPAMax_Mins() );
     m_pText_CPA_WarnT->SetValue( s );
     
     //      Lost Targets
-    m_pCheck_Mark_Lost->SetValue( g_bMarkLost );
+    m_pCheck_Mark_Lost->SetValue( g_pAIS->MarkLost() );
 
-    s.Printf( _T("%4.0f"), g_MarkLost_Mins );
+    s.Printf( _T("%4.0f"), g_pAIS->MarkLost_Mins() );
     m_pText_Mark_Lost->SetValue( s );
 
-    m_pCheck_Remove_Lost->SetValue( g_bRemoveLost );
+    m_pCheck_Remove_Lost->SetValue( g_pAIS->RemoveLost() );
 
-    s.Printf( _T("%4.0f"), g_RemoveLost_Mins );
+    s.Printf( _T("%4.0f"), g_pAIS->RemoveLost_Mins() );
     m_pText_Remove_Lost->SetValue( s );
 
     //      Display
-    m_pCheck_Show_COG->SetValue( g_bShowCOG );
+    m_pCheck_Show_COG->SetValue( g_pAIS->ShowCOG() );
 
-    s.Printf( _T("%4.0f"), g_ShowCOG_Mins );
+    s.Printf( _T("%4.0f"), g_pAIS->ShowCOG_Mins() );
     m_pText_COG_Predictor->SetValue( s );
 
-    m_pCheck_Show_Tracks->SetValue( g_bAISShowTracks );
+    m_pCheck_Show_Tracks->SetValue( g_pAIS->ShowTracks() );
 
-    s.Printf( _T("%4.0f"), g_AISShowTracks_Mins );
+    s.Printf( _T("%4.0f"), g_pAIS->ShowTracks_Mins() );
     m_pText_Track_Length->SetValue( s );
 
-    m_pCheck_Show_Moored->SetValue( !g_bShowMoored );
+    m_pCheck_Show_Moored->SetValue( !g_pAIS->ShowMoored() );
 
-    s.Printf( _T("%4.1f"), g_ShowMoored_Kts );
+    s.Printf( _T("%4.1f"), g_pAIS->ShowMoored_Kts() );
     m_pText_Moored_Speed->SetValue( s );
 
-    m_pCheck_Show_Area_Notices->SetValue( g_bShowAreaNotices );
+    m_pCheck_Show_Area_Notices->SetValue( g_pAIS->ShowAreaNotices() );
 
-    m_pCheck_Draw_Target_Size->SetValue( g_bDrawAISSize );
+    m_pCheck_Draw_Target_Size->SetValue( g_pAIS->ShowRealSize() );
 
-    m_pCheck_Show_Target_Name->SetValue( g_bShowAISName );
+    m_pCheck_Show_Target_Name->SetValue( g_pAIS->ShowTargetName() );
 
-    s.Printf( _T("%d"), g_Show_Target_Name_Scale );
+    s.Printf( _T("%d"), g_pAIS->ShowNameScale() );
     m_pText_Show_Target_Name_Scale->SetValue( s );
 
-    m_pCheck_Wpl_Aprs->SetValue( g_bWplIsAprsPosition );
+    m_pCheck_Wpl_Aprs->SetValue( g_pAIS->WplIsAPRSPosition() );
 
     //      Alerts
-    m_pCheck_AlertDialog->SetValue( g_bAIS_CPA_Alert );
-    m_pCheck_AlertAudio->SetValue( g_bAIS_CPA_Alert_Audio );
-    m_pCheck_Alert_Moored->SetValue( g_bAIS_CPA_Alert_Suppress_Moored );
+    m_pCheck_AlertDialog->SetValue( g_pAIS->CPAAlert() );
+    m_pCheck_AlertAudio->SetValue( g_pAIS->CPAAlertAudio() );
+    m_pCheck_Alert_Moored->SetValue( g_pAIS->SuppressMooredCPAAlert() );
 
-    m_pCheck_Ack_Timout->SetValue( g_bAIS_ACK_Timeout );
-    s.Printf( _T("%4.0f"), g_AckTimeout_Mins );
+    m_pCheck_Ack_Timeout->SetValue( g_pAIS->ACKTimeout() );
+    s.Printf( _T("%4.0f"), g_pAIS->ACKTimeout_Mins() );
     m_pText_ACK_Timeout->SetValue( s );
 
     // Rollover
-    m_pCheck_Rollover_Class->SetValue( g_bAISRolloverShowClass );
-    m_pCheck_Rollover_COG->SetValue( g_bAISRolloverShowCOG );
-    m_pCheck_Rollover_CPA->SetValue( g_bAISRolloverShowCPA );
+    m_pCheck_Rollover_Class->SetValue( g_pAIS->RolloverShowClass() );
+    m_pCheck_Rollover_COG->SetValue( g_pAIS->RolloverShowCOG() );
+    m_pCheck_Rollover_CPA->SetValue( g_pAIS->RolloverShowCPA() );
 
     m_pSlider_Zoom->SetValue( g_chart_zoom_modifier );
     
@@ -3543,7 +3517,7 @@ void options::OnButtonaddClick( wxCommandEvent& event )
 
     if( g_bportable ) {
         wxFileName f( selDir );
-        f.MakeRelativeTo( *pHome_Locn );
+        f.MakeRelativeTo( *g_pBASE->GetHomeLocation() );
         pActiveChartsList->Append( f.GetFullPath() );
     } else
         pActiveChartsList->Append( selDir );
@@ -4000,25 +3974,34 @@ void options::OnApplyClick( wxCommandEvent& event )
 
     //    AIS Parameters
     //      CPA Box
-    g_bCPAMax = m_pCheck_CPA_Max->GetValue();
-    m_pText_CPA_Max->GetValue().ToDouble( &g_CPAMax_NM );
-    g_bCPAWarn = m_pCheck_CPA_Warn->GetValue();
-    m_pText_CPA_Warn->GetValue().ToDouble( &g_CPAWarn_NM );
-    g_bTCPA_Max = m_pCheck_CPA_WarnT->GetValue();
-    m_pText_CPA_WarnT->GetValue().ToDouble( &g_TCPA_Max );
+    double dval;
+    long lval;
+    g_pAIS->set_CPAMax( m_pCheck_CPA_Max->GetValue() );
+    m_pText_CPA_Max->GetValue().ToDouble( &dval );
+    g_pAIS->set_CPAMax( dval );
+    g_pAIS->set_CPAWarn( m_pCheck_CPA_Warn->GetValue() );
+    m_pText_CPA_Warn->GetValue().ToDouble( &dval );
+    g_pAIS->set_CPAWarn_NM( dval );
+    g_pAIS->set_TCPAMax( m_pCheck_CPA_WarnT->GetValue() );
+    m_pText_CPA_WarnT->GetValue().ToDouble( &dval );
+    g_pAIS->set_TCPAMax_Mins( dval );
 
     //      Lost Targets
-    g_bMarkLost = m_pCheck_Mark_Lost->GetValue();
-    m_pText_Mark_Lost->GetValue().ToDouble( &g_MarkLost_Mins );
-    g_bRemoveLost = m_pCheck_Remove_Lost->GetValue();
-    m_pText_Remove_Lost->GetValue().ToDouble( &g_RemoveLost_Mins );
+    g_pAIS->set_MarkLost( m_pCheck_Mark_Lost->GetValue() );
+    m_pText_Mark_Lost->GetValue().ToDouble( &dval );
+    g_pAIS->set_MarkLost_Mins( dval );
+    g_pAIS->set_RemoveLost( m_pCheck_Remove_Lost->GetValue() );
+    m_pText_Remove_Lost->GetValue().ToDouble( &dval );
+    g_pAIS->set_RemoveLost_Mins( dval );
 
     //      Display
-    g_bShowCOG = m_pCheck_Show_COG->GetValue();
-    m_pText_COG_Predictor->GetValue().ToDouble( &g_ShowCOG_Mins );
+    g_pAIS->set_ShowCOG( m_pCheck_Show_COG->GetValue() );
+    m_pText_COG_Predictor->GetValue().ToDouble( &dval );
+    g_pAIS->set_ShowCOG_Mins( dval );
 
-    g_bAISShowTracks = m_pCheck_Show_Tracks->GetValue();
-    m_pText_Track_Length->GetValue().ToDouble( &g_AISShowTracks_Mins );
+    g_pAIS->set_ShowTracks( m_pCheck_Show_Tracks->GetValue() );
+    m_pText_Track_Length->GetValue().ToDouble( &dval );
+    g_pAIS->set_ShowTracks_Mins( dval );
     
     //  Update all the current targets
     if( g_pAIS ){
@@ -4027,36 +4010,38 @@ void options::OnApplyClick( wxCommandEvent& event )
         for( it = ( *current_targets ).begin(); it != ( *current_targets ).end(); ++it ) {
             AIS_Target_Data *pAISTarget = it->second;
             if( NULL != pAISTarget ) {
-                pAISTarget->b_show_track = g_bAISShowTracks;
+                pAISTarget->b_show_track = g_pAIS->ShowTracks();
             }
         }
     }
     
 
-    g_bShowMoored = !m_pCheck_Show_Moored->GetValue();
-    m_pText_Moored_Speed->GetValue().ToDouble( &g_ShowMoored_Kts );
+    g_pAIS->set_ShowMoored( !m_pCheck_Show_Moored->GetValue() );
+    m_pText_Moored_Speed->GetValue().ToDouble( &dval );
+    g_pAIS->set_ShowMoored_Kts( dval );
 
-    g_bShowAreaNotices = m_pCheck_Show_Area_Notices->GetValue();
-    g_bDrawAISSize = m_pCheck_Draw_Target_Size->GetValue();
-    g_bShowAISName = m_pCheck_Show_Target_Name->GetValue();
+    g_pAIS->set_ShowAreaNotices( m_pCheck_Show_Area_Notices->GetValue() );
+    g_pAIS->set_ShowRealSize( m_pCheck_Draw_Target_Size->GetValue() );
+    g_pAIS->set_ShowTargetName( m_pCheck_Show_Target_Name->GetValue() );
     long ais_name_scale = 5000;
-    m_pText_Show_Target_Name_Scale->GetValue().ToLong( &ais_name_scale );
-    g_Show_Target_Name_Scale = (int)wxMax( 5000, ais_name_scale );
+    m_pText_Show_Target_Name_Scale->GetValue().ToLong( &lval );
+    g_pAIS->set_ShowNameScale( (int)wxMax( 5000, lval ) );
 
-    g_bWplIsAprsPosition = m_pCheck_Wpl_Aprs->GetValue();
+    g_pAIS->set_WplIsAPRSPosition( m_pCheck_Wpl_Aprs->GetValue() );
 
     //      Alert
-    g_bAIS_CPA_Alert = m_pCheck_AlertDialog->GetValue();
-    g_bAIS_CPA_Alert_Audio = m_pCheck_AlertAudio->GetValue();
-    g_bAIS_CPA_Alert_Suppress_Moored = m_pCheck_Alert_Moored->GetValue();
+    g_pAIS->set_CPAAlert( m_pCheck_AlertDialog->GetValue() );
+    g_pAIS->set_CPAAlertAudio( m_pCheck_AlertAudio->GetValue() );
+    g_pAIS->set_SuppressMooredCPAAlert( m_pCheck_Alert_Moored->GetValue() );
 
-    g_bAIS_ACK_Timeout = m_pCheck_Ack_Timout->GetValue();
-    m_pText_ACK_Timeout->GetValue().ToDouble( &g_AckTimeout_Mins );
+    g_pAIS->set_ACKTimeout( m_pCheck_Ack_Timeout->GetValue() );
+    m_pText_ACK_Timeout->GetValue().ToDouble( &dval );
+    g_pAIS->set_ACKTimeout_Mins( dval );
 
     // Rollover
-    g_bAISRolloverShowClass = m_pCheck_Rollover_Class->GetValue();
-    g_bAISRolloverShowCOG = m_pCheck_Rollover_COG->GetValue();
-    g_bAISRolloverShowCPA = m_pCheck_Rollover_CPA->GetValue();
+    g_pAIS->set_RolloverShowClass( m_pCheck_Rollover_Class->GetValue() );
+    g_pAIS->set_RolloverShowCOG( m_pCheck_Rollover_COG->GetValue() );
+    g_pAIS->set_RolloverShowCPA( m_pCheck_Rollover_CPA->GetValue() );
 
     g_chart_zoom_modifier = m_pSlider_Zoom->GetValue();
     
@@ -4616,10 +4601,10 @@ void options::OnButtonSelectSound( wxCommandEvent& event )
     if( response == wxID_OK ) {
         if( g_bportable ) {
             wxFileName f( openDialog->GetPath() );
-            f.MakeRelativeTo( *pHome_Locn );
-            g_sAIS_Alert_Sound_File = f.GetFullPath();
+            f.MakeRelativeTo( *g_pBASE->GetHomeLocation() );
+            g_pAIS->set_AlertSoundFile( f.GetFullPath() );
         } else
-            g_sAIS_Alert_Sound_File = openDialog->GetPath();
+            g_pAIS->set_AlertSoundFile( openDialog->GetPath() );
 
         g_anchorwatch_sound.UnLoad();
     }
@@ -4629,7 +4614,7 @@ void options::OnButtonTestSound( wxCommandEvent& event )
 {
 
     OCPN_Sound AIS_Sound;
-    AIS_Sound.Create( g_sAIS_Alert_Sound_File );
+    AIS_Sound.Create( g_pAIS->AlertSoundFile() );
 
     if( AIS_Sound.IsOk() ) {
         
@@ -5185,7 +5170,7 @@ void options::OnInsertTideDataLocation( wxCommandEvent &event )
 
         if( g_bportable ) {
             wxFileName f( sel_file );
-            f.MakeRelativeTo( *pHome_Locn );
+            f.MakeRelativeTo( *g_pBASE->GetHomeLocation() );
             tcDataSelected->Append( f.GetFullPath() );
         } else
             tcDataSelected->Append( sel_file );
@@ -5195,7 +5180,7 @@ void options::OnInsertTideDataLocation( wxCommandEvent &event )
         wxString data_dir = fn.GetPath();
         if( g_bportable ) {
             wxFileName f( data_dir );
-            f.MakeRelativeTo( *pHome_Locn );
+            f.MakeRelativeTo( *g_pBASE->GetHomeLocation() );
             g_TCData_Dir = f.GetFullPath();
         }
         else

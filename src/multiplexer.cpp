@@ -30,6 +30,7 @@
 #include "NMEALogWindow.h"
 #include "garmin/jeeps/garmin_wrapper.h"
 #include "OCPN_DataStreamEvent.h"
+#include "AIS_Decoder.h"
 
 extern PlugInManager    *g_pi_manager;
 extern wxString         g_GPS_Ident;
@@ -38,6 +39,7 @@ extern bool             g_bWplIsAprsPosition;
 extern wxArrayOfConnPrm  *g_pConnectionParams;
 extern bool             g_bserial_access_checked;
 extern bool             g_b_legacy_input_filter_behaviour;
+extern AIS_Decoder      *g_pAIS;
 
 extern "C" bool CheckSerialAccess( void );
 
@@ -260,7 +262,7 @@ void Multiplexer::OnEvtStream(OCPN_DataStreamEvent& event)
                 message.Mid(3,3).IsSameAs(_T("TLL")) ||
                 message.Mid(3,3).IsSameAs(_T("TTM")) ||
                 message.Mid(3,3).IsSameAs(_T("OSD")) ||
-                ( g_bWplIsAprsPosition && message.Mid(3,3).IsSameAs(_T("WPL")) ) )
+                ( g_pAIS->WplIsAPRSPosition() && message.Mid(3,3).IsSameAs(_T("WPL")) ) )
             {
                 if( m_aisconsumer )
                     m_aisconsumer->AddPendingEvent(event);

@@ -202,7 +202,6 @@ extern bool             g_bEnableZoomToCursor;
 
 extern AISTargetAlertDialog    *g_pais_alert_dialog_active;
 extern AISTargetQueryDialog    *g_pais_query_dialog_active;
-extern int              g_ais_query_dialog_x, g_ais_query_dialog_y;
 
 extern int              g_S57_dialog_sx, g_S57_dialog_sy;
 
@@ -2187,7 +2186,7 @@ void ChartCanvas::OnRolloverPopupTimerEvent( wxTimerEvent& event )
 
     //  Handle the AIS Rollover Window first
     bool showAISRollover = false;
-    if( g_pAIS && g_pAIS->GetNumTargets() && g_bShowAIS ) {
+    if( g_pAIS && g_pAIS->GetNumTargets() && g_pAIS->ShowAIS() ) {
         SelectItem *pFind = pSelectAIS->FindSelection( m_cursor_lat, m_cursor_lon,
                                                        SELTYPE_AISTARGET );
         if( pFind ) {
@@ -4003,7 +4002,7 @@ void ChartCanvas::AlertDraw( ocpnDC& dc )
 
 
     if( play_sound ) {
-        if( !g_anchorwatch_sound.IsOk() ) g_anchorwatch_sound.Create( g_sAIS_Alert_Sound_File );
+        if( !g_anchorwatch_sound.IsOk() ) g_anchorwatch_sound.Create( g_pAIS->AlertSoundFile() );
 
 #ifndef __WXMSW__
         if(g_anchorwatch_sound.IsOk() && !g_anchorwatch_sound.IsPlaying())
@@ -5399,7 +5398,7 @@ void ChartCanvas::MouseEvent( wxMouseEvent& event )
                 //      Check to see if there is a route or AIS target under the cursor
                 //      If so, start the rollover timer which creates the popup
                 bool b_start_rollover = false;
-                if( g_pAIS && g_pAIS->GetNumTargets() && g_bShowAIS ) {
+                if( g_pAIS && g_pAIS->GetNumTargets() && g_pAIS->ShowAIS() ) {
                     SelectItem *pFind = pSelectAIS->FindSelection( m_cursor_lat, m_cursor_lon,
                                                                    SELTYPE_AISTARGET );
                     if( pFind )
@@ -5979,7 +5978,9 @@ void ChartCanvas::ShowObjectQueryWindow( int x, int y, float zlat, float zlon )
 
     std::vector<Ais8_001_22*> area_notices;
 
-    if( g_pAIS && g_bShowAIS && g_bShowAreaNotices ) {
+    bool ais_areanotice = false;
+    if( g_pAIS && g_pAIS->ShowAIS() && g_pAIS->ShowAreaNotices() ) {
+
         AIS_Target_Hash* an_sources = g_pAIS->GetAreaNoticeSourcesList();
 
         float vp_scale = GetVPScale();
@@ -6181,7 +6182,6 @@ void ChartCanvas::ShowMarkPropertiesDialog( RoutePoint* markPoint ) {
 
         pMarkPropDialog->SetSize( fitted_size );
         pMarkPropDialog->Centre();
-
 
         int xp = (canvas_size.x - fitted_size.x)/2;
         int yp = (canvas_size.y - fitted_size.y)/2;
@@ -8461,7 +8461,7 @@ void ChartCanvas::DrawAllCurrentsInBBox( ocpnDC& dc, LLBBox& BBox )
     double lat_last = 0.;
 
     double true_scale_display = floor( VPoint.chart_scale / 100. ) * 100.;
-    bDrawCurrentValues =  true_scale_display < g_Show_Target_Name_Scale;
+    bDrawCurrentValues =  true_scale_display < g_pAIS->ShowNameScale();
 
     wxPen *pblack_pen = wxThePenList->FindOrCreatePen( GetGlobalColor( _T ( "UINFD" ) ), 1,
                         wxSOLID );
@@ -8650,8 +8650,8 @@ void ShowAISTargetQueryDialog( wxWindow *win, int mmsi )
     if( !win ) return;
 
     if( NULL == g_pais_query_dialog_active ) {
-        int pos_x = g_ais_query_dialog_x;
-        int pos_y = g_ais_query_dialog_y;
+        int pos_x = g_pAIS->AlertDlgPosition().x;
+        int pos_y = g_pAIS->AlertDlgPosition().y;
 
         if( g_pais_query_dialog_active ) {
             delete g_pais_query_dialog_active;

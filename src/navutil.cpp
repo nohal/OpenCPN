@@ -119,6 +119,8 @@ extern WayPointman      *pWayPointMan;
 extern Routeman         *g_pRouteMan;
 extern RouteProp        *pRoutePropDialog;
 
+extern bool             g_bTrackDaily;
+extern bool             g_bTrackCarryOver;
 extern bool             s_bSetSystemTime;
 extern bool             g_bDisplayGrid;         //Flag indicating if grid is to be displayed
 extern bool             g_bPlayShipsBells;
@@ -161,46 +163,6 @@ extern wxString         g_InvisibleLayers;
 extern wxRect           g_blink_rect;
 
 extern wxArrayString    *pMessageOnceArray;
-
-//    AIS Global configuration
-extern bool             g_bCPAMax;
-extern double           g_CPAMax_NM;
-extern bool             g_bCPAWarn;
-extern double           g_CPAWarn_NM;
-extern bool             g_bTCPA_Max;
-extern double           g_TCPA_Max;
-extern bool             g_bMarkLost;
-extern double           g_MarkLost_Mins;
-extern bool             g_bRemoveLost;
-extern double           g_RemoveLost_Mins;
-extern bool             g_bShowCOG;
-extern double           g_ShowCOG_Mins;
-extern bool             g_bAISShowTracks;
-extern bool             g_bTrackCarryOver;
-extern bool             g_bTrackDaily;
-extern double           g_AISShowTracks_Mins;
-extern bool             g_bShowMoored;
-extern double           g_ShowMoored_Kts;
-extern bool             g_bAIS_CPA_Alert;
-extern bool             g_bAIS_CPA_Alert_Audio;
-extern int              g_ais_alert_dialog_x, g_ais_alert_dialog_y;
-extern int              g_ais_alert_dialog_sx, g_ais_alert_dialog_sy;
-extern int              g_ais_query_dialog_x, g_ais_query_dialog_y;
-extern wxString         g_sAIS_Alert_Sound_File;
-extern bool             g_bAIS_CPA_Alert_Suppress_Moored;
-extern bool             g_bAIS_ACK_Timeout;
-extern double           g_AckTimeout_Mins;
-extern wxString         g_AisTargetList_perspective;
-extern int              g_AisTargetList_range;
-extern int              g_AisTargetList_sortColumn;
-extern bool             g_bAisTargetList_sortReverse;
-extern wxString         g_AisTargetList_column_spec;
-extern bool             g_bShowAreaNotices;
-extern bool             g_bDrawAISSize;
-extern bool             g_bShowAISName;
-extern int              g_Show_Target_Name_Scale;
-extern bool             g_bWplIsAprsPosition;
-extern bool             g_benableAISNameCache;
 
 extern int              g_S57_dialog_sx, g_S57_dialog_sy;
 
@@ -1150,9 +1112,10 @@ void MyConfig::CreateRotatingNavObjBackup()
 
 int MyConfig::LoadMyConfig()
 {
-
-    int read_int;
-    wxString val;
+    wxString sval;
+    bool bval;
+    double dval;
+    int ival;
 
     int display_width, display_height;
     wxDisplaySize( &display_width, &display_height );
@@ -1391,8 +1354,8 @@ int MyConfig::LoadMyConfig()
     Read( _T ( "EnableRotateKeys" ),  &g_benable_rotate );
     Read( _T ( "EmailCrashReport" ),  &g_bEmailCrashReport );
     
-    g_benableAISNameCache = true;
-    Read( _T ( "EnableAISNameCache" ),  &g_benableAISNameCache );
+    Read( _T ( "EnableAISNameCache" ),  &bval, g_pAIS->NameCacheEnabled() );
+    g_pAIS->set_NameCacheEnabled( bval );
     
     SetPath( _T ( "/Settings/GlobalState" ) );
     Read( _T ( "bFollow" ), &st_bFollow );
@@ -1409,96 +1372,124 @@ int MyConfig::LoadMyConfig()
     Read( _T ( "ClientSzY" ), &g_lastClientRecth, 0 );
 
     //    AIS
-    wxString s;
     SetPath( _T ( "/Settings/AIS" ) );
 
-    Read( _T ( "bNoCPAMax" ), &g_bCPAMax );
+    Read( _T ( "bNoCPAMax" ), &bval, g_pAIS->CPAMax() );
+    g_pAIS->set_CPAMax( bval );
 
-    Read( _T ( "NoCPAMaxNMi" ), &s );
-    s.ToDouble( &g_CPAMax_NM );
+    Read( _T ( "NoCPAMaxNMi" ), &dval, g_pAIS->CPAMax_NM() );
+    g_pAIS->set_CPAMax_NM(dval);
 
-    Read( _T ( "bCPAWarn" ), &g_bCPAWarn );
+    Read( _T ( "bCPAWarn" ), &bval, g_pAIS->CPAWarn() );
+    g_pAIS->set_CPAWarn( bval );
 
-    Read( _T ( "CPAWarnNMi" ), &s );
-    s.ToDouble( &g_CPAWarn_NM );
+    Read( _T ( "CPAWarnNMi" ), &sval, wxString::Format(wxT("%f"), g_pAIS->CPAWarn_NM()) );
+    sval.ToDouble( &dval );
+    g_pAIS->set_CPAMax_NM(  dval );
 
-    Read( _T ( "bTCPAMax" ), &g_bTCPA_Max );
+    Read( _T ( "bTCPAMax" ), &bval, g_pAIS->TCPAMax() );
+    g_pAIS->set_TCPAMax( bval );
 
-    Read( _T ( "TCPAMaxMinutes" ), &s );
-    s.ToDouble( &g_TCPA_Max );
+    Read( _T ( "TCPAMaxMinutes" ), &sval, wxString::Format(wxT("%f"), g_pAIS->TCPAMax_Mins()) );
+    sval.ToDouble( &dval );
+    g_pAIS->set_TCPAMax_Mins( dval );
 
-    Read( _T ( "bMarkLostTargets" ), &g_bMarkLost );
+    Read( _T ( "bMarkLostTargets" ), &bval, g_pAIS->MarkLost() );
+    g_pAIS->set_MarkLost( bval );
 
-    Read( _T ( "MarkLost_Minutes" ), &s );
-    s.ToDouble( &g_MarkLost_Mins );
+    Read( _T ( "MarkLost_Minutes" ), &sval, wxString::Format(wxT("%f"), g_pAIS->MarkLost_Mins()) );
+    sval.ToDouble( &dval );
+    g_pAIS->set_MarkLost_Mins( dval );
 
-    Read( _T ( "bRemoveLostTargets" ), &g_bRemoveLost );
+    Read( _T ( "bRemoveLostTargets" ), &bval, g_pAIS->RemoveLost() );
+    g_pAIS->set_RemoveLost( bval );
 
-    Read( _T ( "RemoveLost_Minutes" ), &s );
-    s.ToDouble( &g_RemoveLost_Mins );
+    Read( _T ( "RemoveLost_Minutes" ), &sval, wxString::Format(wxT("%f"), g_pAIS->RemoveLost_Mins()) );
+    sval.ToDouble( &dval );
+    g_pAIS->set_RemoveLost_Mins( dval );
 
-    Read( _T ( "bShowCOGArrows" ), &g_bShowCOG );
+    Read( _T ( "bShowCOGArrows" ), &bval, g_pAIS->ShowCOG() );
+    g_pAIS->set_ShowCOG( bval );
 
-    Read( _T ( "CogArrowMinutes" ), &s );
-    s.ToDouble( &g_ShowCOG_Mins );
+    Read( _T ( "CogArrowMinutes" ), &sval, wxString::Format(wxT("%f"), g_pAIS->ShowCOG_Mins()) );
+    sval.ToDouble( &dval );
+    g_pAIS->set_ShowCOG_Mins( dval );
 
-    Read( _T ( "bShowTargetTracks" ), &g_bAISShowTracks, 0 );
+    Read( _T ( "bShowTargetTracks" ), &bval, g_pAIS->ShowTracks() );
+    g_pAIS->set_ShowTracks( bval );
 
-    if( Read( _T ( "TargetTracksMinutes" ), &s ) ) {
-        s.ToDouble( &g_AISShowTracks_Mins );
-        g_AISShowTracks_Mins = wxMax(1.0, g_AISShowTracks_Mins);
-        g_AISShowTracks_Mins = wxMin(60.0, g_AISShowTracks_Mins);
+    if( Read( _T ( "TargetTracksMinutes" ), &sval, wxString::Format(wxT("%f"), g_pAIS->ShowTracks_Mins()) ) ) {
+        sval.ToDouble( &dval );
+        dval = wxMax( 1.0, dval );
+        dval = wxMin( 60.0, dval );
     } else
-        g_AISShowTracks_Mins = 20;
+        dval = 20.0;
+    g_pAIS->set_ShowTracks_Mins( dval );
 
-    Read( _T ( "bShowMooredTargets" ), &g_bShowMoored );
+    Read( _T ( "bShowMooredTargets" ), &bval, g_pAIS->ShowMoored() );
+    g_pAIS->set_ShowMoored( bval );
 
-    Read( _T ( "MooredTargetMaxSpeedKnots" ), &s );
-    s.ToDouble( &g_ShowMoored_Kts );
+    Read( _T ( "MooredTargetMaxSpeedKnots" ), &sval, wxString::Format(wxT("%f"), g_pAIS->ShowMoored_Kts()) );
+    sval.ToDouble( &dval );
+    g_pAIS->set_ShowMoored_Kts( dval );
 
-    Read( _T ( "bShowAreaNotices" ), &g_bShowAreaNotices );
-    Read( _T ( "bDrawAISSize" ), &g_bDrawAISSize );
-    Read( _T ( "bShowAISName" ), &g_bShowAISName );
-    Read( _T ( "bAISAlertDialog" ), &g_bAIS_CPA_Alert );
-    g_Show_Target_Name_Scale = Read( _T ( "ShowAISTargetNameScale" ), 250000L );
-    g_Show_Target_Name_Scale = wxMax( 5000, g_Show_Target_Name_Scale );
-    Read( _T ( "bWplIsAprsPositionReport" ), &g_bWplIsAprsPosition, 1 );
+    Read( _T ( "bShowAreaNotices" ), &bval, g_pAIS->ShowAreaNotices() );
+    g_pAIS->set_ShowAreaNotices( bval );
+    Read( _T ( "bDrawAISSize" ), &bval, g_pAIS->ShowRealSize() );
+    g_pAIS->set_ShowRealSize( bval );
+    Read( _T ( "bShowAISName" ), &bval, g_pAIS->ShowTargetName() );
+    g_pAIS->set_ShowTargetName( bval );
+    Read( _T ( "bAISAlertDialog" ), &bval, g_pAIS->CPAAlert() );
+    g_pAIS->set_CPAAlert( bval );
+    
+    ival = Read( _T ( "ShowAISTargetNameScale" ), g_pAIS->ShowNameScale() );
+    ival = wxMax( 5000, ival );
+    g_pAIS->set_ShowNameScale( ival );
+    
+    Read( _T ( "bWplIsAprsPositionReport" ), &bval, g_pAIS->WplIsAPRSPosition() );
+    g_pAIS->set_WplIsAPRSPosition( bval );
     Read( _T ( "AISCOGPredictorWidth" ), &g_ais_cog_predictor_width, 3 );
 
-    Read( _T ( "bAISAlertAudio" ), &g_bAIS_CPA_Alert_Audio );
-    Read( _T ( "AISAlertAudioFile" ), &g_sAIS_Alert_Sound_File );
-    Read( _T ( "bAISAlertSuppressMoored" ), &g_bAIS_CPA_Alert_Suppress_Moored );
+    Read( _T ( "bAISAlertAudio" ), &bval, g_pAIS->CPAAlertAudio() );
+    g_pAIS->set_CPAAlertAudio( bval );
+    Read( _T ( "AISAlertAudioFile" ), &sval, g_pAIS->AlertSoundFile() );
+    g_pAIS->set_AlertSoundFile( sval );
+    
+    Read( _T ( "bAISAlertSuppressMoored" ), &bval, g_pAIS->SuppressMooredCPAAlert() );
+    g_pAIS->set_SuppressMooredCPAAlert( bval );
 
-    Read( _T ( "bAISAlertAckTimeout" ), &g_bAIS_ACK_Timeout, 0 );
-    Read( _T ( "AlertAckTimeoutMinutes" ), &s );
-    s.ToDouble( &g_AckTimeout_Mins );
+    Read( _T ( "bAISAlertAckTimeout" ), &bval, g_pAIS->ACKTimeout() );
+    g_pAIS->set_ACKTimeout( bval );
+    
+    Read( _T ( "AlertAckTimeoutMinutes" ), &sval, wxString::Format(wxT("%f"), g_pAIS->ACKTimeout_Mins()) );
+    sval.ToDouble( &dval );
+    g_pAIS->set_ACKTimeout_Mins( dval );
 
-    g_ais_alert_dialog_sx = Read( _T ( "AlertDialogSizeX" ), 200L );
-    g_ais_alert_dialog_sy = Read( _T ( "AlertDialogSizeY" ), 200L );
-    g_ais_alert_dialog_x = Read( _T ( "AlertDialogPosX" ), 200L );
-    g_ais_alert_dialog_y = Read( _T ( "AlertDialogPosY" ), 200L );
-    g_ais_query_dialog_x = Read( _T ( "QueryDialogPosX" ), 200L );
-    g_ais_query_dialog_y = Read( _T ( "QueryDialogPosY" ), 200L );
+    int ais_alert_dialog_sx = Read( _T ( "AlertDialogSizeX" ), 200L );
+    int ais_alert_dialog_sy = Read( _T ( "AlertDialogSizeY" ), 200L );
+    int ais_alert_dialog_x = Read( _T ( "AlertDialogPosX" ), 200L );
+    int ais_alert_dialog_y = Read( _T ( "AlertDialogPosY" ), 200L );
+    int ais_query_dialog_x = Read( _T ( "QueryDialogPosX" ), 200L );
+    int ais_query_dialog_y = Read( _T ( "QueryDialogPosY" ), 200L );
+    g_pAIS->set_AlertDlgSize( wxSize(ais_alert_dialog_sx, ais_alert_dialog_sy) );
+    g_pAIS->set_AlertDlgPosition( wxPoint(ais_alert_dialog_x, ais_alert_dialog_y) );
+    g_pAIS->set_QueryDlgPosition( wxPoint(ais_alert_dialog_x, ais_alert_dialog_y) );
 
-    if( ( g_ais_alert_dialog_x < 0 ) || ( g_ais_alert_dialog_x > display_width ) ) g_ais_alert_dialog_x =
-            5;
-    if( ( g_ais_alert_dialog_y < 0 ) || ( g_ais_alert_dialog_y > display_height ) ) g_ais_alert_dialog_y =
-            5;
+    Read( _T ( "AISTargetListPerspective" ), &sval );
+    g_pAIS->set_TargetListAUIPerspective( sval );
+    g_pAIS->set_TargetListRange( Read( _T ( "AISTargetListRange" ), 40L ) );
+    g_pAIS->set_TargetListSortColumn( Read( _T ( "AISTargetListSortColumn" ), 2L ) ); // Column #2 is MMSI
+    Read( _T ( "bAISTargetListSortReverse" ), &bval, false );
+    g_pAIS->set_TargetListSortReverse( bval );
+    Read( _T ( "AISTargetListColumnSpec" ), &sval );
+    g_pAIS->set_TargetListColSpec( sval );
 
-    if( ( g_ais_query_dialog_x < 0 ) || ( g_ais_query_dialog_x > display_width ) ) g_ais_query_dialog_x =
-            5;
-    if( ( g_ais_query_dialog_y < 0 ) || ( g_ais_query_dialog_y > display_height ) ) g_ais_query_dialog_y =
-            5;
-
-    Read( _T ( "AISTargetListPerspective" ), &g_AisTargetList_perspective );
-    g_AisTargetList_range = Read( _T ( "AISTargetListRange" ), 40L );
-    g_AisTargetList_sortColumn = Read( _T ( "AISTargetListSortColumn" ), 2L ); // Column #2 is MMSI
-    Read( _T ( "bAISTargetListSortReverse" ), &g_bAisTargetList_sortReverse, false );
-    Read( _T ( "AISTargetListColumnSpec" ), &g_AisTargetList_column_spec );
-
-    Read( _T ( "bAISRolloverShowClass" ), &g_bAISRolloverShowClass );
-    Read( _T ( "bAISRolloverShowCOG" ), &g_bAISRolloverShowCOG );
-    Read( _T ( "bAISRolloverShowCPA" ), &g_bAISRolloverShowCPA );
+    Read( _T ( "bAISRolloverShowClass" ), &bval );
+    g_pAIS->set_RolloverShowClass( bval );
+    Read( _T ( "bAISRolloverShowCOG" ), &bval );
+    g_pAIS->set_RolloverShowCOG( bval );
+    Read( _T ( "bAISRolloverShowCPA" ), &bval );
+    g_pAIS->set_RolloverShowCPA( bval );
 
     g_S57_dialog_sx = Read( _T ( "S57QueryDialogSizeX" ), 400L );
     g_S57_dialog_sy = Read( _T ( "S57QueryDialogSizeY" ), 400L );
@@ -1553,8 +1544,8 @@ int MyConfig::LoadMyConfig()
     Read( _T ( "TCDataDir" ), &g_TCData_Dir );           // Get the Directory name
 
     SetPath( _T ( "/Settings/GlobalState" ) );
-    Read( _T ( "nColorScheme" ), &read_int, 0 );
-    global_color_scheme = (ColorScheme) read_int;
+    Read( _T ( "nColorScheme" ), &ival, 0 );
+    global_color_scheme = (ColorScheme) ival;
 
 
     SetPath( _T ( "/Settings/NMEADataSource" ) );
@@ -1731,8 +1722,8 @@ int MyConfig::LoadMyConfig()
 
         if( fabs( st_lat ) < 90.0 ) vLat = st_lat;
     }
-    s.Printf( _T ( "Setting Viewpoint Lat/Lon %g, %g" ), vLat, vLon );
-    wxLogMessage( s );
+    sval.Printf( _T ( "Setting Viewpoint Lat/Lon %g, %g" ), vLat, vLon );
+    wxLogMessage( sval );
 
     if( Read( wxString( _T ( "VPScale" ) ), &st ) ) {
         sscanf( st.mb_str( wxConvUTF8 ), "%lf", &st_view_scale );
@@ -1768,8 +1759,8 @@ int MyConfig::LoadMyConfig()
 
         if( fabs( lat ) < 90.0 ) gLat = lat;
     }
-    s.Printf( _T ( "Setting Ownship Lat/Lon %g, %g" ), gLat, gLon );
-    wxLogMessage( s );
+    sval.Printf( _T ( "Setting Ownship Lat/Lon %g, %g" ), gLat, gLon );
+    wxLogMessage( sval );
 
 //    Fonts
 
@@ -1854,24 +1845,24 @@ int MyConfig::LoadMyConfig()
 
     // Radar rings
     g_iNavAidRadarRingsNumberVisible = 0;
-    Read( _T ( "RadarRingsNumberVisible" ), &val );
-    if( val.Length() > 0 ) g_iNavAidRadarRingsNumberVisible = atoi( val.mb_str() );
+    Read( _T ( "RadarRingsNumberVisible" ), &sval );
+    if( sval.Length() > 0 ) g_iNavAidRadarRingsNumberVisible = atoi( sval.mb_str() );
 
     g_fNavAidRadarRingsStep = 1.0;
-    Read( _T ( "RadarRingsStep" ), &val );
-    if( val.Length() > 0 ) g_fNavAidRadarRingsStep = atof( val.mb_str() );
+    Read( _T ( "RadarRingsStep" ), &sval );
+    if( sval.Length() > 0 ) g_fNavAidRadarRingsStep = atof( sval.mb_str() );
 
     g_pNavAidRadarRingsStepUnits = 0;
     Read( _T ( "RadarRingsStepUnits" ), &g_pNavAidRadarRingsStepUnits );
 
     // Waypoint Radar rings
     g_iWaypointRangeRingsNumber = 0;
-    Read( _T ( "WaypointRangeRingsNumber" ), &val );
-    if( val.Length() > 0 ) g_iWaypointRangeRingsNumber = atoi( val.mb_str() );
+    Read( _T ( "WaypointRangeRingsNumber" ), &sval );
+    if( sval.Length() > 0 ) g_iWaypointRangeRingsNumber = atoi( sval.mb_str() );
 
     g_fWaypointRangeRingsStep = 1.0;
-    Read( _T ( "WaypointRangeRingsStep" ), &val );
-    if( val.Length() > 0 ) g_fWaypointRangeRingsStep = atof( val.mb_str() );
+    Read( _T ( "WaypointRangeRingsStep" ), &sval );
+    if( sval.Length() > 0 ) g_fWaypointRangeRingsStep = atof( sval.mb_str() );
 
     g_iWaypointRangeRingsStepUnits = 0;
     Read( _T ( "WaypointRangeRingsStepUnits" ), &g_iWaypointRangeRingsStepUnits );
@@ -1897,18 +1888,18 @@ int MyConfig::LoadMyConfig()
     Read( _T ( "EnableZoomToCursor" ), &g_bEnableZoomToCursor );
 
     g_TrackIntervalSeconds = 60.0;
-    val.Clear();
-    Read( _T ( "TrackIntervalSeconds" ), &val );
-    if( val.Length() > 0 ) {
-        double tval = atof( val.mb_str() );
+    sval.Clear();
+    Read( _T ( "TrackIntervalSeconds" ), &sval );
+    if( sval.Length() > 0 ) {
+        double tval = atof( sval.mb_str() );
         if( tval >= 2. ) g_TrackIntervalSeconds = tval;
     }
 
     g_TrackDeltaDistance = 0.10;
-    val.Clear();
-    Read( _T ( "TrackDeltaDistance" ), &val );
-    if( val.Length() > 0 ) {
-        double tval = atof( val.mb_str() );
+    sval.Clear();
+    Read( _T ( "TrackDeltaDistance" ), &sval );
+    if( sval.Length() > 0 ) {
+        double tval = atof( sval.mb_str() );
         if( tval >= 0.05 ) g_TrackDeltaDistance = tval;
     }
 
@@ -2668,54 +2659,54 @@ void MyConfig::UpdateSettings()
     //    AIS
     SetPath( _T ( "/Settings/AIS" ) );
 
-    Write( _T ( "bNoCPAMax" ), g_bCPAMax );
-    Write( _T ( "NoCPAMaxNMi" ), g_CPAMax_NM );
-    Write( _T ( "bCPAWarn" ), g_bCPAWarn );
-    Write( _T ( "CPAWarnNMi" ), g_CPAWarn_NM );
-    Write( _T ( "bTCPAMax" ), g_bTCPA_Max );
-    Write( _T ( "TCPAMaxMinutes" ), g_TCPA_Max );
-    Write( _T ( "bMarkLostTargets" ), g_bMarkLost );
-    Write( _T ( "MarkLost_Minutes" ), g_MarkLost_Mins );
-    Write( _T ( "bRemoveLostTargets" ), g_bRemoveLost );
-    Write( _T ( "RemoveLost_Minutes" ), g_RemoveLost_Mins );
-    Write( _T ( "bShowCOGArrows" ), g_bShowCOG );
-    Write( _T ( "CogArrowMinutes" ), g_ShowCOG_Mins );
-    Write( _T ( "bShowTargetTracks" ), g_bAISShowTracks );
-    Write( _T ( "TargetTracksMinutes" ), g_AISShowTracks_Mins );
-    Write( _T ( "bShowMooredTargets" ), g_bShowMoored );
-    Write( _T ( "MooredTargetMaxSpeedKnots" ), g_ShowMoored_Kts );
-    Write( _T ( "bAISAlertDialog" ), g_bAIS_CPA_Alert );
-    Write( _T ( "bAISAlertAudio" ), g_bAIS_CPA_Alert_Audio );
-    Write( _T ( "AISAlertAudioFile" ), g_sAIS_Alert_Sound_File );
-    Write( _T ( "bAISAlertSuppressMoored" ), g_bAIS_CPA_Alert_Suppress_Moored );
-    Write( _T ( "bShowAreaNotices" ), g_bShowAreaNotices );
-    Write( _T ( "bDrawAISSize" ), g_bDrawAISSize );
-    Write( _T ( "bShowAISName" ), g_bShowAISName );
-    Write( _T ( "ShowAISTargetNameScale" ), g_Show_Target_Name_Scale );
-    Write( _T ( "bWplIsAprsPositionReport" ), g_bWplIsAprsPosition );
+    Write( _T ( "bNoCPAMax" ), g_pAIS->CPAMax() );
+    Write( _T ( "NoCPAMaxNMi" ), g_pAIS->CPAMax_NM() );
+    Write( _T ( "bCPAWarn" ), g_pAIS->CPAWarn() );
+    Write( _T ( "CPAWarnNMi" ), g_pAIS->CPAWarn_NM() );
+    Write( _T ( "bTCPAMax" ), g_pAIS->TCPAMax() );
+    Write( _T ( "TCPAMaxMinutes" ), g_pAIS->TCPAMax_Mins() );
+    Write( _T ( "bMarkLostTargets" ), g_pAIS->MarkLost() );
+    Write( _T ( "MarkLost_Minutes" ), g_pAIS->MarkLost_Mins() );
+    Write( _T ( "bRemoveLostTargets" ), g_pAIS->RemoveLost() );
+    Write( _T ( "RemoveLost_Minutes" ), g_pAIS->RemoveLost_Mins() );
+    Write( _T ( "bShowCOGArrows" ), g_pAIS->ShowCOG() );
+    Write( _T ( "CogArrowMinutes" ), g_pAIS->ShowCOG_Mins() );
+    Write( _T ( "bShowTargetTracks" ), g_pAIS->ShowTracks() );
+    Write( _T ( "TargetTracksMinutes" ), g_pAIS->ShowTracks_Mins() );
+    Write( _T ( "bShowMooredTargets" ), g_pAIS->ShowMoored() );
+    Write( _T ( "MooredTargetMaxSpeedKnots" ), g_pAIS->ShowMoored_Kts() );
+    Write( _T ( "bAISAlertDialog" ), g_pAIS->CPAAlert() );
+    Write( _T ( "bAISAlertAudio" ), g_pAIS->CPAAlertAudio() );
+    Write( _T ( "AISAlertAudioFile" ), g_pAIS->AlertSoundFile() );
+    Write( _T ( "bAISAlertSuppressMoored" ), g_pAIS->SuppressMooredCPAAlert() );
+    Write( _T ( "bShowAreaNotices" ), g_pAIS->ShowAreaNotices() );
+    Write( _T ( "bDrawAISSize" ), g_pAIS->ShowRealSize() );
+    Write( _T ( "bShowAISName" ), g_pAIS->ShowTargetName() );
+    Write( _T ( "ShowAISTargetNameScale" ), g_pAIS->ShowNameScale() );
+    Write( _T ( "bWplIsAprsPositionReport" ), g_pAIS->WplIsAPRSPosition() );
     Write( _T ( "AISCOGPredictorWidth" ), g_ais_cog_predictor_width );
 
-    Write( _T ( "AlertDialogSizeX" ), g_ais_alert_dialog_sx );
-    Write( _T ( "AlertDialogSizeY" ), g_ais_alert_dialog_sy );
-    Write( _T ( "AlertDialogPosX" ), g_ais_alert_dialog_x );
-    Write( _T ( "AlertDialogPosY" ), g_ais_alert_dialog_y );
-    Write( _T ( "QueryDialogPosX" ), g_ais_query_dialog_x );
-    Write( _T ( "QueryDialogPosY" ), g_ais_query_dialog_y );
-    Write( _T ( "AISTargetListPerspective" ), g_AisTargetList_perspective );
-    Write( _T ( "AISTargetListRange" ), g_AisTargetList_range );
-    Write( _T ( "AISTargetListSortColumn" ), g_AisTargetList_sortColumn );
-    Write( _T ( "bAISTargetListSortReverse" ), g_bAisTargetList_sortReverse );
-    Write( _T ( "AISTargetListColumnSpec" ), g_AisTargetList_column_spec );
+    Write( _T ( "AlertDialogSizeX" ), g_pAIS->AlertDlgSize().x );
+    Write( _T ( "AlertDialogSizeY" ), g_pAIS->AlertDlgSize().y );
+    Write( _T ( "AlertDialogPosX" ), g_pAIS->AlertDlgPosition().x );
+    Write( _T ( "AlertDialogPosY" ), g_pAIS->AlertDlgPosition().y );
+    Write( _T ( "QueryDialogPosX" ), g_pAIS->QueryDlgPosition().x );
+    Write( _T ( "QueryDialogPosY" ), g_pAIS->QueryDlgPosition().y );
+    Write( _T ( "AISTargetListPerspective" ), g_pAIS->TargetListAUIPerspective() );
+    Write( _T ( "AISTargetListRange" ), g_pAIS->TargetListRange() );
+    Write( _T ( "AISTargetListSortColumn" ), g_pAIS->TargetListSortColumn() );
+    Write( _T ( "bAISTargetListSortReverse" ), g_pAIS->TargetListSortReverse() );
+    Write( _T ( "AISTargetListColumnSpec" ), g_pAIS->TargetListColSpec() );
 
     Write( _T ( "S57QueryDialogSizeX" ), g_S57_dialog_sx );
     Write( _T ( "S57QueryDialogSizeY" ), g_S57_dialog_sy );
 
-    Write( _T ( "bAISRolloverShowClass" ), g_bAISRolloverShowClass );
-    Write( _T ( "bAISRolloverShowCOG" ), g_bAISRolloverShowCOG );
-    Write( _T ( "bAISRolloverShowCPA" ), g_bAISRolloverShowCPA );
+    Write( _T ( "bAISRolloverShowClass" ), g_pAIS->RolloverShowClass() );
+    Write( _T ( "bAISRolloverShowCOG" ), g_pAIS->RolloverShowCOG() );
+    Write( _T ( "bAISRolloverShowCPA" ), g_pAIS->RolloverShowCPA() );
 
-    Write( _T ( "bAISAlertAckTimeout" ), g_bAIS_ACK_Timeout );
-    Write( _T ( "AlertAckTimeoutMinutes" ), g_AckTimeout_Mins );
+    Write( _T ( "bAISAlertAckTimeout" ), g_pAIS->ACKTimeout() );
+    Write( _T ( "AlertAckTimeoutMinutes" ), g_pAIS->ACKTimeout_Mins() );
 
 #ifdef USE_S57
     SetPath( _T ( "/Settings/GlobalState" ) );

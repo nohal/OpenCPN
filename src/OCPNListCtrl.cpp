@@ -24,9 +24,12 @@
 
 #include "OCPNListCtrl.h"
 #include "AIS_Target_Data.h"
+#include "navutil.h"
+#include "AIS_Decoder.h"
 
 extern wxString g_AisTargetList_column_spec;
 extern bool bGPSValid;
+extern AIS_Decoder *g_pAIS;
 
 OCPNListCtrl::OCPNListCtrl( AISTargetListDialog* parent, wxWindowID id, const wxPoint& pos,
         const wxSize& size, long style ) :
@@ -37,14 +40,15 @@ OCPNListCtrl::OCPNListCtrl( AISTargetListDialog* parent, wxWindowID id, const wx
 
 OCPNListCtrl::~OCPNListCtrl()
 {
-    g_AisTargetList_column_spec.Clear();
+    wxString sval = wxEmptyString;
     for( int i = 0; i < tlSOG + 1; i++ ) {
         wxListItem item;
         GetColumn( i, item );
         wxString sitem;
         sitem.Printf( _T("%d;"), item.m_width );
-        g_AisTargetList_column_spec += sitem;
+        sval += sitem;
     }
+    g_pAIS->set_TargetListColSpec( sval );
 }
 
 wxString OCPNListCtrl::OnGetItemText( long item, long column ) const

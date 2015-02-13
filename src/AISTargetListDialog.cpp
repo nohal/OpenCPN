@@ -34,6 +34,8 @@
 #include "styles.h"
 #include "Select.h"
 #include "routemanagerdialog.h"
+#include "navutil.h"
+#include "chcanv.h"
 
 static AIS_Decoder *s_p_sort_decoder;
 
@@ -52,7 +54,7 @@ extern ChartCanvas *cc1;
 extern wxString g_default_wp_icon;
 extern Select *pSelect;
 extern RouteManagerDialog *pRouteManagerDialog;
-extern bool g_bAISShowTracks;
+extern AIS_Decoder *g_pAIS;
 
 IMPLEMENT_CLASS ( AISTargetListDialog, wxPanel )
 
@@ -70,7 +72,7 @@ static int ItemCompare( AIS_Target_Data *pAISTarget1, AIS_Target_Data *pAISTarge
     bool b_cmptype_num = false;
 
     //    Don't sort unless requested
-    if( !g_bAisTargetList_autosort && !g_bsort_once )
+    if( !g_pAIS->TargetListAutosort() && !g_bsort_once )
         return 0;
 
     AIS_Target_Data *t1 = pAISTarget1;
@@ -90,7 +92,7 @@ static int ItemCompare( AIS_Target_Data *pAISTarget1, AIS_Target_Data *pAISTarge
             return 1;
     }
 
-    switch( g_AisTargetList_sortColumn ){
+    switch( g_pAIS->TargetListSortColumn() ){
         case tlTRK:
             n1 = t1->b_show_track;
             n2 = t2->b_show_track;
@@ -253,18 +255,23 @@ static int ItemCompare( AIS_Target_Data *pAISTarget1, AIS_Target_Data *pAISTarge
     }
 
     if( !b_cmptype_num ) {
-        if( g_bAisTargetList_sortReverse ) return s2.Cmp( s1 );
+        if( g_pAIS->TargetListSortReverse() )
+            return s2.Cmp( s1 );
         return s1.Cmp( s2 );
     } else {
         //    If numeric sort values are equal, secondary sort is on Range_NM
-        if( g_bAisTargetList_sortReverse ) {
-            if( n2 > n1 ) return 1;
-            else if( n2 < n1 ) return -1;
+        if( g_pAIS->TargetListSortReverse() ) {
+            if( n2 > n1 )
+                return 1;
+            else if( n2 < n1 )
+                return -1;
             else
                 return ( t1->Range_NM > t2->Range_NM ); //0;
         } else {
-            if( n2 > n1 ) return -1;
-            else if( n2 < n1 ) return 1;
+            if( n2 > n1 )
+                return -1;
+            else if( n2 < n1 )
+                return 1;
             else
                 return ( t1->Range_NM > t2->Range_NM ); //0;
         }
@@ -313,7 +320,7 @@ AISTargetListDialog::AISTargetListDialog( wxWindow *parent, wxAuiManager *auimgr
     SetSizer( topSizer );
 
     //  Parse the global column width string as read from config file
-    wxStringTokenizer tkz( g_AisTargetList_column_spec, _T(";") );
+    wxStringTokenizer tkz( g_pAIS->TargetListColSpec(), _T(";") );
     wxString s_width = tkz.GetNextToken();
     int width;
     long lwidth;
@@ -442,9 +449,9 @@ AISTargetListDialog::AISTargetListDialog( wxWindow *parent, wxAuiManager *auimgr
     m_pListCtrlAISTargets->InsertColumn( tlTCPA, _("TCPA"), wxLIST_FORMAT_RIGHT, width );
     wxListItem item;
     item.SetMask( wxLIST_MASK_IMAGE );
-    item.SetImage( g_bAisTargetList_sortReverse ? 1 : 0 );
-    g_AisTargetList_sortColumn = wxMax(g_AisTargetList_sortColumn, 0);
-    m_pListCtrlAISTargets->SetColumn( g_AisTargetList_sortColumn, item );
+    item.SetImage( g_pAIS->TargetListSortReverse() ? 1 : 0 );
+    g_pAIS->set_TargetListSortColumn( wxMax(g_pAIS->TargetListSortColumn(), 0) );
+    m_pListCtrlAISTargets->SetColumn( g_pAIS->TargetListSortColumn(), item );
 
     topSizer->Add( m_pListCtrlAISTargets, 1, wxEXPAND | wxALL, 0 );
 
@@ -493,8 +500,8 @@ AISTargetListDialog::AISTargetListDialog( wxWindow *parent, wxAuiManager *auimgr
     m_pCBAutosort->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED,
                                    wxCommandEventHandler( AISTargetListDialog::OnAutosortCB ), NULL, this );
     boxSizer02->Add( m_pCBAutosort, 0, wxEXPAND | wxALL, 0 );
-    g_bAisTargetList_autosort = true;
-    m_pCBAutosort->SetValue(g_bAisTargetList_autosort);
+    g_pAIS->set_TargetListAutosort( true );
+    m_pCBAutosort->SetValue( g_pAIS->TargetListAutosort() );
     
     boxSizer02->AddSpacer( 10 );
 
@@ -503,7 +510,7 @@ AISTargetListDialog::AISTargetListDialog( wxWindow *parent, wxAuiManager *auimgr
     boxSizer02->Add( m_pStaticTextRange, 0, wxALL, 0 );
     boxSizer02->AddSpacer( 2 );
     m_pSpinCtrlRange = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition,
-            wxSize( 50, -1 ), wxSP_ARROW_KEYS, 1, 20000, g_AisTargetList_range );
+            wxSize( 50, -1 ), wxSP_ARROW_KEYS, 1, 20000, g_pAIS->TargetListAutosort() );
     m_pSpinCtrlRange->Connect( wxEVT_COMMAND_SPINCTRL_UPDATED,
             wxCommandEventHandler( AISTargetListDialog::OnLimitRange ), NULL, this );
     m_pSpinCtrlRange->Connect( wxEVT_COMMAND_TEXT_UPDATED,
@@ -540,7 +547,7 @@ AISTargetListDialog::AISTargetListDialog( wxWindow *parent, wxAuiManager *auimgr
     if( m_pAuiManager ) {
         wxAuiPaneInfo pane =
                 wxAuiPaneInfo().Name( _T("AISTargetList") ).CaptionVisible( true ).Float().FloatingPosition( 50, 50 );
-        m_pAuiManager->LoadPaneInfo( g_AisTargetList_perspective, pane );
+        m_pAuiManager->LoadPaneInfo( g_pAIS->TargetListAUIPerspective(), pane );
 
         //      Force and/or override any perspective information that is not applicable
         pane.Name( _T("AISTargetList") );
@@ -589,7 +596,7 @@ AISTargetListDialog::AISTargetListDialog( wxWindow *parent, wxAuiManager *auimgr
             pane.Row( 1 );
             pane.Position( 0 );
 
-            g_AisTargetList_perspective = m_pAuiManager->SavePaneInfo( pane );
+            g_pAIS->set_TargetListAUIPerspective( m_pAuiManager->SavePaneInfo( pane ) );
             pConfig->UpdateSettings();
         }
 
@@ -632,7 +639,7 @@ void AISTargetListDialog::OnPaneClose( wxAuiManagerEvent& event )
 {
     wxAuiPaneInfo *pane = event.pane;
     if( event.pane->name == _T("AISTargetList") ) {
-        g_AisTargetList_perspective = m_pAuiManager->SavePaneInfo( *event.pane );
+        g_pAIS->set_TargetListAUIPerspective( m_pAuiManager->SavePaneInfo( *event.pane ) );
     }
     event.Skip();
 }
@@ -641,7 +648,7 @@ void AISTargetListDialog::OnCloseButton( wxCommandEvent& event )
 {
     if(m_pAuiManager) {
         wxAuiPaneInfo pane =m_pAuiManager->GetPane(this);
-        g_AisTargetList_perspective = m_pAuiManager->SavePaneInfo( pane );
+        g_pAIS->set_TargetListAUIPerspective( m_pAuiManager->SavePaneInfo( pane ) );
         m_pAuiManager->DetachPane(this);
         Disconnect_decoder();
         pane.Show(false);
@@ -705,24 +712,24 @@ void AISTargetListDialog::OnTargetQuery( wxCommandEvent& event )
 
 void AISTargetListDialog::OnAutosortCB( wxCommandEvent &event )
 {
-    g_bAisTargetList_autosort = m_pCBAutosort->GetValue();
+    g_pAIS->set_TargetListAutosort( m_pCBAutosort->GetValue() );
     
-    m_bautosort_force = g_bAisTargetList_autosort;
+    m_bautosort_force = g_pAIS->TargetListAutosort();
     
-    if( !g_bAisTargetList_autosort ) {
+    if( !g_pAIS->TargetListAutosort() ) {
         wxListItem item;
         item.SetMask( wxLIST_MASK_IMAGE );
         item.SetImage( -1 );
-        g_AisTargetList_sortColumn = wxMax(g_AisTargetList_sortColumn, 0);
-        m_pListCtrlAISTargets->SetColumn( g_AisTargetList_sortColumn, item );
+        g_pAIS->set_TargetListSortColumn( wxMax(g_pAIS->TargetListSortColumn(), 0) );
+        m_pListCtrlAISTargets->SetColumn( g_pAIS->TargetListSortColumn(), item );
     }
     else {
         wxListItem item;
         item.SetMask( wxLIST_MASK_IMAGE );
-        item.SetImage( g_bAisTargetList_sortReverse ? 1 : 0 );
+        item.SetImage( g_pAIS->TargetListSortReverse() ? 1 : 0 );
         
-        if( g_AisTargetList_sortColumn >= 0 ) {
-            m_pListCtrlAISTargets->SetColumn( g_AisTargetList_sortColumn, item );
+        if( g_pAIS->TargetListSortColumn() >= 0 ) {
+            m_pListCtrlAISTargets->SetColumn( g_pAIS->TargetListSortColumn(), item );
             UpdateAISTargetList();
         }
     }
@@ -733,21 +740,21 @@ void AISTargetListDialog::OnTargetListColumnClicked( wxListEvent &event )
     int key = event.GetColumn();
     wxListItem item;
     item.SetMask( wxLIST_MASK_IMAGE );
-    if( key == g_AisTargetList_sortColumn ) 
-        g_bAisTargetList_sortReverse = !g_bAisTargetList_sortReverse;
+    if( key == g_pAIS->TargetListSortColumn() ) 
+        g_pAIS->set_TargetListSortReverse( !g_pAIS->TargetListSortReverse() );
     else {
         item.SetImage( -1 );
-        m_pListCtrlAISTargets->SetColumn( g_AisTargetList_sortColumn, item );
-        g_bAisTargetList_sortReverse = false;
-        g_AisTargetList_sortColumn = key;
+        m_pListCtrlAISTargets->SetColumn( g_pAIS->TargetListSortColumn(), item );
+        g_pAIS->set_TargetListSortReverse( false );
+        g_pAIS->set_TargetListSortColumn( key );
     }
-    item.SetImage( g_bAisTargetList_sortReverse ? 1 : 0 );
+    item.SetImage( g_pAIS->TargetListSortReverse() ? 1 : 0 );
     
-    if(!g_bAisTargetList_autosort )
+    if(!g_pAIS->TargetListAutosort() )
         g_bsort_once = true;
     
-    if( g_AisTargetList_sortColumn >= 0 ) {
-        m_pListCtrlAISTargets->SetColumn( g_AisTargetList_sortColumn, item );
+    if( g_pAIS->TargetListSortColumn() >= 0 ) {
+        m_pListCtrlAISTargets->SetColumn( g_pAIS->TargetListSortColumn(), item );
         UpdateAISTargetList();
     }
 }
@@ -840,7 +847,7 @@ void AISTargetListDialog::OnToggleTrack( wxCommandEvent& event )
 
 void AISTargetListDialog::OnLimitRange( wxCommandEvent& event )
 {
-    g_AisTargetList_range = m_pSpinCtrlRange->GetValue();
+    g_pAIS->set_TargetListRange( m_pSpinCtrlRange->GetValue() );
     UpdateAISTargetList();
 }
 
@@ -879,7 +886,7 @@ void AISTargetListDialog::UpdateAISTargetList( void )
 
             if( NULL != pAISTarget ) {
                 bool b_add = false;
-                if( ( pAISTarget->b_positionOnceValid ) && ( pAISTarget->Range_NM <= g_AisTargetList_range ) )
+                if( ( pAISTarget->b_positionOnceValid ) && ( pAISTarget->Range_NM <= g_pAIS->TargetListRange() ) )
                     b_add = true;
                 else if( !pAISTarget->b_positionOnceValid )
                     b_add = true;
@@ -908,12 +915,12 @@ void AISTargetListDialog::UpdateAISTargetList( void )
         
         m_pListCtrlAISTargets->SetItemCount( m_pMMSI_array->GetCount() );
 
-        g_AisTargetList_count = m_pMMSI_array->GetCount();
+        g_pAIS->set_TargetListCount( m_pMMSI_array->GetCount() );
         
-        if( (g_AisTargetList_count > 1000) && !m_bautosort_force )
-            g_bAisTargetList_autosort = false;
+        if( (g_pAIS->TargetListCount() > 1000) && !m_bautosort_force )
+            g_pAIS->set_TargetListAutosort( false ); //FIXME: Autosort should return false automatically if the count is higher than 1000
         
-        m_pCBAutosort->SetValue( g_bAisTargetList_autosort );
+        m_pCBAutosort->SetValue( g_pAIS->TargetListAutosort() );
 
         m_pListCtrlAISTargets->SetScrollPos( wxVERTICAL, sb_position, false );
 

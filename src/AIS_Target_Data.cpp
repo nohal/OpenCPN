@@ -23,6 +23,9 @@
  */
 
 #include "AIS_Target_Data.h"
+#include "chcanv.h"
+#include "navutil.h"
+#include "AIS_Decoder.h"
 
 extern bool bGPSValid;
 extern ChartCanvas *cc1;
@@ -32,7 +35,7 @@ extern bool g_bAISRolloverShowCPA;
 extern bool g_bShowMag;
 extern MyFrame *gFrame;
 extern bool g_bAISShowTracks;
-
+extern AIS_Decoder *g_pAIS;
 
 //    Define and declare a hasmap for ERI Ship type strings, keyed by their UN Codes.
 WX_DECLARE_HASH_MAP(int, wxString, wxIntegerHash, wxIntegerEqual, ERIShipTypeHash);
@@ -61,7 +64,7 @@ static wxString FormatTimeAdaptive( int seconds )
 }
 
 
-AIS_Target_Data::AIS_Target_Data()
+AIS_Target_Data::AIS_Target_Data(bool show_track)
 {
     strncpy(ShipName, "Unknown             ", 21);
     strncpy(CallSign, "       ", 8);
@@ -138,7 +141,7 @@ AIS_Target_Data::AIS_Target_Data()
     blue_paddle = 0;
     bCPA_Valid = false;
     ROTIND = 0;
-    b_show_track = g_bAISShowTracks;
+    b_show_track = show_track;
     b_SarAircraftPosnReport = false;
     altitude = 0;
     b_nameFromCache = false;
@@ -669,7 +672,7 @@ wxString AIS_Target_Data::GetRolloverString( void )
         result.Append( t );
         result.Append( _T(")") );
     }
-    if( g_bAISRolloverShowClass || ( Class == AIS_SART ) ) {
+    if( g_pAIS->RolloverShowClass() || ( Class == AIS_SART ) ) {
         if( result.Len() ) result.Append( _T("\n") );
         result.Append( _T("[") );
         if( Class == AIS_ATON ) {
@@ -723,7 +726,7 @@ wxString AIS_Target_Data::GetRolloverString( void )
         }
     }
 
-    if( g_bAISRolloverShowCOG && (( SOG <= 102.2 ) || b_SarAircraftPosnReport) 
+    if( g_pAIS->RolloverShowCOG() && (( SOG <= 102.2 ) || b_SarAircraftPosnReport) 
             && ( ( Class != AIS_ATON ) && ( Class != AIS_BASE ) ) ) {
         if( result.Len() ) result << _T("\n");
         
@@ -752,7 +755,7 @@ wxString AIS_Target_Data::GetRolloverString( void )
             result << _(" COG Unavailable");
     }
 
-    if( g_bAISRolloverShowCPA && bCPA_Valid ) {
+    if( g_pAIS->RolloverShowCPA() && bCPA_Valid ) {
         if( result.Len() ) result << _T("\n");
         result << _("CPA") << _T(" ") << cc1->FormatDistanceAdaptive( CPA )
         << _T(" ") << _("in") << _T(" ")

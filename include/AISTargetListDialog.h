@@ -27,6 +27,10 @@
 
 #include <wx/panel.h>
 #include <wx/checkbox.h>
+#include <wx/listctrl.h>
+#include <wx/spinctrl.h>
+#include <wx/aui/aui.h>
+#include <wx/wxhtml.h>
 
 #define ID_AIS_TARGET_LIST    10003
 

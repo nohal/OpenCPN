@@ -48,6 +48,7 @@
 #include "timers.h"
 #include "emboss_data.h"
 #include "s57chart.h"
+#include "TimedPopupWindow.h"
 
 class wxGLContext;
 class GSHHSChart;

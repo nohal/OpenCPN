@@ -31,22 +31,20 @@
 #include "ocpn_types.h"
 #include "Select.h"
 #include "routemanagerdialog.h"
+#include "navutil.h"
+#include "chart1.h"
 
 extern ColorScheme global_color_scheme;
 extern bool g_bopengl;
 extern AISTargetAlertDialog *g_pais_alert_dialog_active;
 extern MyFrame *gFrame;
 extern ChartCanvas *cc1;
-extern int g_ais_alert_dialog_x;
-extern int g_ais_alert_dialog_y;
-extern int g_ais_alert_dialog_sx;
-extern int g_ais_alert_dialog_sy;
-extern bool g_bAIS_CPA_Alert_Audio;
 extern wxString g_default_wp_icon;
 extern Select *pSelect;
 extern MyConfig *pConfig;
 extern RouteManagerDialog *pRouteManagerDialog;
 extern ChartCanvas *cc1;
+extern AIS_Decoder *g_pAIS;
 
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -186,7 +184,7 @@ void AISTargetAlertDialog::CreateControls()
     topSizer->Add( AckBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
 
     // The Silence button
-    if( g_bAIS_CPA_Alert_Audio ){
+    if( g_pAIS->CPAAlertAudio() ){
         wxButton* silence = new wxButton( this, ID_SILENCE, _( "&Silence Alert" ), wxDefaultPosition,
             wxDefaultSize, 0 );
         AckBox->Add( silence, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
@@ -350,21 +348,16 @@ void AISTargetAlertDialog::OnIdJumptoClick( wxCommandEvent& event )
 
 void AISTargetAlertDialog::OnMove( wxMoveEvent& event )
 {
-    //    Record the dialog position
-    wxPoint p = event.GetPosition();
-    g_ais_alert_dialog_x = p.x;
-    g_ais_alert_dialog_y = p.y;
+    //Record dialog position
+    g_pAIS->set_AlertDlgPosition( event.GetPosition() );
 
     event.Skip();
 }
 
 void AISTargetAlertDialog::OnSize( wxSizeEvent& event )
 {
-    //    Record the dialog size
-    wxSize p = event.GetSize();
-    g_ais_alert_dialog_sx = p.x;
-    g_ais_alert_dialog_sy = p.y;
-
+    //Record dialog size
+    g_pAIS->set_AlertDlgSize( event.GetSize() );
     event.Skip();
 }
 

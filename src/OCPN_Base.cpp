@@ -1,6 +1,8 @@
 /***************************************************************************
  *
  * Project:  OpenCPN
+ * Purpose:  Core infrastructure
+ * Author:   David Register
  *
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register                               *
@@ -19,31 +21,55 @@
  *   along with this program; if not, write to the                         *
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,  USA.         *
- ***************************************************************************
- */
+ **************************************************************************/
 
-#ifndef __AIS_BITSTRING_H__
-#define __AIS_BITSTRING_H__
+#include "OCPN_Base.h"
 
-#define AIS_MAX_MESSAGE_LEN (10 * 82)           // AIS Spec allows up to 9 sentences per message, 82 bytes each
+extern bool g_bportable;
 
-class AIS_Bitstring
+OCPN_Base::OCPN_Base(wxStandardPaths &standard_paths)
 {
-public:
+    //      Establish a "home" location
+    std_path = standard_paths;
+    pHome_Locn = new wxString();
+}
 
-    AIS_Bitstring(const char *str);
-    unsigned char to_6bit(const char c);
+OCPN_Base::~OCPN_Base()
+{
+    delete pHome_Locn;
+}
 
-    /// sp is starting bit, 1-based
-    int GetInt(int sp, int len, bool signed_flag = false);
-    int GetStr(int sp, int bit_len, char *dest, int max_len);
-    int GetBitCount();
+wxString *OCPN_Base::newPrivateFileName(wxStandardPaths &std_path, wxString *home_locn, const char *name, const char *windowsName)
+{
+    wxString fname = wxString::FromUTF8(name);
+    wxString fwname = wxString::FromUTF8(windowsName);
+    wxString *filePathAndName;
 
+#ifdef __WXMSW__
+    filePathAndName = new wxString( fwname );
+    filePathAndName->Prepend( *pHome_Locn );
 
-private:
-
-    unsigned char bitbytes[AIS_MAX_MESSAGE_LEN];
-    int byte_length;
-};
-
+#else
+    filePathAndName = new wxString(_T(""));
+    filePathAndName->Append(std_path.GetUserDataDir());
+    appendOSDirSlash(filePathAndName);
+    filePathAndName->Append( fname );
 #endif
+
+    if( g_bportable ) {
+        filePathAndName->Clear();
+#ifdef __WXMSW__
+        filePathAndName->Append( fwname );
+#else
+        filePathAndName->Append( fname );
+#endif
+        filePathAndName->Prepend( *home_locn );
+    }
+    return filePathAndName;
+}
+
+void OCPN_Base::appendOSDirSlash( wxString* pString )
+{
+    wxChar sep = wxFileName::GetPathSeparator();
+    if( pString->Last() != sep ) pString->Append( sep );
+}

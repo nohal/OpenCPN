@@ -1,6 +1,8 @@
 /***************************************************************************
  *
  * Project:  OpenCPN
+ * Purpose:  Timed pop-up window
+ * Author:   David Register
  *
  ***************************************************************************
  *   Copyright (C) 2010 by David S. Register                               *
@@ -19,31 +21,36 @@
  *   along with this program; if not, write to the                         *
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,  USA.         *
- ***************************************************************************
- */
+ **************************************************************************/
 
-#ifndef __AIS_BITSTRING_H__
-#define __AIS_BITSTRING_H__
 
-#define AIS_MAX_MESSAGE_LEN (10 * 82)           // AIS Spec allows up to 9 sentences per message, 82 bytes each
+#include "timers.h"
 
-class AIS_Bitstring
+//----------------------------------------------------------------------------
+// Generic Auto Timed Window
+// Belongs to the creator, not deleted automatically on application close
+//----------------------------------------------------------------------------
+
+class TimedPopupWin: public wxWindow
 {
 public:
-
-    AIS_Bitstring(const char *str);
-    unsigned char to_6bit(const char c);
-
-    /// sp is starting bit, 1-based
-    int GetInt(int sp, int len, bool signed_flag = false);
-    int GetStr(int sp, int bit_len, char *dest, int max_len);
-    int GetBitCount();
-
-
+    TimedPopupWin( wxWindow *parent, int timeout = -1 );
+    ~TimedPopupWin();
+    
+    void OnPaint( wxPaintEvent& event );
+    
+    void SetBitmap( wxBitmap &bmp );
+    wxBitmap* GetBitmap() { return m_pbm; }
+    void OnTimer( wxTimerEvent& event );
+    bool IsActive() { return isActive; }
+    void IsActive( bool state ) { isActive = state; }
+    
 private:
-
-    unsigned char bitbytes[AIS_MAX_MESSAGE_LEN];
-    int byte_length;
+    wxBitmap *m_pbm;
+    wxTimer m_timer_timeout;
+    int m_timeout_sec;
+    bool isActive;
+    
+    DECLARE_EVENT_TABLE()
 };
 
-#endif

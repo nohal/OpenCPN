@@ -36,7 +36,7 @@ class AIS_Target_Data
 {
 public:
 
-    AIS_Target_Data();
+    AIS_Target_Data(bool show_track);
     ~AIS_Target_Data();
 
     wxString BuildQueryResult(void);

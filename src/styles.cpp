@@ -35,8 +35,9 @@
 
 #include "styles.h"
 #include "chart1.h"
+#include "OCPN_Base.h"
 
-extern wxString *pHome_Locn;
+extern OCPN_Base *g_pBASE;
 extern wxString g_SData_Locn;
 
 using namespace ocpnStyle;
@@ -560,8 +561,8 @@ StyleManager::StyleManager(void)
     isOK = false;
     currentStyle = NULL;
     Init( g_SData_Locn + _T("uidata") + wxFileName::GetPathSeparator() );
-    Init( *pHome_Locn );
-    Init( *pHome_Locn + _T(".opencpn") + wxFileName::GetPathSeparator() );
+    Init( *g_pBASE->GetHomeLocation() );
+    Init( *g_pBASE->GetHomeLocation() + _T(".opencpn") + wxFileName::GetPathSeparator() );
     SetStyle( _T("") );
 }
 

@@ -31,6 +31,7 @@
 #include <wx/confbase.h>
 #include <wx/fileconf.h>
 #include <wx/sound.h>
+#include <deque>
 
 #ifdef __WXMSW__
 #include <wx/msw/regconf.h>
@@ -90,6 +91,7 @@ class wxProgressDialog;
 class ocpnDC;
 class NavObjectCollection1;
 class NavObjectChanges;
+class ChartGroupArray;
 
 //----------------------------------------------------------------------------
 //    Track

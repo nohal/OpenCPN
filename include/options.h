@@ -507,7 +507,7 @@ public:
     wxCheckBox                *m_pCheck_Rollover_Class;
     wxCheckBox                *m_pCheck_Rollover_COG;
     wxCheckBox                *m_pCheck_Rollover_CPA;
-    wxCheckBox                *m_pCheck_Ack_Timout;
+    wxCheckBox                *m_pCheck_Ack_Timeout;
     wxTextCtrl                *m_pText_ACK_Timeout;
     wxCheckBox                *m_pCheck_Show_Area_Notices;
     wxCheckBox                *m_pCheck_Draw_Target_Size;

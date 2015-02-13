@@ -34,22 +34,24 @@
   #include "wx/wx.h"
 #endif //precompiled headers
 
-#include <wx/datetime.h>
-#include <wx/listctrl.h>
-#include <wx/spinctrl.h>
-#include <wx/aui/aui.h>
-#include <wx/wxhtml.h>
+//#include <wx/datetime.h>
+//#include <wx/listctrl.h>
+//#include <wx/spinctrl.h>
+//#include <wx/aui/aui.h>
+//#include <wx/wxhtml.h>
 
 #include <vector>
 
-#include "wx/sound.h"
+//#include "wx/sound.h"
 
-#include "dychart.h"
-#include "chart1.h"
-#include "navutil.h"
-#include "OCPN_Sound.h"
+//#include "dychart.h"
+//#include "chart1.h"
+//#include "navutil.h"
+#include "ocpn_types.h"
 #include "AIS_Bitstring.h"
 #include "AISTargetListDialog.h"
+class ViewPort;
+class ocpnDC; //#include "ocpndc.h"
 
 //    Constants
 #ifndef PI

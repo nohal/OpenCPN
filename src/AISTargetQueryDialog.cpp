@@ -38,8 +38,6 @@
 #include "routemanagerdialog.h"
 
 extern AISTargetQueryDialog *g_pais_query_dialog_active;
-extern int g_ais_query_dialog_x;
-extern int g_ais_query_dialog_y;
 extern ColorScheme global_color_scheme;
 extern AIS_Decoder *g_pAIS;
 extern wxString g_default_wp_icon;
@@ -311,10 +309,8 @@ void AISTargetQueryDialog::UpdateText()
 
 void AISTargetQueryDialog::OnMove( wxMoveEvent& event )
 {
-    //    Record the dialog position
-    wxPoint p = event.GetPosition();
-    g_ais_query_dialog_x = p.x;
-    g_ais_query_dialog_y = p.y;
+    //Record the dialog position
+    g_pAIS->set_QueryDlgPosition( event.GetPosition() );
     event.Skip();
 }
 

@@ -455,7 +455,7 @@ static void transrot_pts( int n, wxPoint *pt, float sin_theta, float cos_theta, 
 
 void AISDrawAreaNotices( ocpnDC& dc )
 {
-    if( !g_pAIS || !g_bShowAIS || !g_bShowAreaNotices ) return;
+    if( !g_pAIS || !g_pAIS->ShowAIS() || !g_pAIS->ShowAreaNotices() ) return;
 
     wxDateTime now = wxDateTime::Now();
     now.MakeGMT();
@@ -819,7 +819,7 @@ static void AISDrawTarget( AIS_Target_Data *td, ocpnDC& dc )
 
     //      Skip anchored/moored (interpreted as low speed) targets if requested
     //      unless the target is NUC or AtoN, in which case it is always displayed.
-    if( ( !g_bShowMoored ) && ( td->SOG <= g_ShowMoored_Kts )
+    if( ( !g_pAIS->ShowMoored() ) && ( td->SOG <= g_pAIS->ShowMoored_Kts() )
             && ( td->NavStatus != NOT_UNDER_COMMAND )
             && ( ( td->Class == AIS_CLASS_A ) || ( td->Class == AIS_CLASS_B ) ) ) return;
 
@@ -856,7 +856,7 @@ static void AISDrawTarget( AIS_Target_Data *td, ocpnDC& dc )
 
     double pred_lat, pred_lon;
 
-    ll_gc_ll( td->Lat, td->Lon, td->COG, target_sog * g_ShowCOG_Mins / 60., &pred_lat, &pred_lon );
+    ll_gc_ll( td->Lat, td->Lon, td->COG, target_sog * g_pAIS->ShowCOG_Mins() / 60., &pred_lat, &pred_lon );
 
     //    Is predicted point in the VPoint?
     if( cc1->GetVP().GetBBox().PointInBox( pred_lon, pred_lat, 0 ) ) drawit++;                     // yep
@@ -888,7 +888,7 @@ static void AISDrawTarget( AIS_Target_Data *td, ocpnDC& dc )
             cc1->GetCanvasPointPix( angle_lat, angle_lon, &AnglePoint );
 
             if( abs( AnglePoint.x - TargetPoint.x ) > 0 ) {
-                if( target_sog > g_ShowMoored_Kts )
+                if( target_sog > g_pAIS->ShowMoored_Kts() )
                     theta = atan2f(
                         (double) ( AnglePoint.y - TargetPoint.y ),
                         (double) ( AnglePoint.x - TargetPoint.x ) );
@@ -912,7 +912,7 @@ static void AISDrawTarget( AIS_Target_Data *td, ocpnDC& dc )
         //  Draw the icon rotated to the COG
         wxPoint ais_real_size[6];
         bool bcan_draw_size = true;
-        if (g_bDrawAISSize)
+        if ( g_pAIS->ShowRealSize() )
         {
             if (td->DimA + td->DimB == 0 || td->DimC + td->DimD == 0)
             {
@@ -1107,7 +1107,7 @@ static void AISDrawTarget( AIS_Target_Data *td, ocpnDC& dc )
         }
 
         //       Render the COG line if the speed is greater than moored speed defined by ais options dialog
-        if( ( g_bShowCOG ) && ( target_sog > g_ShowMoored_Kts ) ) {
+        if( ( g_pAIS->ShowCOG() ) && ( target_sog > g_pAIS->ShowMoored_Kts() ) ) {
             int pixx = TargetPoint.x;
             int pixy = TargetPoint.y;
             int pixx1 = PredPoint.x;
@@ -1271,7 +1271,7 @@ static void AISDrawTarget( AIS_Target_Data *td, ocpnDC& dc )
 
             dc.StrokePolygon( 4, ais_quad_icon, TargetPoint.x, TargetPoint.y );
 
-            if (g_bDrawAISSize && bcan_draw_size)
+            if( g_pAIS->ShowRealSize() && bcan_draw_size )
             {
                 dc.SetBrush( wxBrush( GetGlobalColor( _T ( "UBLCK" ) ), wxTRANSPARENT ) );
                 dc.StrokePolygon( 6, ais_real_size, TargetPoint.x, TargetPoint.y );
@@ -1379,9 +1379,9 @@ static void AISDrawTarget( AIS_Target_Data *td, ocpnDC& dc )
             }
         }
 
-        if (g_bShowAISName) {
+        if( g_pAIS->ShowTargetName() ) {
             double true_scale_display = floor( cc1->GetVP().chart_scale / 100. ) * 100.;
-            if( true_scale_display < g_Show_Target_Name_Scale ) { // from which scale to display name
+            if( true_scale_display < g_pAIS->ShowNameScale() ) { // from which scale to display name
 
                 wxString tgt_name = td->GetFullName();
                 tgt_name = tgt_name.substr( 0, tgt_name.find( _T ( "Unknown" ), 0) );
@@ -1452,12 +1452,8 @@ static void AISDrawTarget( AIS_Target_Data *td, ocpnDC& dc )
 
 void AISDraw( ocpnDC& dc )
 {
-    if( !g_pAIS ) return;
-
-// Toggling AIS display on and off
-
-    if( !g_bShowAIS )
-        return;//
+    if( !g_pAIS || !g_pAIS->ShowAIS())
+        return;
 
     //      Iterate over the AIS Target Hashmap
     AIS_Target_Hash::iterator it;
@@ -1468,14 +1464,14 @@ void AISDraw( ocpnDC& dc )
     //    This way, fast targets are not obscured by slow/stationary targets
     for( it = ( *current_targets ).begin(); it != ( *current_targets ).end(); ++it ) {
         AIS_Target_Data *td = it->second;
-        if( ( td->SOG < g_ShowMoored_Kts )
+        if( ( td->SOG < g_pAIS->ShowMoored_Kts() )
                 && !( ( td->Class == AIS_GPSG_BUDDY ) || ( td->Class == AIS_DSC ) ) ) AISDrawTarget(
                         td, dc );
     }
 
     for( it = ( *current_targets ).begin(); it != ( *current_targets ).end(); ++it ) {
         AIS_Target_Data *td = it->second;
-        if( ( td->SOG >= g_ShowMoored_Kts )
+        if( ( td->SOG >= !g_pAIS->ShowAIS() )
                 && !( ( td->Class == AIS_GPSG_BUDDY ) || ( td->Class == AIS_DSC ) ) ) AISDrawTarget(
                         td, dc );
     }
@@ -1488,11 +1484,8 @@ void AISDraw( ocpnDC& dc )
 
 bool AnyAISTargetsOnscreen( ViewPort &vp )
 {
-    if( !g_pAIS )
+    if( !g_pAIS || !g_pAIS->ShowAIS() )
         return false;
-    
-    if( !g_bShowAIS )
-        return false;//
         
     //      Iterate over the AIS Target Hashmap
     AIS_Target_Hash::iterator it;

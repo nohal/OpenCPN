@@ -41,6 +41,12 @@
 #include "viewport.h"
 #include "nmea0183.h"
 
+class ChartDirInfo;
+
+WX_DECLARE_OBJARRAY(ChartDirInfo, ArrayOfCDI);
+WX_DECLARE_OBJARRAY(wxRect, ArrayOfRect);
+
+#include "AIS_Target_Data.h"
 
 #ifdef USE_S57
 #include "cpl_error.h"
@@ -215,7 +221,6 @@ class wxSocketEvent;
 class ocpnToolBarSimple;
 class OCPN_DataStreamEvent;
 class DataStream;
-class AIS_Target_Data;
 
 //      A class to contain NMEA messages, their receipt time, and their source priority
 class NMEA_Msg_Container
@@ -251,13 +256,6 @@ private:
     std::string m_string;
 };
 
-
-
-
-WX_DECLARE_OBJARRAY(ChartDirInfo, ArrayOfCDI);
-WX_DECLARE_OBJARRAY(wxRect, ArrayOfRect);
-
-
 class MyApp: public wxApp
 {
   public:
@@ -281,7 +279,7 @@ class MyApp: public wxApp
     void TrackOff(void);
     
     wxSingleInstanceChecker *m_checker;
-
+    
     DECLARE_EVENT_TABLE()
 
 };
@@ -587,33 +585,6 @@ extern int OCPNMessageBox(wxWindow *parent,
                           int style = wxOK,  int timout_sec = -1, int x = -1, int y = -1);
 
 
-//----------------------------------------------------------------------------
-// Generic Auto Timed Window
-// Belongs to the creator, not deleted automatically on application close
-//----------------------------------------------------------------------------
-
-class TimedPopupWin: public wxWindow
-{
-public:
-    TimedPopupWin( wxWindow *parent, int timeout = -1 );
-    ~TimedPopupWin();
-    
-    void OnPaint( wxPaintEvent& event );
-    
-    void SetBitmap( wxBitmap &bmp );
-    wxBitmap* GetBitmap() { return m_pbm; }
-    void OnTimer( wxTimerEvent& event );
-    bool IsActive() { return isActive; }
-    void IsActive( bool state ) { isActive = state; }
-    
-private:
-    wxBitmap *m_pbm;
-    wxTimer m_timer_timeout;
-    int m_timeout_sec;
-    bool isActive;
-    
-    DECLARE_EVENT_TABLE()
-};
 
 
 #endif

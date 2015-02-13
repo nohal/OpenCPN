@@ -45,7 +45,6 @@
 #include "wx/print.h"
 #include "wx/printdlg.h"
 #include "wx/artprov.h"
-#include "wx/stdpaths.h"
 #include <wx/intl.h>
 #include <wx/listctrl.h>
 #include <wx/aui/aui.h>
@@ -106,13 +105,13 @@
 #include "routemanagerdialog.h"
 #include "pluginmanager.h"
 #include "AIS_Target_Data.h"
+#include "OCPN_Base.h"
 
 #ifdef ocpnUSE_GL
 #include "glChartCanvas.h"
 #endif
 
 #include <wx/image.h>
-#include "wx/apptrait.h"
 
 #ifdef __WXOSX__
 #include "macutils.h"
@@ -223,8 +222,6 @@ bool                      b_novicemode = false;
 wxString                  g_PrivateDataDir;
 wxString                  g_SData_Locn;
 wxString                  *pChartListFileName;
-wxString                  *pAISTargetNameFileName;
-wxString                  *pHome_Locn;
 wxString                  *pWorldMapLocation;
 wxString                  *pInit_Chart_Dir;
 wxString                  g_csv_locn;
@@ -383,17 +380,14 @@ double                    g_ownship_HDTpredictor_miles;
 
 int                       g_current_arrow_scale;
 
+OCPN_Base                 *g_pBASE;
+
 Multiplexer               *g_pMUX;
 
 AIS_Decoder               *g_pAIS;
-bool                      g_bAIS_CPA_Alert;
-bool                      g_bAIS_CPA_Alert_Audio;
+
 AISTargetAlertDialog      *g_pais_alert_dialog_active;
 AISTargetQueryDialog      *g_pais_query_dialog_active;
-
-int                       g_ais_alert_dialog_x, g_ais_alert_dialog_y;
-int                       g_ais_alert_dialog_sx, g_ais_alert_dialog_sy;
-int                       g_ais_query_dialog_x, g_ais_query_dialog_y;
 
 int                       g_S57_dialog_sx, g_S57_dialog_sy;
 
@@ -446,10 +440,6 @@ bool                      g_b_legacy_input_filter_behaviour;  // Support origina
 bool                      g_bbigred;
 
 PlugInManager             *g_pi_manager;
-
-bool                      g_bAISRolloverShowClass;
-bool                      g_bAISRolloverShowCOG;
-bool                      g_bAISRolloverShowCPA;
 
 bool                      g_bDebugGPSD;
 
@@ -510,34 +500,6 @@ DWORD                     color_windowframe;
 DWORD                     color_inactiveborder;
 
 #endif
-
-// AIS Global configuration
-bool                      g_bShowAIS;
-bool                      g_bCPAMax;
-double                    g_CPAMax_NM;
-bool                      g_bCPAWarn;
-double                    g_CPAWarn_NM;
-bool                      g_bTCPA_Max;
-double                    g_TCPA_Max;
-bool                      g_bMarkLost;
-double                    g_MarkLost_Mins;
-bool                      g_bRemoveLost;
-double                    g_RemoveLost_Mins;
-bool                      g_bShowCOG;
-double                    g_ShowCOG_Mins;
-bool                      g_bAISShowTracks;
-double                    g_AISShowTracks_Mins;
-bool                      g_bShowMoored;
-double                    g_ShowMoored_Kts;
-wxString                  g_sAIS_Alert_Sound_File;
-bool                      g_bAIS_CPA_Alert_Suppress_Moored;
-bool                      g_bAIS_ACK_Timeout;
-double                    g_AckTimeout_Mins;
-bool                      g_bShowAreaNotices;
-bool                      g_bDrawAISSize;
-bool                      g_bShowAISName;
-int                       g_Show_Target_Name_Scale;
-bool                      g_bWplIsAprsPosition;
 
 wxToolBarToolBase         *m_pAISTool;
 
@@ -613,13 +575,6 @@ bool                      g_bquiting;
 int                       g_BSBImgDebug;
 
 AISTargetListDialog       *g_pAISTargetList;
-wxString                  g_AisTargetList_perspective;
-int                       g_AisTargetList_range;
-int                       g_AisTargetList_sortColumn;
-bool                      g_bAisTargetList_sortReverse;
-wxString                  g_AisTargetList_column_spec;
-int                       g_AisTargetList_count;
-bool                      g_bAisTargetList_autosort;
 
 bool                      g_bGarminHostUpload;
 
@@ -824,35 +779,6 @@ int CALLBACK CrashCallback(CR_CRASH_CALLBACK_INFO* pInfo)
 }
 
 #endif
-
-wxString *newPrivateFileName(wxStandardPaths &std_path, wxString *home_locn, const char *name, const char *windowsName)
-{
-    wxString fname = wxString::FromUTF8(name);
-    wxString fwname = wxString::FromUTF8(windowsName);
-    wxString *filePathAndName;
-
-#ifdef __WXMSW__
-    filePathAndName = new wxString( fwname );
-    filePathAndName->Prepend( *pHome_Locn );
-
-#else
-    filePathAndName = new wxString(_T(""));
-    filePathAndName->Append(std_path.GetUserDataDir());
-    appendOSDirSlash(filePathAndName);
-    filePathAndName->Append( fname );
-#endif
-
-    if( g_bportable ) {
-        filePathAndName->Clear();
-#ifdef __WXMSW__
-        filePathAndName->Append( fwname );
-#else
-        filePathAndName->Append( fname );
-#endif
-        filePathAndName->Prepend( *home_locn );
-    }
-    return filePathAndName;
-}
 
 #ifdef __WXMSW__
 bool GetWindowsMonitorSize( int *w, int *h );
@@ -1074,7 +1000,7 @@ void LoadS57()
 
     if( g_bportable ) {
         g_csv_locn = _T(".");
-        appendOSDirSlash( &g_csv_locn );
+        g_pBASE->appendOSDirSlash( &g_csv_locn );
         g_csv_locn.Append( _T("s57data") );
     }
 
@@ -1082,7 +1008,7 @@ void LoadS57()
 //      Otherwise, default to PrivateDataDir
     if( g_SENCPrefix.IsEmpty() ) {
         g_SENCPrefix = g_PrivateDataDir;
-        appendOSDirSlash( &g_SENCPrefix );
+        g_pBASE->appendOSDirSlash( &g_SENCPrefix );
         g_SENCPrefix.Append( _T("SENC") );
     }
 
@@ -1100,7 +1026,7 @@ void LoadS57()
 
     if( g_UserPresLibData.IsEmpty() ) {
         plib_data = g_csv_locn;
-        appendOSDirSlash( &plib_data );
+        g_pBASE->appendOSDirSlash( &plib_data );
         plib_data.Append( _T("S52RAZDS.RLE") );
     } else {
         plib_data = g_UserPresLibData;
@@ -1129,12 +1055,12 @@ void LoadS57()
 
         wxString look_data_dir;
         look_data_dir.Append( std_path.GetUserDataDir() );
-        appendOSDirSlash( &look_data_dir );
+        g_pBASE->appendOSDirSlash( &look_data_dir );
         wxString tentative_SData_Locn = look_data_dir;
         look_data_dir.Append( _T("s57data") );
 
         plib_data = look_data_dir;
-        appendOSDirSlash( &plib_data );
+        g_pBASE->appendOSDirSlash( &plib_data );
         plib_data.Append( _T("S52RAZDS.RLE") );
 
         wxLogMessage( _T("Looking for s57data in ") + look_data_dir );
@@ -1157,7 +1083,7 @@ void LoadS57()
         look_data_dir.Append( _T("s57data") );
 
         plib_data = look_data_dir;
-        appendOSDirSlash( &plib_data );
+        g_pBASE->appendOSDirSlash( &plib_data );
         plib_data.Append( _T("S52RAZDS.RLE") );
 
         wxLogMessage( _T("Looking for s57data in ") + look_data_dir );
@@ -1201,6 +1127,8 @@ bool MyApp::OnInit()
     wxStopWatch sw;
 
     if( !wxApp::OnInit() ) return false;
+    
+    g_pBASE = new OCPN_Base( *dynamic_cast<wxStandardPaths*>(&wxApp::GetTraits()->GetStandardPaths()) );
 
     //  On Windows
     //  We allow only one instance unless the portable option is used
@@ -1466,23 +1394,19 @@ bool MyApp::OnInit()
             wxFONTENCODING_SYSTEM );
     temp_font.SetDefaultEncoding( wxFONTENCODING_SYSTEM );
 
-//      Establish a "home" location
-    wxStandardPaths& std_path = *dynamic_cast<wxStandardPaths*>(&wxApp::GetTraits()->GetStandardPaths());
-
     //TODO  Why is the following preferred?  Will not compile with gcc...
 //    wxStandardPaths& std_path = wxApp::GetTraits()->GetStandardPaths();
 
 #ifdef __unix__
-    std_path.SetInstallPrefix(wxString(PREFIX, wxConvUTF8));
+    g_pBASE->GetStandardPaths().SetInstallPrefix(wxString(PREFIX, wxConvUTF8));
 #endif
 
-    gExe_path = std_path.GetExecutablePath();
+    gExe_path = g_pBASE->GetStandardPaths().GetExecutablePath();
 
-    pHome_Locn = new wxString;
 #ifdef __WXMSW__
-    pHome_Locn->Append( std_path.GetConfigDir() );   // on w98, produces "/windows/Application Data"
+    g_pBASE->GetHomeLocation()->Append( std_path.GetConfigDir() );   // on w98, produces "/windows/Application Data"
 #else
-    pHome_Locn->Append(std_path.GetUserConfigDir());
+    g_pBASE->GetHomeLocation()->Append(g_pBASE->GetStandardPaths().GetUserConfigDir());
 #endif
 
     //  On android, make the private data dir on the sdcard, if it exists.
@@ -1490,25 +1414,25 @@ bool MyApp::OnInit()
     //  This behaviour should go away at Release.
 #ifdef __OCPN__ANDROID__
     if( wxDirExists(_T("/mnt/sdcard")) ){
-        pHome_Locn->Clear();
-        pHome_Locn->Append( _T("/mnt/sdcard/.opencpn") );
+        g_pBASE->GetHomeLocation()->Clear();
+        g_pBASE->GetHomeLocation()->Append( _T("/mnt/sdcard/.opencpn") );
     }
 #endif
 
     if( g_bportable ) {
-        pHome_Locn->Clear();
-        wxFileName f( std_path.GetExecutablePath() );
-        pHome_Locn->Append( f.GetPath() );
+        g_pBASE->GetHomeLocation()->Clear();
+        wxFileName f( g_pBASE->GetStandardPaths().GetExecutablePath() );
+        g_pBASE->GetHomeLocation()->Append( f.GetPath() );
     }
 
-    appendOSDirSlash( pHome_Locn );
+    g_pBASE->appendOSDirSlash( g_pBASE->GetHomeLocation() );
 
     //      Establish Log File location
-    glog_file = *pHome_Locn;
+    glog_file = *g_pBASE->GetHomeLocation();
 
 #ifdef  __WXOSX__
-    pHome_Locn->Append(_T("opencpn"));
-    appendOSDirSlash(pHome_Locn);
+    g_pBASE->GetHomeLocation()->Append(_T("opencpn"));
+    appendOSDirSlash(g_pBASE->GetHomeLocation());
 
     wxFileName LibPref(glog_file);          // starts like "~/Library/Preferences"
     LibPref.RemoveLastDir();// takes off "Preferences"
@@ -1521,7 +1445,7 @@ bool MyApp::OnInit()
 #endif
 
     // create the opencpn "home" directory if we need to
-    wxFileName wxHomeFiledir( *pHome_Locn );
+    wxFileName wxHomeFiledir( *g_pBASE->GetHomeLocation() );
     if( true != wxHomeFiledir.DirExists( wxHomeFiledir.GetPath() ) ) if( !wxHomeFiledir.Mkdir(
             wxHomeFiledir.GetPath() ) ) {
         wxASSERT_MSG(false,_T("Cannot create opencpn home directory"));
@@ -1632,8 +1556,8 @@ bool MyApp::OnInit()
      * Windows: the directory where the executable file is located
      * Mac: appname.app/Contents/SharedSupport bundle subdirectory
      */
-    g_SData_Locn = std_path.GetDataDir();
-    appendOSDirSlash( &g_SData_Locn );
+    g_SData_Locn = g_pBASE->GetStandardPaths().GetDataDir();
+    g_pBASE->appendOSDirSlash( &g_SData_Locn );
 
 #ifdef __OCPN__ANDROID__
     wxFileName fdir = wxFileName::DirName(std_path.GetUserConfigDir());
@@ -1644,7 +1568,7 @@ bool MyApp::OnInit()
 #endif
     
     if( g_bportable )
-        g_SData_Locn = *pHome_Locn;
+        g_SData_Locn = *g_SData_Locn = *g_pBASE->GetHomeLocation();
 
     imsg = _T("SData_Locn is ");
     imsg += g_SData_Locn;
@@ -1676,15 +1600,15 @@ bool MyApp::OnInit()
 
     //      Establish the prefix of the location of user specific data files
 #ifdef __WXMSW__
-    g_PrivateDataDir = *pHome_Locn;                     // should be {Documents and Settings}\......
+    g_PrivateDataDir = *g_pBASE->GetHomeLocation();                     // should be {Documents and Settings}\......
 #elif defined __WXOSX__
-            g_PrivateDataDir = std_path.GetUserConfigDir();     // should be ~/Library/Preferences
+            g_PrivateDataDir = g_pBASE->GetStandardPaths().GetUserConfigDir();     // should be ~/Library/Preferences
 #else
-            g_PrivateDataDir = std_path.GetUserDataDir();       // should be ~/.opencpn
+            g_PrivateDataDir = g_pBASE->GetStandardPaths().GetUserDataDir();       // should be ~/.opencpn
 #endif
 
     if( g_bportable )
-        g_PrivateDataDir = *pHome_Locn;
+        g_PrivateDataDir = *g_PrivateDataDir = *g_pBASE->GetHomeLocation();
 
 #ifdef __OCPN__ANDROID__
     g_PrivateDataDir = *pHome_Locn;
@@ -1694,16 +1618,15 @@ bool MyApp::OnInit()
     imsg += g_PrivateDataDir;
     wxLogMessage( imsg );
 
-
     //  Get the PlugIns directory location
-    g_Plugin_Dir = std_path.GetPluginsDir();   // linux:   {prefix}/lib/opencpn
+    g_Plugin_Dir = g_pBASE->GetStandardPaths().GetPluginsDir();   // linux:   {prefix}/lib/opencpn
                                                // Mac:     appname.app/Contents/PlugIns
 #ifdef __WXMSW__
     g_Plugin_Dir += _T("\\plugins");             // Windows: {exe dir}/plugins
 #endif
 
     if( g_bportable ) {
-        g_Plugin_Dir = *pHome_Locn;
+        g_Plugin_Dir = *g_pBASE->GetHomeLocation();
         g_Plugin_Dir += _T("plugins");
     }
 
@@ -1728,7 +1651,7 @@ bool MyApp::OnInit()
     pSelectAIS->SetSelectPixelRadius( 12 );
 
 //      Initially AIS display is always on
-    g_bShowAIS = true;
+    g_pAIS->set_ShowAIS( true );
     g_pais_query_dialog_active = NULL;
 
 //      Who am I?
@@ -1748,20 +1671,20 @@ bool MyApp::OnInit()
 //      Establish the location of the config file
 #ifdef __WXMSW__
     gConfig_File = _T("opencpn.ini");
-    gConfig_File.Prepend( *pHome_Locn );
+    gConfig_File.Prepend( *g_pBASE->GetHomeLocation() );
 
 #elif defined __WXOSX__
-    gConfig_File = std_path.GetUserConfigDir(); // should be ~/Library/Preferences
+    gConfig_File = g_pBASE->GetStandardPaths().GetUserConfigDir(); // should be ~/Library/Preferences
     appendOSDirSlash(&gConfig_File);
     gConfig_File.Append(_T("opencpn.ini"));
 #else
-    gConfig_File = std_path.GetUserDataDir(); // should be ~/.opencpn
-    appendOSDirSlash(&gConfig_File);
+    gConfig_File = g_pBASE->GetStandardPaths().GetUserDataDir(); // should be ~/.opencpn
+    g_pBASE->appendOSDirSlash(&gConfig_File);
     gConfig_File.Append(_T("opencpn.conf"));
 #endif
 
     if( g_bportable ) {
-        gConfig_File = *pHome_Locn;
+        gConfig_File = *g_pBASE->GetHomeLocation();
 #ifdef __WXMSW__
         gConfig_File += _T("opencpn.ini");
 #elif defined __WXOSX__
@@ -1979,10 +1902,7 @@ bool MyApp::OnInit()
 #endif
 
 //      Establish location and name of chart database
-    pChartListFileName = newPrivateFileName(std_path, pHome_Locn, "chartlist.dat", "CHRTLIST.DAT");
-
-//      Establish location and name of AIS MMSI -> Target Name mapping
-    pAISTargetNameFileName = newPrivateFileName(std_path, pHome_Locn, "mmsitoname.csv", "MMSINAME.CSV");
+    pChartListFileName = g_pBASE->newPrivateFileName( "chartlist.dat", "CHRTLIST.DAT" );
 
 #ifdef __OCPN__ANDROID__
     pChartListFileName->Clear();
@@ -1994,9 +1914,9 @@ bool MyApp::OnInit()
     if( pInit_Chart_Dir->IsEmpty() ) {
         if( !g_bportable )
 #ifndef __OCPN__ANDROID__
-        pInit_Chart_Dir->Append( std_path.GetDocumentsDir() );
+            pInit_Chart_Dir->Append( g_pBASE->GetStandardPaths().GetDocumentsDir() );
 #else
-        pInit_Chart_Dir->Append( _T("/mnt/sdcard") );
+            pInit_Chart_Dir->Append( _T("/mnt/sdcard") );
 #endif
     }
 
@@ -2009,26 +1929,26 @@ bool MyApp::OnInit()
     if( b_novicemode ) {
         g_bShowOutlines = true;
 
-        g_CPAMax_NM = 20.;
-        g_CPAWarn_NM = 2.;
-        g_TCPA_Max = 30.;
-        g_bMarkLost = true;
-        ;
-        g_MarkLost_Mins = 8;
-        g_bRemoveLost = true;
-        g_RemoveLost_Mins = 10;
-        g_bShowCOG = true;
-        g_ShowCOG_Mins = 6;
-        g_bShowMoored = true;
-        g_ShowMoored_Kts = 0.2;
-        g_bTrackDaily = false;
+        g_pAIS->set_CPAMax_NM( 20. );
+        g_pAIS->set_CPAWarn_NM( 2. );
+        g_pAIS->set_TCPAMax_Mins( 30. );
+        g_pAIS->set_MarkLost( true );
+        g_pAIS->set_MarkLost_Mins( 8. );
+        g_pAIS->set_RemoveLost( true );
+        g_pAIS->set_RemoveLost_Mins( 10 );
+        g_pAIS->set_ShowCOG( true);
+        g_pAIS->set_ShowCOG_Mins( 6 );
+        g_pAIS->set_ShowMoored( true );
+        g_pAIS->set_ShowMoored_Kts( 0.2 );
+        g_pAIS->set_ShowAreaNotices( false );
+        g_pAIS->set_ShowRealSize( false );
+        g_pAIS->set_ShowTargetName( false );
+        g_pAIS->set_ShowNameScale( 100000 );
+        g_bTrackDaily = false ;
         g_PlanSpeed = 6.;
         g_bFullScreenQuilt = true;
         g_bQuiltEnable = true;
         g_bskew_comp = false;
-        g_bShowAreaNotices = false;
-        g_bDrawAISSize = false;
-        g_bShowAISName = false;
     }
 
     //  Check the global Tide/Current data source array
@@ -2057,7 +1977,7 @@ bool MyApp::OnInit()
 
     //  Check the global AIS alarm sound file
     //  If empty, preset default
-    if(g_sAIS_Alert_Sound_File.IsEmpty()) {
+    if( g_pAIS->AlertSoundFile().IsEmpty() ) {
         wxString default_sound =  ( g_SData_Locn + _T("sounds") +
         wxFileName::GetPathSeparator() +
         _T("2bells.wav"));
@@ -2065,10 +1985,10 @@ bool MyApp::OnInit()
         if( g_bportable ) {
             wxFileName f( default_sound );
             f.MakeRelativeTo( g_PrivateDataDir );
-            g_sAIS_Alert_Sound_File = f.GetFullPath();
+            g_pAIS->set_AlertSoundFile( f.GetFullPath() );
         }
         else
-            g_sAIS_Alert_Sound_File = default_sound ;
+            g_pAIS->set_AlertSoundFile( default_sound );
     }
 
 
@@ -2150,7 +2070,7 @@ bool MyApp::OnInit()
 
     if( g_bportable ) {
         myframe_window_title += _(" -- [Portable(-p) executing from ");
-        myframe_window_title += *pHome_Locn;
+        myframe_window_title += *g_pBASE->GetHomeLocation();
         myframe_window_title += _T("]");
     }
 
@@ -2483,7 +2403,7 @@ extern ocpnGLOptions g_GLOptions;
 
     // Import Layer-wise any .gpx files from /Layers directory
     wxString layerdir = g_PrivateDataDir;
-    appendOSDirSlash( &layerdir );
+    g_pBASE->appendOSDirSlash( &layerdir );
     layerdir.Append( _T("layers") );
 
 #if 0
@@ -2651,12 +2571,9 @@ int MyApp::OnExit()
     }
 
     delete pChartListFileName;
-    delete pHome_Locn;
     delete phost_name;
     delete pInit_Chart_Dir;
     delete pWorldMapLocation;
-
-    delete pAISTargetNameFileName;
     
     delete g_pRouteMan;
     delete pWayPointMan;
@@ -3012,7 +2929,7 @@ void MyFrame::SetAndApplyColorScheme( ColorScheme cs )
 
         g_pais_query_dialog_active = new AISTargetQueryDialog();
         g_pais_query_dialog_active->Create( this, -1, _( "AIS Target Query" ),
-                wxPoint( g_ais_query_dialog_x, g_ais_query_dialog_y ) );
+                g_pAIS->AlertDlgPosition() );
         g_pais_query_dialog_active->SetMMSI( n_mmsi );
         g_pais_query_dialog_active->UpdateText();
         if( b_isshown ) g_pais_query_dialog_active->Show();
@@ -3233,7 +3150,7 @@ ocpnToolBarSimple *MyFrame::CreateAToolbar()
 #endif
 
     wxString initiconName;
-    if( g_bShowAIS ) {
+    if( g_pAIS->ShowAIS() ) {
         tb->SetToolShortHelp( ID_AIS, _("Hide AIS Targets") );
         initiconName = _T("AIS");
     }
@@ -3495,7 +3412,7 @@ void MyFrame::OnCloseWindow( wxCloseEvent& event )
     // Pane is not closed so the child is not notified (OnPaneClose)
     if( g_pAISTargetList ) {
         wxAuiPaneInfo &pane = g_pauimgr->GetPane( g_pAISTargetList );
-        g_AisTargetList_perspective = g_pauimgr->SavePaneInfo( pane );
+        g_pAIS->set_TargetListAUIPerspective( g_pauimgr->SavePaneInfo( pane ) );
         g_pauimgr->DetachPane( g_pAISTargetList );
     }
 
@@ -4120,11 +4037,11 @@ void MyFrame::OnToolLeftClick( wxCommandEvent& event )
 
         case ID_MENU_AIS_TARGETS:
         case ID_AIS: {
-            g_bShowAIS = !g_bShowAIS;
+            g_pAIS->set_ShowAIS( !g_pAIS->ShowAIS() );
 
             if( g_toolbar ) {
                 wxString iconName;
-                if( g_bShowAIS ) {
+                if( g_pAIS->ShowAIS() ) {
                     g_toolbar->SetToolShortHelp( ID_AIS, _("Hide AIS Targets") );
                     iconName = _T("AIS");
                 } else {
@@ -4139,7 +4056,7 @@ void MyFrame::OnToolLeftClick( wxCommandEvent& event )
                 }
             }
 
-            SetMenubarItemState(ID_MENU_AIS_TARGETS, g_bShowAIS);
+            SetMenubarItemState( ID_MENU_AIS_TARGETS, g_pAIS->ShowAIS() );
 
             cc1->ReloadVP();
 
@@ -4152,20 +4069,20 @@ void MyFrame::OnToolLeftClick( wxCommandEvent& event )
         }
 
         case ID_MENU_AIS_TRACKS: {
-            g_bAISShowTracks = !g_bAISShowTracks;
-            SetMenubarItemState(ID_MENU_AIS_TRACKS, g_bAISShowTracks);
+            g_pAIS->set_ShowTracks( !g_pAIS->ShowTracks() );
+            SetMenubarItemState( ID_MENU_AIS_TRACKS, g_pAIS->ShowTracks() );
             break;
         }
 
         case ID_MENU_AIS_CPADIALOG: {
-            g_bAIS_CPA_Alert = !g_bAIS_CPA_Alert;
-            SetMenubarItemState(ID_MENU_AIS_CPADIALOG, g_bAIS_CPA_Alert);
+            g_pAIS->set_CPAAlert( !g_pAIS->CPAAlert() );
+            SetMenubarItemState( ID_MENU_AIS_CPADIALOG, g_pAIS->CPAAlert() );
             break;
         }
 
         case ID_MENU_AIS_CPASOUND: {
-            g_bAIS_CPA_Alert_Audio = !g_bAIS_CPA_Alert_Audio;
-            SetMenubarItemState(ID_MENU_AIS_CPASOUND, g_bAIS_CPA_Alert_Audio);
+            g_pAIS->set_CPAAlertAudio( !g_pAIS->CPAAlertAudio() );
+            SetMenubarItemState( ID_MENU_AIS_CPADIALOG, g_pAIS->CPAAlertAudio() );
             break;
         }
 
@@ -5042,10 +4959,10 @@ void MyFrame::UpdateGlobalMenuItems()
     m_pMenuBar->FindItem( ID_MENU_CHART_OUTLINES )->Check( g_bShowOutlines );
     m_pMenuBar->FindItem( ID_MENU_CHART_QUILTING )->Check( g_bQuiltEnable );
     m_pMenuBar->FindItem( ID_MENU_UI_CHARTBAR )->Check( g_bShowChartBar );
-    m_pMenuBar->FindItem( ID_MENU_AIS_TARGETS )->Check( g_bShowAIS );
-    m_pMenuBar->FindItem( ID_MENU_AIS_TRACKS )->Check( g_bAISShowTracks );
-    m_pMenuBar->FindItem( ID_MENU_AIS_CPADIALOG )->Check( g_bAIS_CPA_Alert );
-    m_pMenuBar->FindItem( ID_MENU_AIS_CPASOUND )->Check( g_bAIS_CPA_Alert_Audio );
+    m_pMenuBar->FindItem( ID_MENU_AIS_TARGETS )->Check( g_pAIS->ShowAIS() );
+    m_pMenuBar->FindItem( ID_MENU_AIS_TRACKS )->Check( g_pAIS->ShowTracks() );
+    m_pMenuBar->FindItem( ID_MENU_AIS_CPADIALOG )->Check( g_pAIS->CPAAlert() );
+    m_pMenuBar->FindItem( ID_MENU_AIS_CPASOUND )->Check( g_pAIS->CPAAlertAudio() );
 #ifdef USE_S57
     if( ps52plib ) {
         m_pMenuBar->FindItem( ID_MENU_ENC_TEXT )->Check( ps52plib->GetShowS57Text() );
@@ -6026,7 +5943,7 @@ void MyFrame::OnBellsTimer(wxTimerEvent& event)
     if( !bells_sound[bells - 1].IsOk() )            // load the bells sound
     {
         wxString soundfile = _T("sounds");
-        appendOSDirSlash( &soundfile );
+        g_pBASE->appendOSDirSlash( &soundfile );
         soundfile += wxString( bells_sound_file_name[bells - 1], wxConvUTF8 );
         soundfile.Prepend( g_SData_Locn );
         bells_sound[bells - 1].Create( soundfile );
@@ -6505,7 +6422,7 @@ void MyFrame::TouchAISActive( void )
             wxString iconName = _T("AIS_Normal_Active");
             if( g_pAIS->IsAISAlertGeneral() ) iconName = _T("AIS_AlertGeneral_Active");
             if( g_pAIS->IsAISSuppressed() ) iconName = _T("AIS_Suppressed_Active");
-            if( !g_bShowAIS ) iconName = _T("AIS_Disabled");
+            if( !g_pAIS->ShowAIS() ) iconName = _T("AIS_Disabled");
 
             if( m_lastAISiconName != iconName ) {
                 if( g_toolbar) {
@@ -6535,7 +6452,7 @@ void MyFrame::UpdateAISTool( void )
             iconName = _T("AIS_Suppressed");
         if( g_pAIS->IsAISAlertGeneral() )
             iconName = _T("AIS_AlertGeneral");
-        if( !g_bShowAIS )
+        if( !g_pAIS->ShowAIS() )
             iconName = _T("AIS_Disabled");
 
         //  Manage timeout for AIS activity indicator
@@ -6549,7 +6466,7 @@ void MyFrame::UpdateAISTool( void )
                     iconName = _T("AIS_Suppressed_Active");
                 if( g_pAIS->IsAISAlertGeneral() )
                     iconName = _T("AIS_AlertGeneral_Active");
-                if( !g_bShowAIS )
+                if( !g_pAIS->ShowAIS() )
                     iconName = _T("AIS_Disabled");
             }
         }
@@ -10034,12 +9951,6 @@ You may do so by executing the following command from the linux command line:\n\
     return bret;
 }
 
-void appendOSDirSlash( wxString* pString )
-{
-    wxChar sep = wxFileName::GetPathSeparator();
-    if( pString->Last() != sep ) pString->Append( sep );
-}
-
 /*************************************************************************
  * Global color management routines
  *
@@ -10717,59 +10628,6 @@ double AnchorDistFix( double const d, double const AnchorPointMinDist,
             else
                 return d;
 }
-
-//      Auto timed popup Window implementation
-
-BEGIN_EVENT_TABLE(TimedPopupWin, wxWindow) EVT_PAINT(TimedPopupWin::OnPaint)
-EVT_TIMER(POPUP_TIMER, TimedPopupWin::OnTimer)
-
-END_EVENT_TABLE()
-
-// Define a constructor
-TimedPopupWin::TimedPopupWin( wxWindow *parent, int timeout ) :
-wxWindow( parent, wxID_ANY, wxPoint( 0, 0 ), wxSize( 1, 1 ), wxNO_BORDER )
-{
-    m_pbm = NULL;
-
-    m_timer_timeout.SetOwner( this, POPUP_TIMER );
-    m_timeout_sec = timeout;
-    isActive = false;
-    Hide();
-}
-
-TimedPopupWin::~TimedPopupWin()
-{
-    delete m_pbm;
-}
-void TimedPopupWin::OnTimer( wxTimerEvent& event )
-{
-    if( IsShown() )
-        Hide();
-}
-
-
-void TimedPopupWin::SetBitmap( wxBitmap &bmp )
-{
-    delete m_pbm;
-    m_pbm = new wxBitmap( bmp );
-
-    // Retrigger the auto timeout
-    if( m_timeout_sec > 0 )
-        m_timer_timeout.Start( m_timeout_sec * 1000, wxTIMER_ONE_SHOT );
-}
-
-void TimedPopupWin::OnPaint( wxPaintEvent& event )
-{
-    int width, height;
-    GetClientSize( &width, &height );
-    wxPaintDC dc( this );
-
-    wxMemoryDC mdc;
-    mdc.SelectObject( *m_pbm );
-    dc.Blit( 0, 0, width, height, &mdc, 0, 0 );
-
-}
-
 
 //      Console supporting printf functionality for Windows GUI app
 
