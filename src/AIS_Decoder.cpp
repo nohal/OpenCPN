@@ -74,8 +74,9 @@ static double arpa_ref_hdg = NAN;
 
 extern  const wxEventType wxEVT_OCPN_DATASTREAM;
 
-AIS_Decoder::AIS_Decoder( wxFrame *parent )
+AIS_Decoder::AIS_Decoder()
 {
+    m_parent_frame = NULL;
     //Establish location and name of AIS MMSI -> Target Name mapping
     pAISTargetNameFileName = g_pBASE->newPrivateFileName( "mmsitoname.csv", "MMSINAME.CSV" );
 
@@ -105,8 +106,6 @@ AIS_Decoder::AIS_Decoder( wxFrame *parent )
     m_bAIS_Audio_Alert_On = false;
 
     m_n_targets = 0;
-
-    m_parent_frame = parent;
 
     TimerAIS.SetOwner(this, TIMER_AIS1);
     TimerAIS.Start(TIMER_AIS_MSEC,wxTIMER_CONTINUOUS);

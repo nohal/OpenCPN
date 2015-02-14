@@ -62,7 +62,7 @@ class AIS_Decoder : public wxEvtHandler
 {
 
 public:
-    AIS_Decoder(wxFrame *parent);
+    AIS_Decoder();
 
     ~AIS_Decoder(void);
 
@@ -77,6 +77,7 @@ public:
     AIS_Error DecodeSingleVDO( const wxString& str, GenericPosDatEx *pos, wxString *acc );
     void DeletePersistentTrack( Track *track );
     std::map<int, Track*> m_persistent_tracks;
+    void SetParentFrame( wxFrame *parent ) { m_parent_frame = parent; }
     
 private:
     void OnActivate(wxActivateEvent& event);

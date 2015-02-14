@@ -1650,7 +1650,8 @@ bool MyApp::OnInit()
     pSelectAIS = new Select();
     pSelectAIS->SetSelectPixelRadius( 12 );
 
-//      Initially AIS display is always on
+    g_pAIS = new AIS_Decoder();
+    //      Initially AIS display is always on
     g_pAIS->set_ShowAIS( true );
     g_pais_query_dialog_active = NULL;
 
@@ -2075,7 +2076,8 @@ bool MyApp::OnInit()
     }
 
     gFrame = new MyFrame( NULL, myframe_window_title, position, new_frame_size, app_style ); //Gunther
-
+    
+    g_pAIS->SetParentFrame( gFrame );
 //  Initialize the Plugin Manager
     g_pi_manager = new PlugInManager( gFrame );
 
@@ -2755,11 +2757,10 @@ MyFrame::MyFrame( wxFrame *frame, const wxString& title, const wxPoint& pos, con
 
 //    Establish my children
     g_pMUX = new Multiplexer();
-
-    g_pAIS = new AIS_Decoder( this );
-
+    
     g_pMUX->SetAISHandler(g_pAIS);
     g_pMUX->SetGPSHandler(this);
+    
     //  Create/connect a dynamic event handler slot
     Connect( wxEVT_OCPN_DATASTREAM, (wxObjectEventFunction) (wxEventFunction) &MyFrame::OnEvtOCPN_NMEA );
 
