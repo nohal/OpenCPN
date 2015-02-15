@@ -46,6 +46,7 @@
 //    forward class declarations
 //----------------------------------------------------------------------------
 
+class MyApp;
 class Route;
 class RoutePoint;
 class RoutePointList;

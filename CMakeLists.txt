@@ -668,6 +668,7 @@ SET(HDRS
                 include/OCPN_Printout.h
                 include/OCPN_Dialogs.h
                 include/OCPN_Functions.h
+                include/OCPN_App.h
 )
 
 SET(SRCS
@@ -761,6 +762,7 @@ SET(SRCS
                 src/OCPN_Printout.cpp
                 src/OCPN_Dialogs.cpp
                 src/OCPN_Functions.cpp
+                src/OCPN_App.cpp
     )
 
 IF(NOT WIN32 AND NOT APPLE AND NOT QT_ANDROID)

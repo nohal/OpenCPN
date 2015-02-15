@@ -23,7 +23,10 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,  USA.         *
  **************************************************************************/
 
-#include "wx/tbarbase.h"
+#include <wx/tbarbase.h>
+#include "ocpn_types.h"
+#include "styles.h"
+#include <vector>
 
 //----------------------------------------------------------------------------
 // GrabberWindow Definition

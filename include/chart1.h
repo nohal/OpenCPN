@@ -1,7 +1,7 @@
 /***************************************************************************
  *
  * Project:  OpenCPN
- * Purpose:  OpenCPN Main wxWidgets Program
+ * Purpose:  OpenCPN Main frame
  * Author:   David Register
  *
  ***************************************************************************
@@ -27,8 +27,6 @@
 #define __CHART1_H__
 
 #include "wx/datetime.h"
-#include <wx/cmdline.h>
-#include <wx/snglinst.h>
 #include <wx/power.h>
 #include <wx/clrpicker.h>
 
@@ -86,34 +84,6 @@ static const long TOOLBAR_STYLE = wxTB_FLAT | wxTB_DOCKABLE | wxTB_TEXT ;
 
 #define MAX_COG_AVERAGE_SECONDS        60
 #define MAX_COGSOG_FILTER_SECONDS      60
-
-class MyApp: public wxApp
-{
-  public:
-    bool OnInit();
-    int OnExit();
-    void OnInitCmdLine(wxCmdLineParser& parser);
-    bool OnCmdLineParsed(wxCmdLineParser& parser);
-    void OnActivateApp(wxActivateEvent& event);
-
-#ifdef LINUX_CRASHRPT
-    //! fatal exeption handling
-    void OnFatalException();
-#endif
-
-#ifdef __WXMSW__
-    //  Catch malloc/new fail exceptions
-    //  All the rest will be caught be CrashRpt
-    bool OnExceptionInMainLoop();
-#endif    
-    
-    void TrackOff(void);
-    
-    wxSingleInstanceChecker *m_checker;
-    
-    DECLARE_EVENT_TABLE()
-
-};
 
 class MyFrame: public wxFrame
 {
