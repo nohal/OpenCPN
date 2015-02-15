@@ -42,6 +42,7 @@
 
 class ChartDirInfo;
 
+#define ArrayOfInts wxArrayInt
 WX_DECLARE_OBJARRAY(ChartDirInfo, ArrayOfCDI);
 WX_DECLARE_OBJARRAY(wxRect, ArrayOfRect);
 
