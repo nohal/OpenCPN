@@ -666,6 +666,8 @@ SET(HDRS
                 include/TimedPopupWindow.h
                 include/OCPN_Base.h
                 include/OCPN_Printout.h
+                include/OCPN_Dialogs.h
+                include/OCPN_Functions.h
 )
 
 SET(SRCS
@@ -757,6 +759,8 @@ SET(SRCS
                 src/TimedPopupWindow.cpp
                 src/OCPN_Base.cpp
                 src/OCPN_Printout.cpp
+                src/OCPN_Dialogs.cpp
+                src/OCPN_Functions.cpp
     )
 
 IF(NOT WIN32 AND NOT APPLE AND NOT QT_ANDROID)

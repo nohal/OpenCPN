@@ -37,6 +37,7 @@
 #include "dychart.h"
 #include "tcmgr.h"
 #include "georef.h"
+#include "OCPN_Dialogs.h"
 
 //-----------------------------------------------------------------------------------
 //    TIDELIB

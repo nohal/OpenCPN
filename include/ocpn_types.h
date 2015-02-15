@@ -198,4 +198,41 @@ typedef enum GlobalIdEnum
     ID_NMEA_THREADMSG
 }_GlobalIdEnum;
 
+
+/** \brief A small class used in an array to describe chart directories
+ * On Windows, the installer may leave initial chart directories in the registry.
+ * This class is used while retrieving them.
+ */
+class ChartDirInfo
+{
+public:
+    wxString    fullpath;
+    wxString    magic_number;
+};
+
+
+/** \brief Event for sending messages OpenCPN threads
+ */
+class OCPN_ThreadMessageEvent: public wxEvent
+{
+public:
+    OCPN_ThreadMessageEvent( wxEventType commandType = wxEVT_NULL, int id = 0 ) {}
+    ~OCPN_ThreadMessageEvent( ) {}
+    
+    // accessors
+    void SetSString( std::string string ) { m_string = string; }
+    std::string GetSString() { return m_string; }
+    
+    // required for sending with wxPostEvent()
+    wxEvent *Clone() const
+    {
+        OCPN_ThreadMessageEvent *newevent = new OCPN_ThreadMessageEvent( *this );
+        newevent->m_string = this->m_string;
+        return newevent;
+    }
+    
+private:
+    std::string m_string;
+};
+
 #endif

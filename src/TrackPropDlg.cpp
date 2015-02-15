@@ -30,6 +30,7 @@
 #include "routemanagerdialog.h"
 #include "routeprintout.h"
 #include "pluginmanager.h"
+#include "OCPN_Functions.h"
 
 extern double               gLat, gLon;
 extern RouteList           *pRouteList;

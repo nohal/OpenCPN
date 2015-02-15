@@ -36,6 +36,7 @@
 #include "AIS_Decoder.h"
 #include "Select.h"
 #include "routemanagerdialog.h"
+#include "OCPN_Dialogs.h"
 
 extern AISTargetQueryDialog *g_pais_query_dialog_active;
 extern ColorScheme global_color_scheme;

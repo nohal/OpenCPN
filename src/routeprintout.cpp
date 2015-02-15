@@ -70,6 +70,7 @@ using namespace std;
 
 #include "routeprintout.h"
 #include "printtable.h"
+#include "OCPN_Dialogs.h"
 
 #define PRINT_WP_NAME 0
 #define PRINT_WP_POSITION 1

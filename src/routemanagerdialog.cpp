@@ -45,6 +45,8 @@
 #include "SendToGpsDlg.h"
 #include "TrackPropDlg.h"
 #include "AIS_Decoder.h"
+#include "OCPN_Dialogs.h"
+#include "OCPN_Functions.h"
 
 #define DIALOG_MARGIN 3
 

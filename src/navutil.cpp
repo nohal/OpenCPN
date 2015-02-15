@@ -81,6 +81,7 @@
 #ifdef ocpnUSE_GL
 #include "glChartCanvas.h"
 #endif
+#include "OCPN_Dialogs.h"
 
 //    Statics
 

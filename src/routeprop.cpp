@@ -1,7 +1,7 @@
 /**************************************************************************
 *
 * Project:  OpenCPN
-* Purpose:  RouteProerties Support
+* Purpose:  RouteProperties Support
 * Author:   David Register
 *
 ***************************************************************************
@@ -49,6 +49,8 @@
 #include "tcmgr.h"        // pjotrc 2011.03.02
 #include "PositionParser.h"
 #include "pluginmanager.h"
+#include "OCPN_Dialogs.h"
+#include "OCPN_Functions.h"
 
 extern double             gLat, gLon, gSog, gCog;
 extern double             g_PlanSpeed;

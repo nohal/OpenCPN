@@ -26,6 +26,7 @@
 
 #include "S57QueryDialog.h"
 #include "chcanv.h"
+#include "OCPN_Functions.h"
 
 extern ColorScheme global_color_scheme;
 extern S57QueryDialog *g_pObjectQueryDialog;

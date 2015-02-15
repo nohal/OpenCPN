@@ -24,6 +24,8 @@
  **************************************************************************/
 
 #include "LinkPropDlg.h"
+#include "OCPN_Dialogs.h"
+#include "OCPN_Functions.h"
 
 LinkPropDlgDef::LinkPropDlgDef( wxWindow* parent, wxWindowID id, const wxString& title,
         const wxPoint& pos, const wxSize& size, long style )

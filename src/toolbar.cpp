@@ -38,6 +38,7 @@
 #include "chart1.h"
 #include "pluginmanager.h"
 #include "FontMgr.h"
+#include "OCPN_Dialogs.h"
 
 extern ocpnFloatingToolbarDialog* g_FloatingToolbarDialog;
 extern bool                       g_bTransparentToolbar;

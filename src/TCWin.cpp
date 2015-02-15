@@ -9,6 +9,7 @@
 #include "dychart.h"
 #include "cutil.h"
 #include "FontMgr.h"
+#include "OCPN_Functions.h"
 
 extern ColorScheme global_color_scheme;
 extern IDX_entry *gpIDX;

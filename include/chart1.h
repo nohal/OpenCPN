@@ -55,8 +55,6 @@ extern "C" void MyCPLErrorHandler( CPLErr eErrClass, int nError,
                              const char * pszErrorMsg );
 #endif
 
-wxFont *GetOCPNScaledFont( wxString item, int default_size = 0 );
-
 wxArrayString *EnumerateSerialPorts(void);
 wxColour GetGlobalColor(wxString colorName);
 
@@ -132,31 +130,6 @@ public:
     wxDateTime  receipt_time;
     int         current_priority;
     wxString    stream_name;
-};
-
-//    A small class used in an array to describe chart directories
-class ChartDirInfo
-{
-      public:
-      wxString    fullpath;
-      wxString    magic_number;
-};
-
-class OCPN_ThreadMessageEvent: public wxEvent
-{
-public:
-    OCPN_ThreadMessageEvent( wxEventType commandType = wxEVT_NULL, int id = 0 );
-    ~OCPN_ThreadMessageEvent( );
-    
-    // accessors
-    void SetSString(std::string string) { m_string = string; }
-    std::string GetSString() { return m_string; }
-    
-    // required for sending with wxPostEvent()
-    wxEvent *Clone() const;
-    
-private:
-    std::string m_string;
 };
 
 class MyApp: public wxApp
@@ -416,14 +389,5 @@ class MyFrame: public wxFrame
     
     DECLARE_EVENT_TABLE()
 };
-
-
-extern int OCPNMessageBox(wxWindow *parent,
-                          const wxString& message,
-                          const wxString& caption = _T("Message"),
-                          int style = wxOK,  int timout_sec = -1, int x = -1, int y = -1);
-
-
-
 
 #endif

@@ -76,6 +76,8 @@ extern GLuint g_raster_format;
 #include "s52utils.h"
 #include "cm93.h"
 #endif
+#include "OCPN_Dialogs.h"
+#include "OCPN_Functions.h"
 
 wxString GetOCPNKnownLanguage(wxString lang_canonical, wxString *lang_dir);
 

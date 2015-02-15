@@ -32,6 +32,7 @@
 #include "multiplexer.h"
 #include "Select.h"
 #include "georef.h"
+#include "OCPN_Dialogs.h"
 
 extern WayPointman *pWayPointMan;
 extern bool g_bIsNewLayer;
