@@ -39,6 +39,7 @@
 #include "pluginmanager.h"
 #include "FontMgr.h"
 #include "OCPN_Dialogs.h"
+#include "OCPN_Functions.h"
 
 extern ocpnFloatingToolbarDialog* g_FloatingToolbarDialog;
 extern bool                       g_bTransparentToolbar;

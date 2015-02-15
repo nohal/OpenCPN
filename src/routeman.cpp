@@ -59,6 +59,7 @@
 #include <wx/stdpaths.h>
 #include <wx/apptrait.h>
 #include "OCPN_Dialogs.h"
+#include "OCPN_Functions.h"
 
 extern ConsoleCanvas    *console;
 

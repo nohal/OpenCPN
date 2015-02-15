@@ -70,6 +70,7 @@
 
 #include <algorithm>          // for std::sort
 #include "OCPN_Dialogs.h"
+#include "OCPN_Functions.h"
 
 extern bool GetDoubleAttr(S57Obj *obj, const char *AttrName, double &val);      // found in s52cnsy
 

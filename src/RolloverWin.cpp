@@ -34,6 +34,7 @@
 #include "chart1.h"
 #include "navutil.h"
 #include "FontMgr.h"
+#include "OCPN_Functions.h"
 
 BEGIN_EVENT_TABLE(RolloverWin, wxWindow) EVT_PAINT(RolloverWin::OnPaint)
     EVT_TIMER(ROLLOVER_TIMER, RolloverWin::OnTimer)

@@ -28,6 +28,7 @@
 
 #include "ChInfoWin.h"
 #include "chart1.h"
+#include "OCPN_Functions.h"
 
 BEGIN_EVENT_TABLE(ChInfoWin, wxWindow)
     EVT_PAINT ( ChInfoWin::OnPaint )

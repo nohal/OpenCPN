@@ -36,6 +36,7 @@
 #include "styles.h"
 #include "chart1.h"
 #include "OCPN_Base.h"
+#include "OCPN_Functions.h"
 
 extern OCPN_Base *g_pBASE;
 extern wxString g_SData_Locn;

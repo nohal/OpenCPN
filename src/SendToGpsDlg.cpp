@@ -28,6 +28,7 @@
 #include "Route.h"
 #include "RoutePoint.h"
 #include "chart1.h"
+#include "OCPN_Functions.h"
 
 extern wxString g_uploadConnection;
 

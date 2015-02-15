@@ -38,6 +38,7 @@
 #include "chart1.h"
 #include "chartbase.h"
 #include "styles.h"
+#include "OCPN_Functions.h"
 
 #include <wx/arrimpl.cpp>
 WX_DEFINE_OBJARRAY(RegionArray);

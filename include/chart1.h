@@ -48,29 +48,6 @@ WX_DECLARE_OBJARRAY(wxRect, ArrayOfRect);
 
 #include "AIS_Target_Data.h"
 
-#ifdef USE_S57
-#include "cpl_error.h"
-
-//    Global Static error reporting function
-extern "C" void MyCPLErrorHandler( CPLErr eErrClass, int nError,
-                             const char * pszErrorMsg );
-#endif
-
-wxArrayString *EnumerateSerialPorts(void);
-wxColour GetGlobalColor(wxString colorName);
-
-int GetApplicationMemoryUse(void);
-
-// Helper to create menu label + hotkey string when registering menus
-wxString _menuText(wxString name, wxString shortcut);
-
-// The point for anchor watch should really be a class...
-double AnchorDistFix( double const d, double const AnchorPointMinDist, double const AnchorPointMaxDist);   //  pjotrc 2010.02.22
-
-bool TestGLCanvas(wxString &prog_dir);
-bool ReloadLocale();
-
-
 class NMEA_Msg_Container;
 WX_DECLARE_STRING_HASH_MAP( NMEA_Msg_Container*, MsgPriorityHash );
 

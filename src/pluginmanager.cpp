@@ -64,6 +64,7 @@
 #include "glChartCanvas.h"
 #endif
 #include "OCPN_Dialogs.h"
+#include "OCPN_Functions.h"
 
 extern MyConfig        *pConfig;
 extern wxString        g_SData_Locn;

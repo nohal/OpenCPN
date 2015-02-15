@@ -47,6 +47,7 @@
 #include "routeman.h"
 #include "navutil.h"
 #include "FontMgr.h"
+#include "OCPN_Functions.h"
 
 extern Routeman         *g_pRouteMan;
 extern MyFrame          *gFrame;

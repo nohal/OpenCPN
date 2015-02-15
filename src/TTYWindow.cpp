@@ -31,6 +31,7 @@
 #include "TTYScroll.h"
 #include "WindowDestroyListener.h"
 #include "chart1.h"
+#include "OCPN_Functions.h"
 
 IMPLEMENT_DYNAMIC_CLASS( TTYWindow, wxDialog )
 

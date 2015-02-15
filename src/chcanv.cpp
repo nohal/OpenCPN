@@ -92,6 +92,7 @@
 
 #include "ais.h"
 #include "OCPN_Dialogs.h"
+#include "OCPN_Functions.h"
 
 #ifdef __MSVC__
 #define _CRTDBG_MAP_ALLOC

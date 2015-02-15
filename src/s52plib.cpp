@@ -63,6 +63,7 @@
 #ifdef ocpnUSE_GL
 #include "glChartCanvas.h"
 #endif
+#include "OCPN_Functions.h"
 
 #ifdef __MSVC__
 #define _CRTDBG_MAP_ALLOC

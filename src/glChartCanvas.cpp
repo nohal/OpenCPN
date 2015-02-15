@@ -82,6 +82,7 @@ extern "C" void glOrthof(float left,  float right,  float bottom,  float top,  f
 #include "s57chart.h"               // for ArrayOfS57Obj
 #include "s52plib.h"
 #endif
+#include "OCPN_Functions.h"
 
 extern bool GetMemoryStatus(int *mem_total, int *mem_used);
 extern wxString CompressedCachePath(wxString path);
