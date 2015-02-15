@@ -40,9 +40,10 @@ using namespace std; // FIXME: 'using namespace' must not be used in header file
 
 #include "ocpn_types.h"
 #include "navutil.h"
+#include "OCPN_Printout.h"
 #include "printtable.h"
 
-class MyRoutePrintout : public MyPrintout {
+class MyRoutePrintout : public OCPN_Printout {
 public:
     MyRoutePrintout( std::vector<bool> _toPrintOut,
                      Route*            route,

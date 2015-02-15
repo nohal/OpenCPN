@@ -35,10 +35,10 @@ using namespace std;
 //#include "c:\\Program Files\\visual leak detector\\include\\vld.h"
 #endif
 
-#include "wx/print.h"
-#include "wx/printdlg.h"
-#include "wx/artprov.h"
-#include "wx/stdpaths.h"
+#include <wx/print.h>
+#include <wx/printdlg.h>
+#include <wx/artprov.h>
+#include <wx/stdpaths.h>
 #include <wx/intl.h>
 #include <wx/listctrl.h>
 #include <wx/aui/aui.h>
@@ -85,7 +85,7 @@ extern wxPageSetupData* g_pageSetupData;
 MyRoutePrintout::MyRoutePrintout( std::vector<bool> _toPrintOut,
                                   Route*            route,
                                   const wxString   &title
-                                  ) : MyPrintout( title ),
+                                  ) : OCPN_Printout( NULL, title ),
                                       myRoute( route ),
                                       toPrintOut( _toPrintOut )
 {

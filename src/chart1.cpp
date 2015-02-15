@@ -106,6 +106,7 @@
 #include "pluginmanager.h"
 #include "AIS_Target_Data.h"
 #include "OCPN_Base.h"
+#include "OCPN_Printout.h"
 
 #ifdef ocpnUSE_GL
 #include "glChartCanvas.h"
@@ -1567,7 +1568,7 @@ bool MyApp::OnInit()
 #endif
     
     if( g_bportable )
-        g_SData_Locn = *g_SData_Locn = *g_pBASE->GetHomeLocation();
+        g_SData_Locn = *g_pBASE->GetHomeLocation();
 
     imsg = _T("SData_Locn is ");
     imsg += g_SData_Locn;
@@ -1607,7 +1608,7 @@ bool MyApp::OnInit()
 #endif
 
     if( g_bportable )
-        g_PrivateDataDir = *g_PrivateDataDir = *g_pBASE->GetHomeLocation();
+        g_PrivateDataDir = *g_pBASE->GetHomeLocation();
 
 #ifdef __OCPN__ANDROID__
     g_PrivateDataDir = *pHome_Locn;
@@ -7899,7 +7900,7 @@ void MyFrame::DoPrint( void )
 
     wxPrinter printer( &printDialogData );
 
-    MyPrintout printout( wxT("Chart Print") );
+    OCPN_Printout printout( cc1, _("Chart Print") );
     
     //  In OperGL mode, make the bitmap capture of the screen before the print method starts,
     //  so as to be sure the "Abort..." dialog does not appear on the image
@@ -9170,136 +9171,6 @@ void MyCPLErrorHandler( CPLErr eErrClass, int nError, const char * pszErrorMsg )
     wxLogMessage( str );
 }
 #endif
-
-//----------------------------------------------------------------------------------------------------------
-//      Printing Framework Support
-//----------------------------------------------------------------------------------------------------------
-
-bool MyPrintout::OnPrintPage( int page )
-{
-    wxDC *dc = GetDC();
-    if( dc ) {
-        if( page == 1 ) DrawPageOne( dc );
-
-        return true;
-    } else
-        return false;
-}
-
-bool MyPrintout::OnBeginDocument( int startPage, int endPage )
-{
-    if( !wxPrintout::OnBeginDocument( startPage, endPage ) ) return false;
-
-    return true;
-}
-
-void MyPrintout::GetPageInfo( int *minPage, int *maxPage, int *selPageFrom, int *selPageTo )
-{
-    *minPage = 1;
-    *maxPage = 1;
-    *selPageFrom = 1;
-    *selPageTo = 1;
-}
-
-bool MyPrintout::HasPage( int pageNum )
-{
-    return ( pageNum == 1 );
-}
-
-void MyPrintout::DrawPageOne( wxDC *dc )
-{
-
-    // Get the Size of the Chart Canvas
-    int sx, sy;
-    cc1->GetClientSize( &sx, &sy );                       // of the canvas
-
-    float maxX = sx;
-    float maxY = sy;
-
-    // Let's have at least some device units margin
-    float marginX = 50;
-    float marginY = 50;
-
-    // Add the margin to the graphic size
-    maxX += ( 2 * marginX );
-    maxY += ( 2 * marginY );
-
-    // Get the size of the DC in pixels
-    int w, h;
-    dc->GetSize( &w, &h );
-
-    // Calculate a suitable scaling factor
-    float scaleX = (float) ( w / maxX );
-    float scaleY = (float) ( h / maxY );
-
-    // Use x or y scaling factor, whichever fits on the DC
-    float actualScale = wxMin(scaleX,scaleY);
-
-    // Calculate the position on the DC for centring the graphic
-    float posX = (float) ( ( w - ( maxX * actualScale ) ) / 2.0 );
-    float posY = (float) ( ( h - ( maxY * actualScale ) ) / 2.0 );
-
-    posX = wxMax(posX, marginX);
-    posY = wxMax(posY, marginY);
-
-    // Set the scale and origin
-    dc->SetUserScale( actualScale, actualScale );
-    dc->SetDeviceOrigin( (long) posX, (long) posY );
-
-//  Get the latest bitmap as rendered by the ChartCanvas
-
-    if(g_bopengl) {
-#ifdef ocpnUSE_GL
-        if(m_GLbmp.IsOk()){
-            wxMemoryDC mdc;
-            mdc.SelectObject( m_GLbmp );
-            dc->Blit( 0, 0, m_GLbmp.GetWidth(), m_GLbmp.GetHeight(), &mdc, 0, 0 );
-            mdc.SelectObject( wxNullBitmap );
-        }
-#endif
-    }
-    else {
-
-//  And Blit/scale it onto the Printer DC
-        wxMemoryDC mdc;
-        mdc.SelectObject( *( cc1->pscratch_bm ) );
-
-        dc->Blit( 0, 0, cc1->pscratch_bm->GetWidth(), cc1->pscratch_bm->GetHeight(), &mdc, 0, 0 );
-
-        mdc.SelectObject( wxNullBitmap );
-    }
-
-}
-
-void MyPrintout::GenerateGLbmp( )
-{
-    if(g_bopengl) {
-#ifdef ocpnUSE_GL
-        int gsx = cc1->GetglCanvas()->GetSize().x;
-        int gsy = cc1->GetglCanvas()->GetSize().y;
-        
-        unsigned char *buffer = (unsigned char *)malloc( gsx * gsy * 4 );
-        glReadPixels(0, 0, gsx, gsy, GL_RGBA, GL_UNSIGNED_BYTE, buffer );
-        
-        unsigned char *e = (unsigned char *)malloc( gsx * gsy * 3 );
-        
-        if(buffer && e){
-            for( int p = 0; p < gsx*gsy; p++ ) {
-                e[3*p+0] = buffer[4*p+0];
-                e[3*p+1] = buffer[4*p+1];
-                e[3*p+2] = buffer[4*p+2];
-            }
-        }
-        free(buffer);
-        
-        wxImage image( gsx,gsy );
-        image.SetData(e);
-        wxImage mir_imag = image.Mirror( false );
-        m_GLbmp = wxBitmap( mir_imag );
-#endif
-    }
-}
-
 
 
 //---------------------------------------------------------------------------------------
