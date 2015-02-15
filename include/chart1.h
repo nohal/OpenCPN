@@ -53,10 +53,9 @@ WX_DECLARE_OBJARRAY(wxRect, ArrayOfRect);
 //    Global Static error reporting function
 extern "C" void MyCPLErrorHandler( CPLErr eErrClass, int nError,
                              const char * pszErrorMsg );
+#endif
 
 wxFont *GetOCPNScaledFont( wxString item, int default_size = 0 );
-
-#endif
 
 wxArrayString *EnumerateSerialPorts(void);
 wxColour GetGlobalColor(wxString colorName);
