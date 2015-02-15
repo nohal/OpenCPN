@@ -40,21 +40,15 @@
 #include "viewport.h"
 #include "nmea0183.h"
 
-class ChartDirInfo;
-
-#define ArrayOfInts wxArrayInt
-WX_DECLARE_OBJARRAY(ChartDirInfo, ArrayOfCDI);
-WX_DECLARE_OBJARRAY(wxRect, ArrayOfRect);
-
-#include "AIS_Target_Data.h"
-
-class NMEA_Msg_Container;
-WX_DECLARE_STRING_HASH_MAP( NMEA_Msg_Container*, MsgPriorityHash );
-
-//    Fwd definitions
-class OCPN_NMEAEvent;
+//----------------------------------------------------------------------------
+// fwd class declarations
+//----------------------------------------------------------------------------
+class ChartBase;
+class ocpnToolBarSimple;
+class OCPN_DataStreamEvent;
+class DataStream;
+class AIS_Target_Data;
 class ChartCanvas;
-class ocpnFloatingToolbarDialog;
 class OCPN_MsgEvent;
 class options;
 class Track;
@@ -92,23 +86,6 @@ static const long TOOLBAR_STYLE = wxTB_FLAT | wxTB_DOCKABLE | wxTB_TEXT ;
 
 #define MAX_COG_AVERAGE_SECONDS        60
 #define MAX_COGSOG_FILTER_SECONDS      60
-//----------------------------------------------------------------------------
-// fwd class declarations
-//----------------------------------------------------------------------------
-class ChartBase;
-class wxSocketEvent;
-class ocpnToolBarSimple;
-class OCPN_DataStreamEvent;
-class DataStream;
-
-//      A class to contain NMEA messages, their receipt time, and their source priority
-class NMEA_Msg_Container
-{
-public:
-    wxDateTime  receipt_time;
-    int         current_priority;
-    wxString    stream_name;
-};
 
 class MyApp: public wxApp
 {

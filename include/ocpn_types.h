@@ -235,4 +235,18 @@ private:
     std::string m_string;
 };
 
+//      A class to contain NMEA messages, their receipt time, and their source priority
+class NMEA_Msg_Container
+{
+public:
+    wxDateTime  receipt_time;
+    int         current_priority;
+    wxString    stream_name;
+};
+
+WX_DECLARE_STRING_HASH_MAP( NMEA_Msg_Container*, MsgPriorityHash );
+WX_DECLARE_OBJARRAY(wxRect, ArrayOfRect);
+WX_DECLARE_OBJARRAY(ChartDirInfo, ArrayOfCDI);
+#define ArrayOfInts wxArrayInt
+
 #endif
