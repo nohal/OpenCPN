@@ -29,9 +29,10 @@
 #include <wx/wx.h>
 #endif //precompiled headers
 
-#ifndef __WXMSW__
-#include <signal.h>
-#include <setjmp.h>
+// Include CrashRpt Header
+#ifdef OCPN_USE_CRASHRPT
+#include "CrashRpt.h"
+#include <new.h>
 #endif
 
 #ifdef LINUX_CRASHRPT
@@ -64,6 +65,13 @@
 #include "s57RegistrarMgr.h"
 #include "cpl_csv.h"
 #endif // USE_S57
+
+#ifndef __WXMSW__
+#include <signal.h>
+#include <setjmp.h>
+#else
+#include "cutil.h" //MyUnhandledExceptionFilter
+#endif
 
 bool g_unit_test_1;
 bool g_bportable;
@@ -181,6 +189,7 @@ extern TCMgr *ptcmgr; //created in MyFrame
 extern ChartDummy *pDummyChart; //Created in MyFrame
 extern LayerList *pLayerList; //Created in MyConfig
 extern bool portaudio_initialized; //Belongs to OCPN_Sound
+extern bool g_bTempShowMenuBar; 
 #ifdef USE_S57
 s52plib *ps52plib; //Created in LoadS57 function
 s57RegistrarMgr *g_pRegistrarMan;
@@ -188,6 +197,19 @@ s57RegistrarMgr *g_pRegistrarMan;
 
 #ifdef LINUX_CRASHRPT
 wxCrashPrint g_crashprint;
+#endif
+
+//------------------------------------------------------------------------------
+//              Fwd Refs
+//------------------------------------------------------------------------------
+#ifdef __WXMSW__
+int MyNewHandler( size_t size )
+{
+    //  Pass to wxWidgets Main Loop handler
+    throw std::bad_alloc();
+ 
+    return 0;
+}
 #endif
 
 #ifndef __WXMSW__
@@ -235,164 +257,6 @@ void catch_signals(int signo)
 
 }
 #endif
-
-// Memory monitor support
-bool GetMemoryStatus( int *mem_total, int *mem_used )
-{
-
-#ifdef __LINUX__
-
-//      Use filesystem /proc/pid/status to determine memory status
-
-    unsigned long processID = wxGetProcessId();
-    wxTextFile file;
-    wxString file_name;
-
-    if(mem_used)
-    {
-        *mem_used = 0;
-        file_name.Printf(_T("/proc/%d/status"), (int)processID);
-        if(file.Open(file_name))
-        {
-            bool b_found = false;
-            wxString str;
-            for ( str = file.GetFirstLine(); !file.Eof(); str = file.GetNextLine() )
-            {
-                wxStringTokenizer tk(str, _T(" :"));
-                while ( tk.HasMoreTokens() )
-                {
-                    wxString token = tk.GetNextToken();
-                    if(token == _T("VmRSS"))
-                    {
-                        wxStringTokenizer tkm(str, _T(" "));
-                        wxString mem = tkm.GetNextToken();
-                        long mem_extract = 0;
-                        while(mem.Len())
-                        {
-                            mem.ToLong(&mem_extract);
-                            if(mem_extract)
-                            break;
-                            mem = tkm.GetNextToken();
-                        }
-
-                        *mem_used = mem_extract;
-                        b_found = true;
-                        break;
-                    }
-                    else
-                    break;
-                }
-                if(b_found)
-                break;
-            }
-        }
-    }
-
-    if(mem_total)
-    {
-        *mem_total = 0;
-        wxTextFile file_info;
-        file_name = _T("/proc/meminfo");
-        if(file_info.Open(file_name))
-        {
-            bool b_found = false;
-            wxString str;
-            for ( str = file_info.GetFirstLine(); !file_info.Eof(); str = file_info.GetNextLine() )
-            {
-                wxStringTokenizer tk(str, _T(" :"));
-                while ( tk.HasMoreTokens() )
-                {
-                    wxString token = tk.GetNextToken();
-                    if(token == _T("MemTotal"))
-                    {
-                        wxStringTokenizer tkm(str, _T(" "));
-                        wxString mem = tkm.GetNextToken();
-                        long mem_extract = 0;
-                        while(mem.Len())
-                        {
-                            mem.ToLong(&mem_extract);
-                            if(mem_extract)
-                            break;
-                            mem = tkm.GetNextToken();
-                        }
-
-                        *mem_total = mem_extract;
-                        b_found = true;
-                        break;
-                    }
-                    else
-                    break;
-                }
-                if(b_found)
-                break;
-            }
-        }
-    }
-
-#endif
-
-#ifdef __WXMSW__
-    HANDLE hProcess;
-    PROCESS_MEMORY_COUNTERS pmc;
-
-    unsigned long processID = wxGetProcessId();
-
-    if( mem_used ) {
-        hProcess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processID );
-
-        if( hProcess && GetProcessMemoryInfo( hProcess, &pmc, sizeof( pmc ) ) ) {
-            /*
-             printf( "\tPageFaultCount: 0x%08X\n", pmc.PageFaultCount );
-             printf( "\tPeakWorkingSetSize: 0x%08X\n",
-             pmc.PeakWorkingSetSize );
-             printf( "\tWorkingSetSize: 0x%08X\n", pmc.WorkingSetSize );
-             printf( "\tQuotaPeakPagedPoolUsage: 0x%08X\n",
-             pmc.QuotaPeakPagedPoolUsage );
-             printf( "\tQuotaPagedPoolUsage: 0x%08X\n",
-             pmc.QuotaPagedPoolUsage );
-             printf( "\tQuotaPeakNonPagedPoolUsage: 0x%08X\n",
-             pmc.QuotaPeakNonPagedPoolUsage );
-             printf( "\tQuotaNonPagedPoolUsage: 0x%08X\n",
-             pmc.QuotaNonPagedPoolUsage );
-             printf( "\tPagefileUsage: 0x%08X\n", pmc.PagefileUsage );
-             printf( "\tPeakPagefileUsage: 0x%08X\n",
-             pmc.PeakPagefileUsage );
-             */
-            *mem_used = pmc.WorkingSetSize / 1024;
-        }
-
-        CloseHandle( hProcess );
-    }
-
-    if( mem_total ) {
-        MEMORYSTATUSEX statex;
-
-        statex.dwLength = sizeof( statex );
-
-        GlobalMemoryStatusEx( &statex );
-        /*
-         _tprintf (TEXT("There is  %*ld percent of memory in use.\n"),
-         WIDTH, statex.dwMemoryLoad);
-         _tprintf (TEXT("There are %*I64d total Kbytes of physical memory.\n"),
-         WIDTH, statex.ullTotalPhys/DIV);
-         _tprintf (TEXT("There are %*I64d free Kbytes of physical memory.\n"),
-         WIDTH, statex.ullAvailPhys/DIV);
-         _tprintf (TEXT("There are %*I64d total Kbytes of paging file.\n"),
-         WIDTH, statex.ullTotalPageFile/DIV);
-         _tprintf (TEXT("There are %*I64d free Kbytes of paging file.\n"),
-         WIDTH, statex.ullAvailPageFile/DIV);
-         _tprintf (TEXT("There are %*I64d total Kbytes of virtual memory.\n"),
-         WIDTH, statex.ullTotalVirtual/DIV);
-         _tprintf (TEXT("There are %*I64d free Kbytes of virtual memory.\n"),
-         WIDTH, statex.ullAvailVirtual/DIV);
-         */
-
-        *mem_total = statex.ullTotalPhys / 1024;
-    }
-#endif
-
-    return true;
-}
 
 #ifdef OCPN_USE_CRASHRPT
 
@@ -1378,7 +1242,7 @@ bool MyApp::OnInit()
 
 #ifdef __WXMSW__
     if( /*g_bopengl &&*/ !g_bdisable_opengl ) {
-        wxFileName fn(std_path.GetExecutablePath());
+        wxFileName fn(g_pBASE->GetStandardPaths().GetExecutablePath());
         bool b_test_result = TestGLCanvas(fn.GetPathWithSep() );
 
         if( !b_test_result )

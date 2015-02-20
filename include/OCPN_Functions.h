@@ -31,6 +31,12 @@
 #include "OCPN_Dialogs.h"
 #include "ocpn_types.h"
 
+#ifdef __WXMSW__
+#include <windows.h>
+#include <setupapi.h>
+#endif
+
+
 #ifdef USE_S57
 #include "cpl_error.h"
 
@@ -65,5 +71,17 @@ void InitializeUserColors( void );
 void DeInitializeUserColors( void );
 void SetSystemColors( ColorScheme cs );
 extern "C" bool CheckSerialAccess( void );
+
+#ifdef __WXMSW__
+// System color control support
+
+typedef DWORD (WINAPI *SetSysColors_t)(DWORD, DWORD *, DWORD *);
+typedef DWORD (WINAPI *GetSysColor_t)(DWORD);
+
+void SaveSystemColors(void);
+void RestoreSystemColors(void);
+#endif
+
+bool GetMemoryStatus( int *mem_total, int *mem_used );
 
 #endif

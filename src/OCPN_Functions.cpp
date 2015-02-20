@@ -34,6 +34,17 @@
 #endif // USE_S57
 #include "OCPN_Base.h"
 #include "navutil.h"
+#ifdef __WXMSW__
+#include <psapi.h>
+#include "datastream.h"
+#include "cutil.h"
+#endif
+
+// {2C9C45C2-8E7D-4C08-A12D-816BBAE722C0}
+#ifdef  __WXMSW__
+DEFINE_GUID( GARMIN_DETECT_GUID, 0x2c9c45c2L, 0x8e7d, 0x4c08, 0xa1, 0x2d, 0x81, 0x6b, 0xba, 0xe7,
+        0x22, 0xc0 );
+#endif
 
 extern bool g_bresponsive;
 extern ChartCanvas *cc1;
@@ -58,6 +69,25 @@ extern s57RegistrarMgr *g_pRegistrarMan; //FIXME: seems totally unused
 extern FILE *flog; //FIXME: dtto
 extern bool b_novicemode;
 extern MyConfig *pConfig;
+int g_nCOMPortCheck;
+#ifdef __WXMSW__
+// System color control support
+
+SetSysColors_t            pSetSysColors;
+GetSysColor_t             pGetSysColor;
+
+DWORD                     color_3dface;
+DWORD                     color_3dhilite;
+DWORD                     color_3dshadow;
+DWORD                     color_3ddkshadow;
+DWORD                     color_3dlight;
+DWORD                     color_activecaption;
+DWORD                     color_gradientactivecaption;
+DWORD                     color_captiontext;
+DWORD                     color_windowframe;
+DWORD                     color_inactiveborder;
+
+#endif
 
 wxFont *GetOCPNScaledFont( wxString item, int default_size )
 {
@@ -2020,3 +2050,161 @@ void LoadS57()
     }
 }
 #endif
+
+// Memory monitor support
+bool GetMemoryStatus( int *mem_total, int *mem_used )
+{
+
+#ifdef __LINUX__
+
+//      Use filesystem /proc/pid/status to determine memory status
+
+    unsigned long processID = wxGetProcessId();
+    wxTextFile file;
+    wxString file_name;
+
+    if(mem_used)
+    {
+        *mem_used = 0;
+        file_name.Printf(_T("/proc/%d/status"), (int)processID);
+        if(file.Open(file_name))
+        {
+            bool b_found = false;
+            wxString str;
+            for ( str = file.GetFirstLine(); !file.Eof(); str = file.GetNextLine() )
+            {
+                wxStringTokenizer tk(str, _T(" :"));
+                while ( tk.HasMoreTokens() )
+                {
+                    wxString token = tk.GetNextToken();
+                    if(token == _T("VmRSS"))
+                    {
+                        wxStringTokenizer tkm(str, _T(" "));
+                        wxString mem = tkm.GetNextToken();
+                        long mem_extract = 0;
+                        while(mem.Len())
+                        {
+                            mem.ToLong(&mem_extract);
+                            if(mem_extract)
+                            break;
+                            mem = tkm.GetNextToken();
+                        }
+
+                        *mem_used = mem_extract;
+                        b_found = true;
+                        break;
+                    }
+                    else
+                    break;
+                }
+                if(b_found)
+                break;
+            }
+        }
+    }
+
+    if(mem_total)
+    {
+        *mem_total = 0;
+        wxTextFile file_info;
+        file_name = _T("/proc/meminfo");
+        if(file_info.Open(file_name))
+        {
+            bool b_found = false;
+            wxString str;
+            for ( str = file_info.GetFirstLine(); !file_info.Eof(); str = file_info.GetNextLine() )
+            {
+                wxStringTokenizer tk(str, _T(" :"));
+                while ( tk.HasMoreTokens() )
+                {
+                    wxString token = tk.GetNextToken();
+                    if(token == _T("MemTotal"))
+                    {
+                        wxStringTokenizer tkm(str, _T(" "));
+                        wxString mem = tkm.GetNextToken();
+                        long mem_extract = 0;
+                        while(mem.Len())
+                        {
+                            mem.ToLong(&mem_extract);
+                            if(mem_extract)
+                            break;
+                            mem = tkm.GetNextToken();
+                        }
+
+                        *mem_total = mem_extract;
+                        b_found = true;
+                        break;
+                    }
+                    else
+                    break;
+                }
+                if(b_found)
+                break;
+            }
+        }
+    }
+
+#endif
+
+#ifdef __WXMSW__
+    HANDLE hProcess;
+    PROCESS_MEMORY_COUNTERS pmc;
+
+    unsigned long processID = wxGetProcessId();
+
+    if( mem_used ) {
+        hProcess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processID );
+
+        if( hProcess && GetProcessMemoryInfo( hProcess, &pmc, sizeof( pmc ) ) ) {
+            /*
+             printf( "\tPageFaultCount: 0x%08X\n", pmc.PageFaultCount );
+             printf( "\tPeakWorkingSetSize: 0x%08X\n",
+             pmc.PeakWorkingSetSize );
+             printf( "\tWorkingSetSize: 0x%08X\n", pmc.WorkingSetSize );
+             printf( "\tQuotaPeakPagedPoolUsage: 0x%08X\n",
+             pmc.QuotaPeakPagedPoolUsage );
+             printf( "\tQuotaPagedPoolUsage: 0x%08X\n",
+             pmc.QuotaPagedPoolUsage );
+             printf( "\tQuotaPeakNonPagedPoolUsage: 0x%08X\n",
+             pmc.QuotaPeakNonPagedPoolUsage );
+             printf( "\tQuotaNonPagedPoolUsage: 0x%08X\n",
+             pmc.QuotaNonPagedPoolUsage );
+             printf( "\tPagefileUsage: 0x%08X\n", pmc.PagefileUsage );
+             printf( "\tPeakPagefileUsage: 0x%08X\n",
+             pmc.PeakPagefileUsage );
+             */
+            *mem_used = pmc.WorkingSetSize / 1024;
+        }
+
+        CloseHandle( hProcess );
+    }
+
+    if( mem_total ) {
+        MEMORYSTATUSEX statex;
+
+        statex.dwLength = sizeof( statex );
+
+        GlobalMemoryStatusEx( &statex );
+        /*
+         _tprintf (TEXT("There is  %*ld percent of memory in use.\n"),
+         WIDTH, statex.dwMemoryLoad);
+         _tprintf (TEXT("There are %*I64d total Kbytes of physical memory.\n"),
+         WIDTH, statex.ullTotalPhys/DIV);
+         _tprintf (TEXT("There are %*I64d free Kbytes of physical memory.\n"),
+         WIDTH, statex.ullAvailPhys/DIV);
+         _tprintf (TEXT("There are %*I64d total Kbytes of paging file.\n"),
+         WIDTH, statex.ullTotalPageFile/DIV);
+         _tprintf (TEXT("There are %*I64d free Kbytes of paging file.\n"),
+         WIDTH, statex.ullAvailPageFile/DIV);
+         _tprintf (TEXT("There are %*I64d total Kbytes of virtual memory.\n"),
+         WIDTH, statex.ullTotalVirtual/DIV);
+         _tprintf (TEXT("There are %*I64d free Kbytes of virtual memory.\n"),
+         WIDTH, statex.ullAvailVirtual/DIV);
+         */
+
+        *mem_total = statex.ullTotalPhys / 1024;
+    }
+#endif
+
+    return true;
+}

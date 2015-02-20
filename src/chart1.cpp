@@ -144,6 +144,8 @@ WX_DEFINE_OBJARRAY( MyDialogPtrArray );
 
 #ifdef __WXMSW__
 void RedirectIOToConsole();
+extern SetSysColors_t            pSetSysColors;
+extern GetSysColor_t             pGetSysColor;
 #endif
 
 //------------------------------------------------------------------------------
@@ -428,7 +430,7 @@ bool                      g_fog_overzoom;
 double                    g_overzoom_emphasis_base;
 bool                      g_oz_vector_scale;
 
-int                       g_nCOMPortCheck;
+extern int                g_nCOMPortCheck;
 
 bool                      g_b_legacy_input_filter_behaviour;  // Support original input filter process or new process
 
@@ -463,31 +465,6 @@ options                   *g_options;
 int                       options_lastPage = 0;
 wxPoint                   options_lastWindowPos( 0,0 );
 wxSize                    options_lastWindowSize( 0,0 );
-
-#ifdef __WXMSW__
-// System color control support
-
-typedef DWORD (WINAPI *SetSysColors_t)(DWORD, DWORD *, DWORD *);
-typedef DWORD (WINAPI *GetSysColor_t)(DWORD);
-
-SetSysColors_t            pSetSysColors;
-GetSysColor_t             pGetSysColor;
-
-void SaveSystemColors(void);
-void RestoreSystemColors(void);
-
-DWORD                     color_3dface;
-DWORD                     color_3dhilite;
-DWORD                     color_3dshadow;
-DWORD                     color_3ddkshadow;
-DWORD                     color_3dlight;
-DWORD                     color_activecaption;
-DWORD                     color_gradientactivecaption;
-DWORD                     color_captiontext;
-DWORD                     color_windowframe;
-DWORD                     color_inactiveborder;
-
-#endif
 
 wxToolBarToolBase         *m_pAISTool;
 
@@ -624,12 +601,6 @@ bool             g_bAdvanceRouteWaypointOnArrivalOnly;
 
 wxArrayString    g_locale_catalog_array;
 
-// {2C9C45C2-8E7D-4C08-A12D-816BBAE722C0}
-#ifdef  __WXMSW__
-DEFINE_GUID( GARMIN_DETECT_GUID, 0x2c9c45c2L, 0x8e7d, 0x4c08, 0xa1, 0x2d, 0x81, 0x6b, 0xba, 0xe7,
-        0x22, 0xc0 );
-#endif
-
 #ifdef __MSVC__
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
@@ -657,21 +628,6 @@ static const long long lNaN = 0xfff8000000000000;
 enum {
     ID_PIANO_DISABLE_QUILT_CHART = 32000, ID_PIANO_ENABLE_QUILT_CHART
 };
-
-//------------------------------------------------------------------------------
-//              Fwd Refs
-//------------------------------------------------------------------------------
-
-
-#ifdef __WXMSW__
-int MyNewHandler( size_t size )
-{
-    //  Pass to wxWidgets Main Loop handler
-    throw std::bad_alloc();
- 
-    return 0;
-}
-#endif
 
 #include <wx/power.h>
 
