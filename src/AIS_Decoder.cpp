@@ -318,10 +318,9 @@ AIS_Error AIS_Decoder::DecodeSingleVDO( const wxString& str, GenericPosDatEx *po
 
     //  Create the bit accessible string
     AIS_Bitstring strbit( string_to_parse.mb_str() );
-    AIS_Target_Data *TargetData = NULL;
+    AIS_Target_Data *TargetData = new AIS_Target_Data( ShowAIS() );
     
     if( Parse_VDXBitstring( &strbit, TargetData ) ) {
-        TargetData = new AIS_Target_Data( ShowAIS() );
         switch(TargetData->MID)
         {
             case 1:
@@ -366,6 +365,7 @@ AIS_Error AIS_Decoder::DecodeSingleVDO( const wxString& str, GenericPosDatEx *po
         delete TargetData;
         return AIS_NoError;
     }
+    delete TargetData;
     return AIS_GENERIC_ERROR;
 }
 

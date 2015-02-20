@@ -463,13 +463,17 @@ Please click \"OK\" to agree and proceed, \"Cancel\" to quit.\n") );
 // MyApp
 //------------------------------------------------------------------------------
 
+#ifndef OCPN_USE_WRAPPER
 IMPLEMENT_APP( MyApp )
+#endif
+
 BEGIN_EVENT_TABLE(MyApp, wxApp)
 EVT_ACTIVATE_APP(MyApp::OnActivateApp)
 END_EVENT_TABLE()
 
 #include "wx/dynlib.h"
 
+#if wxUSE_CMDLINE_PARSER
 void MyApp::OnInitCmdLine( wxCmdLineParser& parser )
 {
     //    Add some OpenCPN specific command line options
@@ -490,6 +494,7 @@ bool MyApp::OnCmdLineParsed( wxCmdLineParser& parser )
 
     return true;
 }
+#endif
 
 #ifdef __WXMSW__
     //  Handle any exception not handled by CrashRpt
@@ -746,7 +751,7 @@ bool MyApp::OnInit()
         wxFileName f( std_path_crash.GetExecutablePath() );
         home_data_crash = f.GetPath();
     }
-    appendOSDirSlash( &home_data_crash );
+    g_pBASE->appendOSDirSlash( &home_data_crash );
 
     wxString config_crash = _T("opencpn.ini");
     config_crash.Prepend( home_data_crash );
@@ -898,19 +903,32 @@ bool MyApp::OnInit()
             wxFONTENCODING_SYSTEM );
     temp_font.SetDefaultEncoding( wxFONTENCODING_SYSTEM );
 
+//      Establish a "home" location
+    //wxStandardPaths& std_path = *dynamic_cast<wxStandardPaths*>(&wxApp::GetTraits()->GetStandardPaths());
+
     //TODO  Why is the following preferred?  Will not compile with gcc...
 //    wxStandardPaths& std_path = wxApp::GetTraits()->GetStandardPaths();
 
-#ifdef __WXGTK__
+#ifdef __unix__
     g_pBASE->GetStandardPaths().SetInstallPrefix(wxString(PREFIX, wxConvUTF8));
 #endif
 
     gExe_path = g_pBASE->GetStandardPaths().GetExecutablePath();
 
 #ifdef __WXMSW__
-    g_pBASE->GetHomeLocation()->Append( std_path.GetConfigDir() );   // on w98, produces "/windows/Application Data"
+    g_pBASE->GetHomeLocation()->Append( g_pBASE->GetStandardPaths().GetConfigDir() );   // on w98, produces "/windows/Application Data"
 #else
-            g_pBASE->GetHomeLocation()->Append(g_pBASE->GetStandardPaths().GetUserConfigDir());
+    g_pBASE->GetHomeLocation()->Append(g_pBASE->GetStandardPaths().GetUserConfigDir());
+#endif
+
+    //  On android, make the private data dir on the sdcard, if it exists.
+    //  This make debugging easier, as it is not deleted whenever the APK is re-deployed.
+    //  This behaviour should go away at Release.
+#ifdef __OCPN__ANDROID__
+    if( wxDirExists(_T("/mnt/sdcard")) ){
+        g_pBASE->GetHomeLocation()->Clear();
+        g_pBASE->GetHomeLocation()->Append( _T("/mnt/sdcard/.opencpn") );
+    }
 #endif
 
     if( g_bportable ) {
@@ -926,13 +944,13 @@ bool MyApp::OnInit()
 
 #ifdef  __WXOSX__
     g_pBASE->GetHomeLocation()->Append(_T("opencpn"));
-    appendOSDirSlash(g_pBASE->GetHomeLocation());
+    g_pBASE->appendOSDirSlash(g_pBASE->GetHomeLocation());
 
     wxFileName LibPref(glog_file);          // starts like "~/Library/Preferences"
     LibPref.RemoveLastDir();// takes off "Preferences"
 
     glog_file = LibPref.GetFullPath();
-    appendOSDirSlash(&glog_file);
+    g_pBASE->appendOSDirSlash(&glog_file);
 
     glog_file.Append(_T("Logs/"));// so, on OS X, opencpn.log ends up in ~/Library/Logs
                                   // which makes it accessible to Applications/Utilities/Console....
@@ -955,7 +973,8 @@ bool MyApp::OnInit()
         }
     }
     glog_file.Append( _T("opencpn.log") );
-
+    wxString logit = glog_file;
+    
     //  Constrain the size of the log file
     wxString large_log_message;
     if( ::wxFileExists( glog_file ) ) {
@@ -968,9 +987,22 @@ bool MyApp::OnInit()
         }
     }
 
+#ifdef __OCPN__ANDROID__
+    //  Force new logfile for each instance
+    // TODO Remove this behaviour on Release
+    if( ::wxFileExists( glog_file ) ){
+        ::wxRemoveFile( glog_file );
+    }
+#endif
+    
     flog = fopen( glog_file.mb_str(), "a" );
     logger = new wxLogStderr( flog );
 
+#ifdef __OCPN__ANDROID__
+    //  Trouble printing timestamp
+    logger->SetTimestamp((const char *)NULL);
+#endif
+    
     Oldlogger = wxLog::SetActiveTarget( logger );
 
 #ifdef __WXMSW__
@@ -982,7 +1014,7 @@ bool MyApp::OnInit()
 
 //        wxLog::AddTraceMask("timer");               // verbose message traces to log output
 
-#ifndef __WXMSW__
+#if defined(__WXGTK__) || defined(__WXOSX__)
     logger->SetTimestamp(_T("%H:%M:%S %Z"));
 #endif
 
@@ -1004,7 +1036,21 @@ bool MyApp::OnInit()
 
     wxString wxver(wxVERSION_STRING);
     wxver.Prepend( _T("wxWidgets version: ") );
-    wxLogMessage( wxver );
+    
+    wxPlatformInfo platforminfo = wxPlatformInfo::Get();
+    
+    wxString os_name;
+#ifndef __WXQT__
+    os_name = platforminfo.GetOperatingSystemIdName();
+#else
+    os_name = platforminfo.GetOperatingSystemFamilyName();
+#endif
+    
+    wxString platform = os_name + _T(" ") +
+    platforminfo.GetArchName()+ _T(" ") +
+    platforminfo.GetPortIdName();
+    
+    wxLogMessage( wxver + _T(" ") + platform );
 
     wxLogMessage( _T("MemoryStatus:  mem_total: %d mb,  mem_initial: %d mb"), g_mem_total / 1024,
             g_mem_initial / 1024 );
@@ -1025,13 +1071,40 @@ bool MyApp::OnInit()
     g_SData_Locn = g_pBASE->GetStandardPaths().GetDataDir();
     g_pBASE->appendOSDirSlash( &g_SData_Locn );
 
-    if( g_bportable ) g_SData_Locn = *g_pBASE->GetHomeLocation();
+#ifdef __OCPN__ANDROID__
+    wxFileName fdir = wxFileName::DirName(g_pBASE->GetStandardPaths().GetUserConfigDir());
+    
+    fdir.RemoveLastDir();
+    g_SData_Locn = fdir.GetPath();
+    g_SData_Locn += _T("/cache/");
+#endif
+    
+    if( g_bportable )
+        g_SData_Locn = *g_pBASE->GetHomeLocation();
 
     imsg = _T("SData_Locn is ");
     imsg += g_SData_Locn;
     wxLogMessage( imsg );
 
-//      Create some static strings
+#ifdef __OCPN__ANDROID__
+#if 0    
+    //  Now we can load a Qt StyleSheet, if present
+    wxString style_file = g_SData_Locn;
+    g_pBASE->appendOSDirSlash( &style_file );
+    style_file += _T("styles");
+    g_pBASE->appendOSDirSlash( &style_file );
+    style_file += _T("qtstylesheet.qss");
+    
+    if(LoadQtStyleSheet(style_file)){
+        wxString smsg = _T("Loaded Qt Stylesheet: ") + style_file;
+        wxLogMessage( smsg );
+    }
+    else
+        wxLogMessage(_T("Qt Stylesheet not found"));
+#endif    
+#endif
+        
+    //      Create some static strings
     pInit_Chart_Dir = new wxString();
 
     //  Establish an empty ChartCroupArray
@@ -1046,7 +1119,17 @@ bool MyApp::OnInit()
             g_PrivateDataDir = g_pBASE->GetStandardPaths().GetUserDataDir();       // should be ~/.opencpn
 #endif
 
-    if( g_bportable ) g_PrivateDataDir = *g_pBASE->GetHomeLocation();
+    if( g_bportable )
+        g_PrivateDataDir = *g_pBASE->GetHomeLocation();
+
+#ifdef __OCPN__ANDROID__
+    g_PrivateDataDir = *g_pBASE->GetHomeLocation();
+#endif
+
+    imsg = _T("PrivateDataDir is ");
+    imsg += g_PrivateDataDir;
+    wxLogMessage( imsg );
+
 
     //  Get the PlugIns directory location
     g_Plugin_Dir = g_pBASE->GetStandardPaths().GetPluginsDir();   // linux:   {prefix}/lib/opencpn
@@ -1081,7 +1164,7 @@ bool MyApp::OnInit()
     pSelectAIS->SetSelectPixelRadius( 12 );
 
     g_pAIS = new AIS_Decoder();
-    //      Initially AIS display is always on
+//      Initially AIS display is always on
     g_pAIS->set_ShowAIS( true );
     g_pais_query_dialog_active = NULL;
 
@@ -1106,7 +1189,7 @@ bool MyApp::OnInit()
 
 #elif defined __WXOSX__
     gConfig_File = g_pBASE->GetStandardPaths().GetUserConfigDir(); // should be ~/Library/Preferences
-    appendOSDirSlash(&gConfig_File);
+    g_pBASE->appendOSDirSlash(&gConfig_File);
     gConfig_File.Append(_T("opencpn.ini"));
 #else
     gConfig_File = g_pBASE->GetStandardPaths().GetUserDataDir(); // should be ~/.opencpn
@@ -1126,6 +1209,13 @@ bool MyApp::OnInit()
 
     }
 
+#ifdef __OCPN__ANDROID__
+    gConfig_File = *g_pBASE->GetHomeLocation();
+    gConfig_File += _T("opencpn.conf");
+#endif
+
+    b_novicemode = false;
+    
     wxFileName config_test_file_name( gConfig_File );
     if( config_test_file_name.FileExists() ) wxLogMessage(
             _T("Using existing Config_File: ") + gConfig_File );
@@ -1136,9 +1226,9 @@ bool MyApp::OnInit()
             //    Flag to preset some options for initial config file creation
             b_novicemode = true;
 
-            if( true != config_test_file_name.DirExists( config_test_file_name.GetPath() ) ) if( !config_test_file_name.Mkdir(
-                    config_test_file_name.GetPath() ) ) wxLogMessage(
-                    _T("Cannot create config file directory for ") + gConfig_File );
+            if( true != config_test_file_name.DirExists( config_test_file_name.GetPath() ) )
+                if( !config_test_file_name.Mkdir(config_test_file_name.GetPath() ) )
+                    wxLogMessage( _T("Cannot create config file directory for ") + gConfig_File );
         }
     }
 
@@ -1155,12 +1245,6 @@ bool MyApp::OnInit()
         w.ShowModal();
         exit( EXIT_FAILURE );
     }
-
-#ifdef __WXGTK__
-//    if( !CheckSerialAccess() ){
-//    }
-
-#endif
 
     g_display_size_mm = wxMax(100, GetDisplaySizeMM());
 
@@ -1191,6 +1275,7 @@ bool MyApp::OnInit()
 
 //    wxLog::SetVerbose(true);            // log all messages for debugging language stuff
 
+#if wxUSE_XLOCALE || !wxCHECK_VERSION(3,0,0)
     if( lang_list[0] ) {
     };                 // silly way to avoid compiler warnings
 
@@ -1270,6 +1355,9 @@ bool MyApp::OnInit()
     //  This applies to either the system language, or to OpenCPN language selection
     if( loc_lang_canonical == _T("fr_FR") ) g_b_assume_azerty = true;
     if( def_lang_canonical == _T("fr_FR") ) g_b_assume_azerty = true;
+#else
+    wxLogMessage( _T("wxLocale support not available") );
+#endif
 
 //  Send the Welcome/warning message if it has never been sent before,
 //  or if the version string has changed at all
@@ -1323,13 +1411,27 @@ bool MyApp::OnInit()
     }
 #endif
 
+#ifdef __OCPN__ANDROID__
+    g_memCacheLimit = 100 * 1024;
+#endif
+
 //      Establish location and name of chart database
     pChartListFileName = g_pBASE->newPrivateFileName( "chartlist.dat", "CHRTLIST.DAT" );
+    
+#ifdef __OCPN__ANDROID__
+    pChartListFileName->Clear();
+    pChartListFileName->Append(_T("chartlist.dat"));
+    pChartListFileName->Prepend( *g_pBASE->GetHomeLocation() );
+#endif
 
 //      Establish guessed location of chart tree
     if( pInit_Chart_Dir->IsEmpty() ) {
         if( !g_bportable )
-            pInit_Chart_Dir->Append( g_pBASE->GetStandardPaths().GetDocumentsDir() );
+#ifndef __OCPN__ANDROID__
+        pInit_Chart_Dir->Append( g_pBASE->GetStandardPaths().GetDocumentsDir() );
+#else
+        pInit_Chart_Dir->Append( _T("/mnt/sdcard") );
+#endif
     }
 
 //      Establish the GSHHS Dataset location
@@ -1389,7 +1491,7 @@ bool MyApp::OnInit()
 
     //  Check the global AIS alarm sound file
     //  If empty, preset default
-    if( g_pAIS->AlertSoundFile().IsEmpty() ) {
+    if(g_pAIS->AlertSoundFile().IsEmpty()) {
         wxString default_sound =  ( g_SData_Locn + _T("sounds") +
         wxFileName::GetPathSeparator() +
         _T("2bells.wav"));
@@ -1462,6 +1564,16 @@ bool MyApp::OnInit()
             10 );
 #endif
 
+#ifdef __OCPN__ANDROID__
+    ::wxDisplaySize( &cw, &ch);
+    ch -= 24;                           // This accounts for an error in the wxQT-Android interface...
+    
+    if((cw > 200) && (ch > 200) )
+        new_frame_size.Set( cw, ch );
+    else
+        new_frame_size.Set( 800, 500 );
+#endif
+        
     //  For Windows and GTK, provide the expected application Minimize/Close bar
     long app_style = wxDEFAULT_FRAME_STYLE;
     app_style |= wxWANTS_CHARS;
@@ -1477,8 +1589,7 @@ bool MyApp::OnInit()
     }
 
     gFrame = new MyFrame( NULL, myframe_window_title, position, new_frame_size, app_style ); //Gunther
-    
-    g_pAIS->SetParentFrame( gFrame );
+
 //  Initialize the Plugin Manager
     g_pi_manager = new PlugInManager( gFrame );
 
@@ -1534,7 +1645,7 @@ bool MyApp::OnInit()
 // Show the frame
 
 //    gFrame->ClearBackground();
-//    gFrame->Show( TRUE );
+    gFrame->Show( TRUE );
 
     gFrame->SetAndApplyColorScheme( global_color_scheme );
 
@@ -1545,7 +1656,8 @@ bool MyApp::OnInit()
 
     stats = new StatWin( cc1 );
     stats->SetColorScheme( global_color_scheme );
-
+    stats->Show();
+    
     ocpnStyle::Style* style = g_StyleManager->GetCurrentStyle();
 
     if( cc1->GetQuiltMode() ) {
@@ -1857,7 +1969,9 @@ extern ocpnGLOptions g_GLOptions;
     gFrame->Raise();
 
     gFrame->RequestNewToolbar();
-//    g_FloatingToolbarDialog->Raise();
+#ifdef __WXQT__
+    g_FloatingToolbarDialog->Raise();
+#endif
 //    g_FloatingToolbarDialog->Show();
 
     cc1->Enable();
@@ -1900,6 +2014,8 @@ extern ocpnGLOptions g_GLOptions;
 
 int MyApp::OnExit()
 {
+    wxLogMessage( _T("opencpn::MyApp starting exit.") );
+    
     //  Send current nav status data to log file   // pjotrc 2010.02.09
 
     wxDateTime lognow = wxDateTime::Now();
@@ -1940,7 +2056,6 @@ int MyApp::OnExit()
 
     if( ptcmgr ) delete ptcmgr;
 
-    wxLogMessage( _T("opencpn::MyApp exiting cleanly...\n") );
     delete pConfig;
     delete pSelect;
     delete pSelectTC;
@@ -1961,6 +2076,9 @@ int MyApp::OnExit()
     
     delete pDummyChart;
 
+    wxLogMessage( _T("opencpn::MyApp exiting cleanly...\n") );
+    wxLog::FlushActive();
+    
     if( logger ) {
         wxLog::SetActiveTarget( Oldlogger );
         delete logger;
@@ -1970,7 +2088,7 @@ int MyApp::OnExit()
     delete phost_name;
     delete pInit_Chart_Dir;
     delete pWorldMapLocation;
-    
+
     delete g_pRouteMan;
     delete pWayPointMan;
 
@@ -2013,7 +2131,9 @@ int MyApp::OnExit()
     DeInitAllocCheck();
 #endif
 
+#if wxUSE_XLOCALE || !wxCHECK_VERSION(3,0,0)
     delete plocale_def_lang;
+#endif    
 
     FontMgr::Shutdown();
 
