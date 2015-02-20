@@ -63,6 +63,8 @@
 #include "AIS_Decoder.h"
 #include "AIS_Target_Data.h"
 #include "SendToGpsDlg.h"
+#include "OCPN_Dialogs.h"
+#include "OCPN_Functions.h"
 
 
 #ifdef USE_S57
@@ -322,7 +324,7 @@ void CanvasMenuHandler::CanvasPopupMenu( int x, int y, int seltype )
     }
 
     bool ais_areanotice = false;
-    if( g_pAIS && g_bShowAIS && g_bShowAreaNotices ) {
+    if( g_pAIS && g_pAIS->ShowAIS() && g_pAIS->ShowAreaNotices() ) {
 
         AIS_Target_Hash* an_sources = g_pAIS->GetAreaNoticeSourcesList();
 
