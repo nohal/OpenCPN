@@ -88,6 +88,8 @@ extern GLuint g_raster_format;
 
 #include "OCPNPlatform.h"
 
+#include "DlgMDNSSources.h"
+
 wxString GetOCPNKnownLanguage(const wxString lang_canonical,
                               wxString& lang_dir);
 wxString GetOCPNKnownLanguage(const wxString lang_canonical);
@@ -1345,6 +1347,11 @@ void options::CreatePanel_NMEA_Compact(size_t parent, int border_size,
                                        wxDefaultPosition, wxDefaultSize, 0);
   m_rbNetProtoGPSD->SetValue(TRUE);
   bSizer16->Add(m_rbNetProtoGPSD, 0, wxALL, 5);
+    
+  m_rbNetProtoSIGNALK = new wxRadioButton(m_pNMEAForm, wxID_ANY, _("SignalK"),
+                                          wxDefaultPosition, wxDefaultSize, 0);
+  m_rbNetProtoSIGNALK->Enable(TRUE);
+  bSizer16->Add(m_rbNetProtoSIGNALK, 0, wxALL, 5);
 
   wxFlexGridSizer* fgSizer1a = new wxFlexGridSizer(0, 2, 0, 0);
   fgSizer1a->SetFlexibleDirection(wxBOTH);
@@ -1367,7 +1374,7 @@ void options::CreatePanel_NMEA_Compact(size_t parent, int border_size,
                               wxDefaultPosition, wxSize(200, -1), 0);
   fgSizer1a->Add(m_tNetPort, 1, wxTOP | wxALIGN_RIGHT, 5);
 
-  gSizerSerProps = new wxGridSizer(0, 1, 0, 0);
+  gSizerSerProps = new wxFlexGridSizer(0, 1, 0, 0);
 
   wxFlexGridSizer* fgSizer1 = new wxFlexGridSizer(0, 2, 0, 0);
   fgSizer1->SetFlexibleDirection(wxBOTH);
@@ -1600,6 +1607,12 @@ void options::CreatePanel_NMEA_Compact(size_t parent, int border_size,
   m_rbNetProtoGPSD->Connect(
       wxEVT_COMMAND_RADIOBUTTON_SELECTED,
       wxCommandEventHandler(options::OnNetProtocolSelected), NULL, this);
+  m_rbNetProtoSIGNALK->Connect(
+      wxEVT_COMMAND_RADIOBUTTON_SELECTED,
+      wxCommandEventHandler(options::OnNetProtocolSelected), NULL, this);
+  m_btnMDNSScan->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
+                         wxCommandEventHandler(options::OnBtnMDNSScan), NULL,
+                         this);
   m_tNetAddress->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                          wxCommandEventHandler(options::OnConnValChange), NULL,
                          this);
@@ -1921,7 +1934,10 @@ void options::CreatePanel_NMEA(size_t parent, int border_size,
   } else
     m_rbTypeInternalBT = NULL;
 
-  gSizerNetProps = new wxGridSizer(0, 2, 0, 0);
+  gSizerNetProps = new wxFlexGridSizer(0, 3, 0, 0);
+  gSizerNetProps->AddGrowableCol( 1 );
+  gSizerNetProps->SetFlexibleDirection( wxBOTH );
+  gSizerNetProps->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 
   m_stNetProto = new wxStaticText(m_pNMEAForm, wxID_ANY, _("Protocol"),
                                   wxDefaultPosition, wxDefaultSize, 0);
@@ -1948,8 +1964,14 @@ void options::CreatePanel_NMEA(size_t parent, int border_size,
                                        wxDefaultPosition, wxDefaultSize, 0);
   m_rbNetProtoGPSD->SetValue(TRUE);
   bSizer16->Add(m_rbNetProtoGPSD, 0, wxALL, 5);
+    
+  m_rbNetProtoSIGNALK = new wxRadioButton(m_pNMEAForm, wxID_ANY, _("SignalK"),
+                                          wxDefaultPosition, wxDefaultSize, 0);
+  m_rbNetProtoSIGNALK->Enable(TRUE);
+  bSizer16->Add(m_rbNetProtoSIGNALK, 0, wxALL, 5);
 
   gSizerNetProps->Add(bSizer16, 1, wxEXPAND, 5);
+  gSizerNetProps->Add( 0, 0, 0, wxSHRINK, 5 );
 
   m_stNetAddr = new wxStaticText(m_pNMEAForm, wxID_ANY, _("Address"),
                                  wxDefaultPosition, wxDefaultSize, 0);
@@ -1959,7 +1981,10 @@ void options::CreatePanel_NMEA(size_t parent, int border_size,
   m_tNetAddress = new wxTextCtrl(m_pNMEAForm, wxID_ANY, wxEmptyString,
                                  wxDefaultPosition, wxDefaultSize, 0);
   gSizerNetProps->Add(m_tNetAddress, 0, wxEXPAND | wxTOP, 5);
-
+  m_btnMDNSScan = new wxButton(m_pNMEAForm, wxID_ANY, _("Scan..."), wxDefaultPosition,
+                                  wxDefaultSize, wxBU_EXACTFIT);
+  gSizerNetProps->Add(m_btnMDNSScan, 0, wxALL, 5);
+    
   m_stNetPort = new wxStaticText(m_pNMEAForm, wxID_ANY, _("DataPort"),
                                  wxDefaultPosition, wxDefaultSize, 0);
   m_stNetPort->Wrap(-1);
@@ -1968,10 +1993,11 @@ void options::CreatePanel_NMEA(size_t parent, int border_size,
   m_tNetPort = new wxTextCtrl(m_pNMEAForm, wxID_ANY, wxEmptyString,
                               wxDefaultPosition, wxDefaultSize, 0);
   gSizerNetProps->Add(m_tNetPort, 1, wxEXPAND | wxTOP, 5);
+  gSizerNetProps->Add( 0, 0, 0, wxSHRINK, 5 );
 
   sbSizerConnectionProps->Add(gSizerNetProps, 0, wxEXPAND, 5);
 
-  gSizerSerProps = new wxGridSizer(0, 1, 0, 0);
+  gSizerSerProps = new wxFlexGridSizer(0, 1, 0, 0);
 
   wxFlexGridSizer* fgSizer1;
   fgSizer1 = new wxFlexGridSizer(0, 4, 0, 0);
@@ -2208,6 +2234,12 @@ void options::CreatePanel_NMEA(size_t parent, int border_size,
   m_rbNetProtoGPSD->Connect(
       wxEVT_COMMAND_RADIOBUTTON_SELECTED,
       wxCommandEventHandler(options::OnNetProtocolSelected), NULL, this);
+  m_rbNetProtoSIGNALK->Connect(
+      wxEVT_COMMAND_RADIOBUTTON_SELECTED,
+      wxCommandEventHandler(options::OnNetProtocolSelected), NULL, this);
+  m_btnMDNSScan->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
+                         wxCommandEventHandler(options::OnBtnMDNSScan), NULL,
+                         this);
   m_tNetAddress->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                          wxCommandEventHandler(options::OnConnValChange), NULL,
                          this);
@@ -5494,6 +5526,8 @@ ConnectionParams* options::CreateConnectionParamsFromSelectedItem(void) {
     pConnectionParams->NetProtocol = TCP;
   else if (m_rbNetProtoUDP->GetValue())
     pConnectionParams->NetProtocol = UDP;
+  else if (m_rbNetProtoSIGNALK->GetValue())
+      pConnectionParams->NetProtocol = SIGNALK;
   else
     pConnectionParams->NetProtocol = GPSD;
 
@@ -7311,6 +7345,8 @@ void options::ShowNMEANet(bool visible) {
   m_rbNetProtoGPSD->Show(visible);
   m_rbNetProtoTCP->Show(visible);
   m_rbNetProtoUDP->Show(visible);
+  m_rbNetProtoSIGNALK->Show(visible);
+  m_btnMDNSScan->Show(visible);
 }
 
 void options::ShowNMEASerial(bool visible) {
@@ -7428,6 +7464,10 @@ void options::SetDSFormRWStates(void) {
     m_rbOAccept->Enable(TRUE);
     m_rbOIgnore->Enable(TRUE);
     m_btnOutputStcList->Enable(TRUE);
+    m_rbIAccept->Enable(TRUE);
+    m_rbIIgnore->Enable(TRUE);
+    m_btnInputStcList->Enable(TRUE);
+    m_cbCheckCRC->Enable(TRUE);
   } else if (m_rbNetProtoGPSD->GetValue()) {
     if (m_tNetPort->GetValue() == wxEmptyString)
       m_tNetPort->SetValue(_T("2947"));
@@ -7438,6 +7478,28 @@ void options::SetDSFormRWStates(void) {
     m_rbOAccept->Enable(FALSE);
     m_rbOIgnore->Enable(FALSE);
     m_btnOutputStcList->Enable(FALSE);
+    m_rbIAccept->Enable(TRUE);
+    m_rbIIgnore->Enable(TRUE);
+    m_btnInputStcList->Enable(TRUE);
+    m_cbCheckCRC->Enable(TRUE);
+    m_btnMDNSScan->Enable(FALSE);
+  } else if (m_rbNetProtoSIGNALK->GetValue()) {
+      if (m_tNetAddress->GetValue() == wxEmptyString)
+          m_tNetPort->SetValue(_T("127.0.0.1"));
+      if (m_tNetPort->GetValue() == wxEmptyString)
+          m_tNetPort->SetValue(_T("3000"));
+      m_cbInput->SetValue(TRUE);
+      m_cbInput->Enable(FALSE);
+      m_cbOutput->SetValue(FALSE);
+      m_cbOutput->Enable(FALSE);
+      m_rbOAccept->Enable(FALSE);
+      m_rbOIgnore->Enable(FALSE);
+      m_btnOutputStcList->Enable(FALSE);
+      m_rbIAccept->Enable(FALSE);
+      m_rbIIgnore->Enable(FALSE);
+      m_btnInputStcList->Enable(FALSE);
+      m_cbCheckCRC->Enable(FALSE);
+      m_btnMDNSScan->Enable(TRUE);
   } else {
     if (m_tNetPort->GetValue() == wxEmptyString)
       m_tNetPort->SetValue(_T("10110"));
@@ -7446,6 +7508,11 @@ void options::SetDSFormRWStates(void) {
     m_rbOAccept->Enable(TRUE);
     m_rbOIgnore->Enable(TRUE);
     m_btnOutputStcList->Enable(TRUE);
+    m_rbIAccept->Enable(TRUE);
+    m_rbIIgnore->Enable(TRUE);
+    m_btnInputStcList->Enable(TRUE);
+    m_cbCheckCRC->Enable(TRUE);
+    m_btnMDNSScan->Enable(FALSE);
   }
 }
 
@@ -7482,6 +7549,8 @@ void options::SetConnectionParams(ConnectionParams* cp) {
     m_rbNetProtoTCP->SetValue(TRUE);
   else if (cp->NetProtocol == UDP)
     m_rbNetProtoUDP->SetValue(TRUE);
+  else if (cp->NetProtocol == SIGNALK)
+      m_rbNetProtoSIGNALK->SetValue(TRUE);
   else
     m_rbNetProtoGPSD->SetValue(TRUE);
 
@@ -7670,6 +7739,17 @@ void options::OnBtnOStcs(wxCommandEvent& event) {
   if (dlg.ShowModal() == wxID_OK) m_tcOutputStc->SetValue(dlg.GetSentences());
 }
 
+void options::OnBtnMDNSScan(wxCommandEvent& event) {
+    DlgMDNSSources dlg(this);
+    
+    if (dlg.ShowModal() == wxID_OK)
+    {
+        size_t colon = dlg.GetSelectedServer().Find( ":" );
+        m_tNetAddress->SetValue( dlg.GetSelectedServer().Mid(0, colon) );
+        m_tNetPort->SetValue( dlg.GetSelectedServer().Right(dlg.GetSelectedServer().Len() - colon - 1) );
+    }
+}
+
 void options::OnNetProtocolSelected(wxCommandEvent& event) {
   if (m_rbNetProtoGPSD->GetValue()) {
     if (m_tNetPort->GetValue().IsEmpty()) m_tNetPort->SetValue(_T( "2947" ));
@@ -7679,6 +7759,11 @@ void options::OnNetProtocolSelected(wxCommandEvent& event) {
       m_tNetAddress->SetValue(_T( "0.0.0.0" ));
   } else if (m_rbNetProtoTCP->GetValue()) {
     if (m_tNetPort->GetValue().IsEmpty()) m_tNetPort->SetValue(_T( "10110" ));
+  } else if (m_rbNetProtoSIGNALK->GetValue()) {
+    if (m_tNetPort->GetValue().IsEmpty())
+        m_tNetPort->SetValue(_T( "3000" ));
+    if (m_tNetAddress->GetValue().IsEmpty())
+        m_tNetAddress->SetValue(_T( "127.0.0.1" ));
   }
 
   SetDSFormRWStates();

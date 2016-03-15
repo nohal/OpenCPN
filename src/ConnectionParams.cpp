@@ -169,6 +169,8 @@ wxString ConnectionParams::GetParametersStr()
             return _("TCP");
         else if (NetProtocol == UDP)
             return _("UDP");
+        else if (NetProtocol == SIGNALK)
+            return _("SIGNALK");
         else
             return _("GPSD");
     }
@@ -252,6 +254,8 @@ wxString ConnectionParams::GetDSPort()
             proto = _T("TCP");
         else if (NetProtocol == UDP)
             proto = _T("UDP");
+        else if (NetProtocol == SIGNALK)
+            proto = _T("SIGNALK");
         else
             proto = _T("GPSD");
         return wxString::Format( _T("%s:%s:%d"), proto.c_str(), NetworkAddress.c_str(), NetworkPort );
@@ -278,6 +282,8 @@ wxString ConnectionParams::GetLastDSPort()
             proto = _T("TCP");
         else if (LastNetProtocol == UDP)
             proto = _T("UDP");
+        else if (NetProtocol == SIGNALK)
+            proto = _T("SIGNALK");
         else
             proto = _T("GPSD");
         return wxString::Format( _T("%s:%s:%d"), proto.c_str(), LastNetworkAddress.c_str(), LastNetworkPort );

@@ -229,22 +229,27 @@ void DataStream::Open(void)
     
     else if(m_connection_type == NETWORK){
         if(m_portstring.Contains(_T("GPSD"))){
-            m_net_addr = _T("127.0.0.1");              // defaults
+            m_net_addr = _T("127.0.0.1");           // defaults
             m_net_port = _T("2947");
             m_net_protocol = GPSD;
         }
         else if(m_portstring.StartsWith(_T("TCP"))) {
-            m_net_addr = _T("0.0.0.0");              // defaults
+            m_net_addr = _T("0.0.0.0");             // defaults
             m_net_port = _T("10110");
             m_net_protocol = TCP;
         }
         else if(m_portstring.StartsWith(_T("UDP"))) {
-            m_net_addr =  _T("0.0.0.0");              // any address
+            m_net_addr =  _T("0.0.0.0");            // any address
             m_net_port = _T("10110");
             m_net_protocol = UDP;
         }
+        else if(m_portstring.StartsWith(_T("SIGNALK"))) {
+            m_net_addr =  _T("127.0.0.1");          // defaults
+            m_net_port = _T("3000");
+            m_net_protocol = UDP;
+        }
         else {
-            m_net_addr =  _T("0.0.0.0");              // any address
+            m_net_addr =  _T("0.0.0.0");            // any address
             m_net_port = _T("0");
             m_net_protocol = UDP;
         }
@@ -252,7 +257,7 @@ void DataStream::Open(void)
         //  Capture the  parameters from the portstring
 
         wxStringTokenizer tkz(m_portstring, _T(":"));
-        wxString token = tkz.GetNextToken();                //GPSD, TCP or UDP
+        wxString token = tkz.GetNextToken();                //GPSD, SIGNALK, TCP or UDP
 
         token = tkz.GetNextToken();                         //ip
         if(!token.IsEmpty())
@@ -288,6 +293,10 @@ void DataStream::Open(void)
                 tcp_socket->Connect(m_addr, FALSE);
                 m_brx_connect_event = false;
             
+                break;
+            }
+            case SIGNALK: {
+                wxMessageBox("SignalK not yet implemented.");
                 break;
             }
             case TCP: {
