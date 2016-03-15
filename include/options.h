@@ -353,7 +353,9 @@ class options : private Uncopyable,
   wxStaticBoxSizer *sbSizerOutFilter;
   wxRadioButton *m_rbTypeSerial, *m_rbTypeNet, *m_rbTypeInternalGPS;
   wxRadioButton *m_rbTypeInternalBT, *m_rbNetProtoTCP, *m_rbNetProtoUDP;
-  wxRadioButton *m_rbNetProtoGPSD, *m_rbIAccept, *m_rbIIgnore, *m_rbOAccept;
+  wxRadioButton *m_rbNetProtoGPSD, *m_rbNetProtoSIGNALK;
+  wxButton *m_btnMDNSScan;
+  wxRadioButton *m_rbIAccept, *m_rbIIgnore, *m_rbOAccept;
   wxRadioButton *m_rbOIgnore;
   wxStaticText *m_stBTPairs, *m_stNetProto, *m_stNetAddr, *m_stNetPort;
   wxStaticText *m_stSerPort, *m_stSerBaudrate, *m_stSerProtocol;
@@ -366,7 +368,7 @@ class options : private Uncopyable,
   wxStaticText* itemStaticTextUserVar;
   wxStaticText* itemStaticTextUserVar2;
   
-  wxGridSizer *gSizerNetProps, *gSizerSerProps;
+  wxFlexGridSizer *gSizerNetProps, *gSizerSerProps;
   wxTextCtrl *m_tNetAddress, *m_tNetPort, *m_tFilterSec, *m_tcInputStc;
   wxTextCtrl *m_tcOutputStc, *m_TalkerIdText;
   wxCheckBox *m_cbCheckCRC, *m_cbGarminHost, *m_cbGarminUploadHost;
@@ -395,6 +397,7 @@ class options : private Uncopyable,
   void OnCbOutput(wxCommandEvent &event);
   void OnRbOutput(wxCommandEvent &event);
   void OnBtnOStcs(wxCommandEvent &event);
+  void OnBtnMDNSScan(wxCommandEvent &event);
   void OnConnValChange(wxCommandEvent &event);
   void OnValChange(wxCommandEvent &event);
   void OnUploadFormatChange(wxCommandEvent &event);

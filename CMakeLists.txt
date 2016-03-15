@@ -719,6 +719,15 @@ IF(OCPN_USE_SVG)
       )
     ENDIF(WIN32)
 
+    SET(SRC_WXSERVDISC
+      src/wxServDisc/1035.c
+      src/wxServDisc/mdnsd.c
+      src/wxServDisc/wxServDisc.cpp
+    )
+    ADD_LIBRARY(WXSERVDISC ${SRC_WXSERVDISC})
+    INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/wxServDisc)
+    SET(EXTRA_LIBS ${EXTRA_LIBS} WXSERVDISC)
+
     SET(SRC_WXSVG
       src/wxsvg/src/CSSStyleDeclaration.cpp
       src/wxsvg/src/CSSValue.cpp
@@ -983,6 +992,7 @@ SET(HDRS
                 include/canvasMenu.h
                 include/OCPNPlatform.h
                 include/S57Sector.h
+                include/DlgMDNSSources.h
 )
 
 SET(SRCS
@@ -1071,7 +1081,8 @@ SET(SRCS
                 src/ssl/sha1.c
                 src/viewport.cpp
                 src/canvasMenu.cpp
-                src/OCPNPlatform.cpp 
+                src/OCPNPlatform.cpp
+                src/DlgMDNSSources.cpp 
     )
 
 IF(NOT WIN32 AND NOT APPLE AND NOT QT_ANDROID)
