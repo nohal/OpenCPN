@@ -286,6 +286,7 @@ public:
       void SetCanvasContextMenuItemGrey(int item, bool grey);
 
       void SendNMEASentenceToAllPlugIns(const wxString &sentence);
+      void SendSignalKSentenceToAllPlugIns(const wxString &sentence);
       void SendPositionFixToAllPlugIns(GenericPosDatEx *ppos);
       void SendAISSentenceToAllPlugIns(const wxString &sentence);
       void SendJSONMessageToAllPlugins(const wxString &message_id, wxJSONValue v);
