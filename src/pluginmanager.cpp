@@ -507,6 +507,13 @@ void PlugInManager::SendVectorChartObjectInfo(const wxString &chart, const wxStr
                         ppi->SendVectorChartObjectInfo(decouple_chart, decouple_feature, decouple_objname, lat, lon, scale, nativescale);
                     break;
                 }
+                case 114:
+                {
+                    opencpn_plugin_112 *ppi = dynamic_cast<opencpn_plugin_112 *>(pic->m_pplugin);
+                    if(ppi)
+                        ppi->SendVectorChartObjectInfo(decouple_chart, decouple_feature, decouple_objname, lat, lon, scale, nativescale);
+                    break;
+                }
                 default:
                     break;
                 }
@@ -1008,6 +1015,9 @@ PlugInContainer *PlugInManager::LoadPlugIn(wxString plugin_file)
     case 113:
         pic->m_pplugin = dynamic_cast<opencpn_plugin_113*>(plug_in);
         break;
+    case 114:
+        pic->m_pplugin = dynamic_cast<opencpn_plugin_114*>(plug_in);
+        break;
         
     default:
         break;
@@ -1078,6 +1088,13 @@ bool PlugInManager::RenderAllCanvasOverlayPlugIns( ocpnDC &dc, const ViewPort &v
                             ppi->RenderOverlay(*pdc, &pivp);
                         break;
                     }
+                    case 114:
+                    {
+                        opencpn_plugin_18 *ppi = dynamic_cast<opencpn_plugin_18 *>(pic->m_pplugin);
+                        if(ppi)
+                            ppi->RenderOverlay(*pdc, &pivp);
+                        break;
+                    }
 
                     default:
                         break;
@@ -1124,6 +1141,13 @@ bool PlugInManager::RenderAllCanvasOverlayPlugIns( ocpnDC &dc, const ViewPort &v
                     case 111:
                     case 112:
                     case 113:
+                    {
+                        opencpn_plugin_18 *ppi = dynamic_cast<opencpn_plugin_18 *>(pic->m_pplugin);
+                        if(ppi)
+                            b_rendered = ppi->RenderOverlay(mdc, &pivp);
+                        break;
+                    }
+                    case 114:
                     {
                         opencpn_plugin_18 *ppi = dynamic_cast<opencpn_plugin_18 *>(pic->m_pplugin);
                         if(ppi)
@@ -1192,6 +1216,13 @@ bool PlugInManager::RenderAllGLCanvasOverlayPlugIns( wxGLContext *pcontext, cons
                         ppi->RenderGLOverlay(pcontext, &pivp);
                     break;
                 }
+                case 114:
+                {
+                    opencpn_plugin_18 *ppi = dynamic_cast<opencpn_plugin_18 *>(pic->m_pplugin);
+                    if(ppi)
+                        ppi->RenderGLOverlay(pcontext, &pivp);
+                    break;
+                }
                 default:
                     break;
                 }
@@ -1210,7 +1241,7 @@ bool PlugInManager::SendMouseEventToPlugins( wxMouseEvent &event)
         PlugInContainer *pic = plugin_array.Item(i);
         if(pic->m_bEnabled && pic->m_bInitState)
         {
-            if(pic->m_cap_flag & WANTS_MOUSE_EVENTS){
+            if(pic->m_cap_flag & WANTS_MOUSE_EVENTS)
             {
                 switch(pic->m_api_version)
                 {
@@ -1218,15 +1249,23 @@ bool PlugInManager::SendMouseEventToPlugins( wxMouseEvent &event)
                     case 113:
                     {
                         opencpn_plugin_112 *ppi = dynamic_cast<opencpn_plugin_112*>(pic->m_pplugin);
-                            if(ppi)
-                                if(ppi->MouseEventHook( event ))
-                                    bret = true;
-                            break;
-                        }
-                        
-                        default:
-                            break;
+                        if(ppi)
+                            if(ppi->MouseEventHook( event ))
+                                bret = true;
+                        break;
                     }
+                    case 114:
+                    {
+                        opencpn_plugin_112 *ppi = dynamic_cast<opencpn_plugin_112*>(pic->m_pplugin);
+                        if(ppi)
+                            if(ppi->MouseEventHook( event ))
+                                bret = true;
+                        break;
+                    }
+                        
+                    default:
+                        break;
+                    
                 }
             }
         }
@@ -1254,6 +1293,14 @@ bool PlugInManager::SendKeyEventToPlugins( wxKeyEvent &event)
                                 if(ppi->KeyboardEventHook( event ))
                                     bret = true;
                                 break;
+                        }
+                        case 114:
+                        {
+                            opencpn_plugin_113 *ppi = dynamic_cast<opencpn_plugin_113*>(pic->m_pplugin);
+                            if(ppi)
+                                if(ppi->KeyboardEventHook( event ))
+                                    bret = true;
+                            break;
                         }
                         
                         default:
@@ -1310,6 +1357,15 @@ void NotifySetupOptionsPlugin( PlugInContainer *pic )
             case 111:
             case 112:
             case 113:
+            {
+                opencpn_plugin_19 *ppi = dynamic_cast<opencpn_plugin_19 *>(pic->m_pplugin);
+                if(ppi) {
+                    ppi->OnSetupOptions();
+                    pic->m_bToolboxPanel = true;
+                }
+                break;
+            }
+            case 114:
             {
                 opencpn_plugin_19 *ppi = dynamic_cast<opencpn_plugin_19 *>(pic->m_pplugin);
                 if(ppi) {
@@ -1430,6 +1486,24 @@ void PlugInManager::SendNMEASentenceToAllPlugIns(const wxString &sentence)
     }
 }
 
+void PlugInManager::SendSignalKSentenceToAllPlugIns(const wxString &sentence)
+{
+    wxString decouple_sentence(sentence); // decouples 'const wxString &' and 'wxString &' to keep bin compat for plugins
+    for(unsigned int i = 0 ; i < plugin_array.GetCount() ; i++)
+    {
+        PlugInContainer *pic = plugin_array.Item(i);
+        if(pic->m_bEnabled && pic->m_bInitState)
+        {
+            if(pic->m_cap_flag & WANTS_SIGNALK_SENTENCES)
+            {
+                opencpn_plugin_114 *ppi = dynamic_cast<opencpn_plugin_114 *>(pic->m_pplugin);
+                if(ppi)
+                    ppi->SetSignalKSentence(decouple_sentence);
+            }
+        }
+    }
+}
+
 int PlugInManager::GetJSONMessageTargetCount()
 {
     int rv = 0;
@@ -1485,6 +1559,13 @@ void PlugInManager::SendMessageToAllPlugins(const wxString &message_id, const wx
                 case 111:
                 case 112:
                 case 113:
+                {
+                    opencpn_plugin_18 *ppi = dynamic_cast<opencpn_plugin_18 *>(pic->m_pplugin);
+                    if(ppi)
+                        ppi->SetPluginMessage(decouple_message_id, decouple_message_body);
+                    break;
+                }
+                case 114:
                 {
                     opencpn_plugin_18 *ppi = dynamic_cast<opencpn_plugin_18 *>(pic->m_pplugin);
                     if(ppi)
@@ -1563,6 +1644,13 @@ void PlugInManager::SendPositionFixToAllPlugIns(GenericPosDatEx *ppos)
                 case 111:
                 case 112:
                 case 113:
+                {
+                    opencpn_plugin_18 *ppi = dynamic_cast<opencpn_plugin_18 *>(pic->m_pplugin);
+                    if(ppi)
+                        ppi->SetPositionFixEx(pfix_ex);
+                    break;
+                }
+                case 114:
                 {
                     opencpn_plugin_18 *ppi = dynamic_cast<opencpn_plugin_18 *>(pic->m_pplugin);
                     if(ppi)
@@ -3399,6 +3487,20 @@ bool opencpn_plugin_113::KeyboardEventHook( wxKeyEvent &event )
 
 void opencpn_plugin_113::OnToolbarToolDownCallback(int id) {}
 void opencpn_plugin_113::OnToolbarToolUpCallback(int id) {}
+
+//    Opencpn_Plugin_114 Implementation
+opencpn_plugin_114::opencpn_plugin_114(void *pmgr)
+: opencpn_plugin_113(pmgr)
+{
+}
+
+opencpn_plugin_114::~opencpn_plugin_114(void)
+{
+}
+
+void opencpn_plugin_114::SetSignalKSentence(wxString &sentence)
+{
+}
 
 //          Helper and interface classes
 

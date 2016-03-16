@@ -86,6 +86,7 @@ class       wxScrolledWindow;
 #define     WANTS_MOUSE_EVENTS                        0x00080000
 #define     WANTS_VECTOR_CHART_OBJECT_INFO            0x00100000
 #define     WANTS_KEYBOARD_EVENTS                     0x00200000
+#define     WANTS_SIGNALK_SENTENCES                   0x00400000
 
 //----------------------------------------------------------------------------------------------------------
 //    Some PlugIn API interface object class definitions
@@ -513,6 +514,15 @@ public:
     virtual bool KeyboardEventHook( wxKeyEvent &event );
     virtual void OnToolbarToolDownCallback(int id);
     virtual void OnToolbarToolUpCallback(int id);
+};
+
+class DECL_EXP opencpn_plugin_114 : public opencpn_plugin_113
+{
+public:
+    opencpn_plugin_114(void *pmgr);
+    virtual ~opencpn_plugin_114();
+    
+    virtual void SetSignalKSentence(wxString &sentence);
 };
 
 //------------------------------------------------------------------
