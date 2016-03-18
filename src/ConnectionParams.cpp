@@ -69,6 +69,8 @@ void ConnectionParams::Deserialize(const wxString &configStr)
     b_IsSetup = false;
     if (prms.Count() >= 18)
         bEnabled = !!wxAtoi(prms[17]);
+    if (prms.Count() >= 19)
+        UseTLS = !!wxAtoi(prms[18]);
 }
 
 wxString ConnectionParams::Serialize()
@@ -87,7 +89,7 @@ wxString ConnectionParams::Serialize()
             ostcs.Append( _T(",") );
         ostcs.Append( OutputSentenceList[i] );
     }
-    wxString ret = wxString::Format( _T("%d;%d;%s;%d;%d;%s;%d;%d;%d;%d;%s;%d;%s;%d;%d;%d;%d;%d"),
+    wxString ret = wxString::Format( _T("%d;%d;%s;%d;%d;%s;%d;%d;%d;%d;%s;%d;%s;%d;%d;%d;%d;%d;%d"),
                                      Type,
                                      NetProtocol,
                                      NetworkAddress.c_str(),
@@ -105,7 +107,8 @@ wxString ConnectionParams::Serialize()
                                      Garmin,
                                      GarminUpload,
                                      FurunoGP3X,
-                                     bEnabled
+                                     bEnabled,
+                                     UseTLS
                                    );
 
     return ret;

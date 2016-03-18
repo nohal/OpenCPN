@@ -371,7 +371,7 @@ class options : private Uncopyable,
   wxFlexGridSizer *gSizerNetProps, *gSizerSerProps;
   wxTextCtrl *m_tNetAddress, *m_tNetPort, *m_tFilterSec, *m_tcInputStc;
   wxTextCtrl *m_tcOutputStc, *m_TalkerIdText;
-  wxCheckBox *m_cbCheckCRC, *m_cbGarminHost, *m_cbGarminUploadHost;
+  wxCheckBox *m_cbCheckCRC, *m_cbGarminHost, *m_cbGarminUploadHost, *m_cbUseTLS;
   wxCheckBox *m_cbFurunoGP3X, *m_cbNMEADebug, *m_cbFilterSogCog, *m_cbInput;
   wxCheckBox *m_cbOutput, *m_cbAPBMagnetic;
   wxComboBox *m_comboPort;

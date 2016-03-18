@@ -286,6 +286,10 @@ extern int              g_COGAvgSec;
 extern bool             g_bMagneticAPB;
 extern bool             g_bShowChartBar;
 
+#ifdef __OCPN_USE_WEBSOCKETS__
+extern wxString         g_SignalKOwnContext;
+#endif
+
 extern int              g_MemFootSec;
 extern int              g_MemFootMB;
 
@@ -1271,7 +1275,11 @@ int MyConfig::LoadMyConfig()
         umv.ToDouble( &g_UserVar );
 
     Read( _T ( "UseMagAPB" ), &g_bMagneticAPB, 0 );
-
+    
+#ifdef __OCPN_USE_WEBSOCKETS__
+    Read( _T ( "SignalKOwnContext" ), &g_SignalKOwnContext, wxEmptyString );
+#endif
+         
     Read( _T ( "ScreenBrightness" ), &g_nbrightness, 100 );
 
     Read( _T ( "MemFootprintMgrTimeSec" ), &g_MemFootSec, 60 );
@@ -2633,6 +2641,10 @@ void MyConfig::UpdateSettings()
     Write( _T ( "LookAheadMode" ), g_bLookAhead );
     Write( _T ( "COGUPAvgSeconds" ), g_COGAvgSec );
     Write( _T ( "UseMagAPB" ), g_bMagneticAPB );
+    
+#ifdef __OCPN_USE_WEBSOCKETS__
+    //Write( _T ( "SignalKOwnContext" ), g_SignalKOwnContext );
+#endif
 
     Write( _T ( "OwnshipCOGPredictorMinutes" ), g_ownship_predictor_minutes );
     Write( _T ( "OwnshipCOGPredictorWidth" ), g_cog_predictor_width );

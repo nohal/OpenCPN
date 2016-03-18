@@ -527,6 +527,66 @@ private:
 
 };
 
+#ifdef __OCPN_USE_WEBSOCKETS__
+#include <libwebsockets.h>
+#include <vector>
+
+extern const wxEventType wxEVT_OCPN_SIGNALKMSG;
+
+class OCPN_SignalKMessageEvent: public wxEvent
+{
+public:
+    OCPN_SignalKMessageEvent( wxEventType commandType = wxEVT_NULL, int id = 0 );
+    ~OCPN_SignalKMessageEvent( );
+    
+    // accessors
+    void SetSString(std::string string) { m_string = string; }
+    std::string GetSString() { return m_string; }
+    
+    // required for sending with wxPostEvent()
+    wxEvent *Clone() const;
+    
+private:
+    std::string m_string;
+};
+
+struct WSConnection
+{
+    ConnectionParams params;
+    struct lws *lws_ptr;
+    std::string buffer;
+    unsigned long last_event;
+};
+
+//------------------------------------------------------------------------------
+//
+//    WebSockets worker thread
+//
+//    This thread is managing all the websocket connections
+//
+//------------------------------------------------------------------------------
+class WebSockets_Thread: public wxThread
+{
+public:
+    static WebSockets_Thread    *Instance();
+    ~WebSockets_Thread(void);
+    void *Entry();
+    static void SetListener(wxEvtHandler *listener) { if( m_pInstance ) m_pInstance->m_pMessageTarget = listener; }
+    
+    static int                  callback_sk_dump(struct lws *wsi, enum lws_callback_reasons reason,
+                                           void *user, void *in, size_t len);
+    void AddConnection(ConnectionParams *params);
+    bool RemoveConnection(ConnectionParams *params);
+    void ClearConnections();
+    
+private:
+    std::vector<WSConnection>   connections;
+    WebSockets_Thread();
+    static WebSockets_Thread    *m_pInstance;
+    wxEvtHandler                *m_pMessageTarget;
+    struct lws_context          *context;
+};
+#endif
 
 
 #endif

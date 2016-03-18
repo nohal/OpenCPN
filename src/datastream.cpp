@@ -1952,3 +1952,365 @@ bool DataStream::SetOutputSocketOptions(wxSocketBase* tsock)
     unsigned long outbuf_size = 1024;       // Smallest allowable value on Linux
     return (tsock->SetOption(SOL_SOCKET,SO_SNDBUF,&outbuf_size, sizeof(outbuf_size)) && ret);
 }
+
+#ifdef __OCPN_USE_WEBSOCKETS__
+using namespace std;
+
+const wxEventType wxEVT_OCPN_SIGNALKMSG = wxNewEventType();
+
+OCPN_SignalKMessageEvent::OCPN_SignalKMessageEvent(wxEventType commandType, int id)
+:wxEvent(id, commandType)
+{
+}
+
+OCPN_SignalKMessageEvent::~OCPN_SignalKMessageEvent()
+{
+}
+
+wxEvent* OCPN_SignalKMessageEvent::Clone() const
+{
+    OCPN_SignalKMessageEvent *newevent=new OCPN_SignalKMessageEvent(*this);
+    newevent->m_string = this->m_string;
+    return newevent;
+}
+
+#define RECONNECTTION_RATE_SECS 2
+#define WEBSOCKETS_BUFFER_CHARS 50
+
+/**
+ *  Definition of our protocol
+ */
+enum sk_protocols {
+    PROTOCOL_SK_DUMP,
+    /* always last */
+    SK_PROTOCOL_COUNT
+};
+
+static int deny_deflate, deny_mux, longlived;
+static struct lws *wsi_dump;
+static volatile int force_exit;
+static unsigned int opts;
+
+/**
+ *  Definition of our listener and callback function
+ */
+static struct lws_protocols protocols[] = {
+    {
+        0,
+        WebSockets_Thread::callback_sk_dump,
+        0,
+        WEBSOCKETS_BUFFER_CHARS,
+    },
+    { NULL, NULL, 0, 0 } /* end */
+};
+
+/**
+ *  Handler for libwebsockets errors
+ *
+ *  @param sig Libwebsockets signal number
+ */
+void sighandler(int sig)
+{
+    force_exit = 1;
+}
+
+/**
+ *  Protects from retrying the connection to the websockets too fast
+ *
+ *  @param last Last connection timestamp
+ *  @param secs Seconds we have to wait until we try again
+ *
+ *  @return 1 if we can connect, 0 if it is too early to try again
+ */
+static int ratelimit_connects(unsigned int *last, int secs)
+{
+    struct timeval tv;
+    
+    gettimeofday(&tv, NULL);
+    if (tv.tv_sec - (*last) < secs)
+        return 0;
+    
+    *last = tv.tv_sec;
+    
+    return 1;
+}
+
+//------------------------------------------------------------------------------
+//    WebSockets_Thread Implementation
+//------------------------------------------------------------------------------
+WebSockets_Thread* WebSockets_Thread::m_pInstance = NULL;
+
+/**
+ *  Returns the singleton instance, creates it if needed
+ *
+ *  @return The singleton instance
+ */
+WebSockets_Thread* WebSockets_Thread::Instance()
+{
+    if (!m_pInstance)   // Only allow one instance of class to be generated.
+        m_pInstance = new WebSockets_Thread();
+
+    return m_pInstance;
+}
+
+/**
+ *  Private constructor
+ */
+WebSockets_Thread::WebSockets_Thread()
+{
+    m_pMessageTarget = NULL;
+    Create();
+}
+
+/**
+ *  Destructor
+ */
+WebSockets_Thread::~WebSockets_Thread()
+{
+    m_pMessageTarget = NULL;
+}
+
+void WebSockets_Thread::AddConnection(ConnectionParams *params)
+{
+    WSConnection newconn;
+    newconn.lws_ptr = NULL;
+    newconn.buffer = "";
+    newconn.params = *params;
+    connections.push_back( newconn );
+}
+
+bool WebSockets_Thread::RemoveConnection(ConnectionParams *params)
+{
+    vector<WSConnection>::iterator connectionsIterator;
+    for(connectionsIterator = connections.begin();
+        connectionsIterator != connections.end();
+        connectionsIterator++)
+    {
+        if( connectionsIterator->params.NetworkAddress == params->NetworkAddress &&
+           connectionsIterator->params.NetworkPort == params->NetworkPort &&
+           connectionsIterator->params.UseTLS == params->UseTLS )
+        {
+            lws_callback_on_writable( connectionsIterator->lws_ptr );
+            connectionsIterator->lws_ptr = NULL;
+            connections.erase( connectionsIterator );
+            return true;
+        }
+    }
+    return false;
+}
+
+
+void WebSockets_Thread::ClearConnections()
+{
+    vector<WSConnection>::iterator connectionsIterator;
+    for(connectionsIterator = connections.begin();
+        connectionsIterator != connections.end();
+        connectionsIterator++)
+    {
+        if( connectionsIterator->lws_ptr )
+            lws_callback_on_writable( connectionsIterator->lws_ptr );
+        connectionsIterator->lws_ptr = NULL;
+    }
+    connections.clear();
+}
+
+/**
+ *  Callback method handling websockets events received from libwebsockets
+ */
+int WebSockets_Thread::callback_sk_dump(struct lws *wsi, enum lws_callback_reasons reason,
+                                        void *user, void *in, size_t len)
+{
+    vector<WSConnection>::iterator connectionsIterator;
+    
+    switch (reason) {
+        case LWS_CALLBACK_CLIENT_WRITEABLE:
+            return -1;
+        case LWS_CALLBACK_SERVER_WRITEABLE:
+            return -1;
+            
+        case LWS_CALLBACK_CLIENT_ESTABLISHED:
+            //lwsl_info("dump: LWS_CALLBACK_CLIENT_ESTABLISHED\n");
+            break;
+            
+        case LWS_CALLBACK_CLOSED:
+            //lwsl_notice("dump: LWS_CALLBACK_CLOSED\n");
+            if( !m_pInstance )
+                break;
+            for(connectionsIterator = m_pInstance->connections.begin();
+                connectionsIterator != m_pInstance->connections.end();
+                connectionsIterator++)
+            {
+                connectionsIterator->lws_ptr = NULL;
+            }
+            break;
+            
+        case LWS_CALLBACK_CLIENT_RECEIVE:
+        {
+            ((char *)in)[len] = '\0';
+            //lwsl_info("CR_rx %d '%s'\n", (int)len, (char *)in);
+            if( !m_pInstance )
+                break;
+
+            for(connectionsIterator = m_pInstance->connections.begin();
+                connectionsIterator != m_pInstance->connections.end();
+                connectionsIterator++)
+            {
+                if (wsi == connectionsIterator->lws_ptr) {
+                    connectionsIterator->last_event = time(NULL);
+                    if( ((char *)in)[len-1] == '}' ) //End of a sentence
+                    {
+                        connectionsIterator->buffer.append( (char *)in );
+                        if( m_pInstance )
+                        {
+                            OCPN_SignalKMessageEvent event(wxEVT_OCPN_SIGNALKMSG, 0);
+                            event.SetSString( connectionsIterator->buffer );
+                            if( m_pInstance->m_pMessageTarget )
+                                m_pInstance->m_pMessageTarget->AddPendingEvent(event);
+                        }
+                        connectionsIterator->buffer.clear();
+                    }
+                    else
+                    {
+                        char last = *connectionsIterator->buffer.rbegin();
+                        if( ((char *)in)[0] == '{' && last != ':' && last != '[' && last != ',' ) //Beginning of a new sentence, we probably lost the end of the last one somehow :(, let's replace whatever we have in the buffer and try again
+                        {
+                            connectionsIterator->buffer = (char *)in;
+                        }
+                        else //Middle of a sentence, simply append to the buffer
+                        {
+                            connectionsIterator->buffer.append( (char *)in );
+                        }
+                    }
+                }
+            }
+            break;
+        }
+            /* because we are protocols[0] ... */
+            
+        case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
+            if( !m_pInstance )
+                break;
+            for(connectionsIterator = m_pInstance->connections.begin();
+                connectionsIterator != m_pInstance->connections.end();
+                connectionsIterator++)
+            {
+                if (wsi == connectionsIterator->lws_ptr) {
+                    //lwsl_err("dump: LWS_CALLBACK_CLIENT_CONNECTION_ERROR\n");
+                    connectionsIterator->lws_ptr = NULL;
+                }
+            }
+            break;
+            
+        case LWS_CALLBACK_CLIENT_CONFIRM_EXTENSION_SUPPORTED:
+            if ((strcmp((const char*)in, "deflate-stream") == 0) && deny_deflate) {
+                //lwsl_notice("denied deflate-stream extension\n");
+                return 1;
+            }
+            if ((strcmp((const char*)in, "deflate-frame") == 0) && deny_deflate) {
+                //lwsl_notice("denied deflate-frame extension\n");
+                return 1;
+            }
+            if ((strcmp((const char*)in, "x-google-mux") == 0) && deny_mux) {
+                //lwsl_notice("denied x-google-mux extension\n");
+                return 1;
+            }
+            break;
+            
+        default:
+            break;
+    }
+    
+    return 0;
+}
+
+/**
+ *  The actual thread routine
+ *
+ *  @return NULL
+ */
+void *WebSockets_Thread::Entry()
+{
+    vector<WSConnection>::iterator connectionsIterator;
+    
+    int n = 0, ret = 0, port = 3000, use_ssl = 0;
+    int debug = 0;
+    unsigned int rl_dump = 0;
+    struct lws_context_creation_info info;
+    int ietf_version = -1; /* latest */
+    const char *address;
+    
+    memset(&info, 0, sizeof info);
+    
+    longlived = 1; //longlived websockets
+    deny_deflate = 1;
+    deny_mux = 1;
+    
+    lws_set_log_level(debug, NULL);
+    
+    signal(SIGINT, sighandler);
+    
+    /*
+     * create the websockets context.  This tracks open connections and
+     * knows how to route any traffic and which protocol version to use,
+     * and if each connection is client or server side.
+     *
+     * For this tool, we tell it to not listen on any port.
+     */
+    
+    info.port = CONTEXT_PORT_NO_LISTEN;
+    info.protocols = protocols;
+#ifndef LWS_NO_EXTENSIONS
+    info.extensions = lws_get_internal_extensions(); //extensions;//
+#endif
+    info.gid = -1;
+    info.uid = -1;
+    
+    context = lws_create_context(&info);
+    if (context == NULL) {
+        fprintf(stderr, "Creating libwebsocket context failed\n");
+        goto thread_prexit;
+    }
+    
+    /*
+     * Sit there servicing the websocket context to handle incoming
+     * packets.
+     *
+     * nothing happens until the client websocket connection is
+     * asynchronously established... calling lws_client_connect() only
+     * instantiates the connection logically, lws_service() processes it
+     * asynchronously.
+     */
+    
+    while (!force_exit) {
+        
+        for(connectionsIterator = connections.begin();
+            connectionsIterator != connections.end();
+            connectionsIterator++)
+        {
+            address = connectionsIterator->params.NetworkAddress.c_str();
+            port = connectionsIterator->params.NetworkPort;
+            if( connectionsIterator->params.UseTLS )
+                use_ssl = 2; //Enable TLS with self-signed certs
+            else
+                use_ssl = 0;
+            if (!connectionsIterator->lws_ptr && ratelimit_connects(&rl_dump, RECONNECTTION_RATE_SECS)) {
+                //lwsl_notice("dump: connecting\n");
+                char host[255];
+                snprintf(host, 254, "%s:%d", address, port);
+                connectionsIterator->lws_ptr = lws_client_connect(context, address, port,
+                                          use_ssl, "/signalk/v1/stream", host, 0,
+                                          protocols[PROTOCOL_SK_DUMP].name,
+                                          ietf_version);
+            }
+        }
+        
+        lws_service(context, 500);
+    }
+    
+    //lwsl_err("Exiting\n");
+    lws_context_destroy(context);
+    
+thread_prexit:
+    return NULL;
+}
+#endif

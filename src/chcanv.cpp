@@ -5183,7 +5183,7 @@ bool ChartCanvas::MouseEventProcessObjects( wxMouseEvent& event )
                 RoutePoint *pMousePoint = NULL;
                 
                 //    Calculate meaningful SelectRadius
-                int nearby_sel_rad_pix = 8;
+                int nearby_sel_rad_pix = 80;
                 double nearby_radius_meters = nearby_sel_rad_pix / m_true_scale_ppm;
                 
                 RoutePoint *pNearbyPoint = pWayPointMan->GetNearbyWaypoint( rlat, rlon,
@@ -5213,13 +5213,13 @@ bool ChartCanvas::MouseEventProcessObjects( wxMouseEvent& event )
                     
                     if( brp_viz ){
                         int dlg_return;
-#ifndef __WXOSX__
+//#ifndef __WXOSX__
                         dlg_return = OCPNMessageBox( this, _("Use nearby waypoint?"),
                                                  _("OpenCPN Route Create"),
                                                    (long) wxYES_NO | wxCANCEL | wxYES_DEFAULT );
-#else
-                        dlg_return = wxID_YES;
-#endif
+//#else
+//                        dlg_return = wxID_YES;
+//#endif
                         if( dlg_return == wxID_YES ) {
                             pMousePoint = pNearbyPoint;
                                                      
