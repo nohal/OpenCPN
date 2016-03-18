@@ -50,7 +50,7 @@ class wxGLContext;
 //    PlugIns conforming to API Version less then the most modern will also
 //    be correctly supported.
 #define API_VERSION_MAJOR           1
-#define API_VERSION_MINOR           13
+#define API_VERSION_MINOR           14
 
 //    Fwd Definitions
 class       wxFileConfig;
@@ -516,12 +516,24 @@ public:
     virtual void OnToolbarToolUpCallback(int id);
 };
 
+/// Plug-in API 1.14, post OpenCPN 4.2
 class DECL_EXP opencpn_plugin_114 : public opencpn_plugin_113
 {
 public:
+    /**
+     *  Plug-in constructor
+     */
     opencpn_plugin_114(void *pmgr);
+    /**
+     *  Plug-in destructor
+     */
     virtual ~opencpn_plugin_114();
     
+    /**
+     *  Injects a complete SignalK JSON sentence into a plug-in
+     *
+     *  @param sentence Single JSON object with one SignalK sentence
+     */
     virtual void SetSignalKSentence(wxString &sentence);
 };
 

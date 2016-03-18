@@ -47,6 +47,10 @@ class Multiplexer : public wxEvtHandler
         Multiplexer();
         ~Multiplexer();
         void AddStream(DataStream *stream);
+#ifdef __OCPN_USE_WEBSOCKETS__
+        void AddWSStream(ConnectionParams *params);
+        void RemoveWSStream(ConnectionParams *params);
+#endif
         void StopAllStreams();
         void ClearStreams();
         void StartAllStreams();
@@ -64,6 +68,9 @@ class Multiplexer : public wxEvtHandler
         int SendWaypointToGPS(RoutePoint *prp, const wxString &com_name, wxGauge *pProgress);
 
         void OnEvtStream(OCPN_DataStreamEvent& event);
+#ifdef __OCPN_USE_WEBSOCKETS__
+        void OnEvtSignalK(OCPN_SignalKMessageEvent& event);
+#endif
         wxString ProcessNMEA4Tags( wxString msg);
         
         void LogOutputMessage(const wxString &msg, wxString stream_name, bool b_filter);
@@ -71,6 +78,9 @@ class Multiplexer : public wxEvtHandler
         void LogInputMessage(const wxString &msg, const wxString & stream_name, bool b_filter, bool b_error = false);
 
     private:
+#ifdef __OCPN_USE_WEBSOCKETS__
+        WebSockets_Thread   *m_pwsthread;
+#endif
         wxArrayOfDataStreams *m_pdatastreams;
 
         wxEvtHandler        *m_aisconsumer;

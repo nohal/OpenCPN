@@ -1413,7 +1413,7 @@ void options::CreatePanel_NMEA_Compact(size_t parent, int border_size,
   fgSizer1->Add(m_stSerProtocol, 0, wxALL, 5);
 
   wxString m_choiceSerialProtocolChoices[] = {_("NMEA 0183"), _("NMEA 2000"),
-                                              _("Seatalk")};
+                                              _("Seatalk"), _("SignalK")};
   int m_choiceSerialProtocolNChoices =
       sizeof(m_choiceSerialProtocolChoices) / sizeof(wxString);
   m_choiceSerialProtocol = new wxChoice(
@@ -1636,6 +1636,8 @@ void options::CreatePanel_NMEA_Compact(size_t parent, int border_size,
                             NULL, this);
   m_cbCheckCRC->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
                         wxCommandEventHandler(options::OnCrcCheck), NULL, this);
+  m_cbUseTLS->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                          wxCommandEventHandler(options::OnConnValChange), NULL, this);
   m_cbGarminHost->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
                           wxCommandEventHandler(options::OnUploadFormatChange),
                           NULL, this);
@@ -1993,7 +1995,12 @@ void options::CreatePanel_NMEA(size_t parent, int border_size,
   m_tNetPort = new wxTextCtrl(m_pNMEAForm, wxID_ANY, wxEmptyString,
                               wxDefaultPosition, wxDefaultSize, 0);
   gSizerNetProps->Add(m_tNetPort, 1, wxEXPAND | wxTOP, 5);
-  gSizerNetProps->Add( 0, 0, 0, wxSHRINK, 5 );
+  //gSizerNetProps->Add( 0, 0, 0, wxSHRINK, 5 );
+  m_cbUseTLS = new wxCheckBox(m_pNMEAForm, wxID_ANY, _("Use TLS"),
+                                wxDefaultPosition, wxDefaultSize, 0);
+  m_cbUseTLS->SetValue(FALSE);
+  m_cbUseTLS->SetToolTip(_("If checked, the connection will be encrypted"));
+  gSizerNetProps->Add(m_cbUseTLS, 0, wxALL, 5);
 
   sbSizerConnectionProps->Add(gSizerNetProps, 0, wxEXPAND, 5);
 
@@ -2263,6 +2270,8 @@ void options::CreatePanel_NMEA(size_t parent, int border_size,
                             NULL, this);
   m_cbCheckCRC->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
                         wxCommandEventHandler(options::OnCrcCheck), NULL, this);
+  m_cbUseTLS->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                        wxCommandEventHandler(options::OnConnValChange), NULL, this);
   m_cbGarminHost->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED,
                           wxCommandEventHandler(options::OnUploadFormatChange),
                           NULL, this);
@@ -5534,6 +5543,7 @@ ConnectionParams* options::CreateConnectionParamsFromSelectedItem(void) {
   pConnectionParams->Baudrate = wxAtoi(m_choiceBaudRate->GetStringSelection());
   pConnectionParams->Priority = wxAtoi(m_choicePriority->GetStringSelection());
   pConnectionParams->ChecksumCheck = m_cbCheckCRC->GetValue();
+  pConnectionParams->UseTLS = m_cbUseTLS->GetValue();
   pConnectionParams->Garmin = m_cbGarminHost->GetValue();
   pConnectionParams->InputSentenceList =
       wxStringTokenize(m_tcInputStc->GetValue(), _T(","));
@@ -5783,6 +5793,17 @@ void options::OnApplyClick(wxCommandEvent& event) {
         if (pds_existing) g_pMUX->StopAndRemoveStream(pds_existing);
     }
 
+#ifdef __OCPN_USE_WEBSOCKETS__
+    if(cp->NetProtocol == NetworkProtocol::SIGNALK)
+    {
+        if( cp->bEnabled )
+            g_pMUX->AddWSStream( cp );
+        else
+            g_pMUX->RemoveWSStream( cp );
+    }
+    else
+    {
+#endif
     if (!cp->bEnabled) continue;
     dsPortType port_type = cp->IOSelect;
     DataStream* dstr = new DataStream(g_pMUX, cp->Type, cp->GetDSPort(),
@@ -5794,7 +5815,9 @@ void options::OnApplyClick(wxCommandEvent& event) {
     dstr->SetOutputFilterType(cp->OutputSentenceListType);
     dstr->SetChecksumCheck(cp->ChecksumCheck);
     g_pMUX->AddStream(dstr);
-
+#ifdef __OCPN_USE_WEBSOCKETS__
+    }
+#endif
     cp->b_IsSetup = TRUE;
   }
 
@@ -7347,6 +7370,7 @@ void options::ShowNMEANet(bool visible) {
   m_rbNetProtoUDP->Show(visible);
   m_rbNetProtoSIGNALK->Show(visible);
   m_btnMDNSScan->Show(visible);
+  m_cbUseTLS->Show(visible);
 }
 
 void options::ShowNMEASerial(bool visible) {
@@ -7483,6 +7507,7 @@ void options::SetDSFormRWStates(void) {
     m_btnInputStcList->Enable(TRUE);
     m_cbCheckCRC->Enable(TRUE);
     m_btnMDNSScan->Enable(FALSE);
+    m_cbUseTLS->Enable(FALSE);
   } else if (m_rbNetProtoSIGNALK->GetValue()) {
       if (m_tNetAddress->GetValue() == wxEmptyString)
           m_tNetPort->SetValue(_T("127.0.0.1"));
@@ -7500,6 +7525,7 @@ void options::SetDSFormRWStates(void) {
       m_btnInputStcList->Enable(FALSE);
       m_cbCheckCRC->Enable(FALSE);
       m_btnMDNSScan->Enable(TRUE);
+      m_cbUseTLS->Enable(TRUE);
   } else {
     if (m_tNetPort->GetValue() == wxEmptyString)
       m_tNetPort->SetValue(_T("10110"));
@@ -7513,6 +7539,7 @@ void options::SetDSFormRWStates(void) {
     m_btnInputStcList->Enable(TRUE);
     m_cbCheckCRC->Enable(TRUE);
     m_btnMDNSScan->Enable(FALSE);
+    m_cbUseTLS->Enable(FALSE);
   }
 }
 
@@ -7520,6 +7547,7 @@ void options::SetConnectionParams(ConnectionParams* cp) {
   m_comboPort->Select(m_comboPort->FindString(cp->Port));
   m_comboPort->SetValue(cp->Port);
   m_cbCheckCRC->SetValue(cp->ChecksumCheck);
+  m_cbUseTLS->SetValue(cp->UseTLS);
   m_cbGarminHost->SetValue(cp->Garmin);
   m_cbInput->SetValue(cp->IOSelect != DS_TYPE_OUTPUT);
   m_cbOutput->SetValue(cp->IOSelect != DS_TYPE_INPUT);
@@ -7701,8 +7729,19 @@ void options::OnRemoveDatasourceClick(wxCommandEvent& event) {
       ConnectionParams* cp = g_pConnectionParams->Item(params_index);
       g_pConnectionParams->RemoveAt(params_index);
 
+#ifdef __OCPN_USE_WEBSOCKETS__
+      if(cp->NetProtocol == NetworkProtocol::SIGNALK)
+      {
+          g_pMUX->RemoveWSStream( cp );
+      }
+      else
+      {
+#endif
       DataStream* pds_existing = g_pMUX->FindStream(cp->GetDSPort());
       if (pds_existing) g_pMUX->StopAndRemoveStream(pds_existing);
+#ifdef __OCPN_USE_WEBSOCKETS__
+      }
+#endif
     }
 
     //  Mark connection deleted
@@ -7742,7 +7781,7 @@ void options::OnBtnOStcs(wxCommandEvent& event) {
 void options::OnBtnMDNSScan(wxCommandEvent& event) {
     DlgMDNSSources dlg(this);
     
-    if (dlg.ShowModal() == wxID_OK)
+    if (dlg.ShowModal() == wxID_OK && dlg.GetSelectedServer() != wxEmptyString)
     {
         size_t colon = dlg.GetSelectedServer().Find( ":" );
         m_tNetAddress->SetValue( dlg.GetSelectedServer().Mid(0, colon) );

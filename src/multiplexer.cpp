@@ -48,6 +48,12 @@ Multiplexer::Multiplexer()
     m_gpsconsumer = NULL;
     Connect(wxEVT_OCPN_DATASTREAM, (wxObjectEventFunction)(wxEventFunction)&Multiplexer::OnEvtStream);
     m_pdatastreams = new wxArrayOfDataStreams();
+#ifdef __OCPN_USE_WEBSOCKETS__
+    m_pwsthread = WebSockets_Thread::Instance();
+    m_pwsthread->SetListener(this);
+    m_pwsthread->Run();
+    Connect( wxEVT_OCPN_SIGNALKMSG, (wxObjectEventFunction) (wxEventFunction) &Multiplexer::OnEvtSignalK );
+#endif
 }
 
 Multiplexer::~Multiplexer()
@@ -60,6 +66,18 @@ void Multiplexer::AddStream(DataStream *stream)
 {
     m_pdatastreams->Add(stream);
 }
+
+#ifdef __OCPN_USE_WEBSOCKETS__
+void Multiplexer::AddWSStream(ConnectionParams *params)
+{
+    m_pwsthread->AddConnection( params );
+}
+
+void Multiplexer::RemoveWSStream(ConnectionParams *params)
+{
+    m_pwsthread->RemoveConnection( params );
+}
+#endif
 
 void Multiplexer::StopAllStreams()
 {
@@ -76,6 +94,9 @@ void Multiplexer::ClearStreams()
         delete m_pdatastreams->Item(i);         // Implicit Close(), see datastream dtor
     }
     m_pdatastreams->Clear();
+#ifdef __OCPN_USE_WEBSOCKETS__
+    m_pwsthread->ClearConnections();
+#endif
 }
 
 DataStream *Multiplexer::FindStream(const wxString & port)
@@ -263,6 +284,90 @@ wxString Multiplexer::ProcessNMEA4Tags( wxString msg)
     
     return msg;
 }
+
+#ifdef __OCPN_USE_WEBSOCKETS__
+#include "wx/jsonreader.h"
+
+extern wxString g_SignalKOwnContext;
+extern MyFrame *gFrame;
+
+#define MS_TO_KNOTS 1.944
+
+void Multiplexer::OnEvtSignalK(OCPN_SignalKMessageEvent& event)
+{
+    wxString message_JSONText = event.GetSString();
+    
+    //  We are free to use or ignore any or all of the PlugIn messages flying thru this pipe tee.
+    
+    //  We can possibly use the estimated magnetic variation if WMM_pi is present and active
+    //  and we have no other source of Variation
+
+    // construct the JSON root object
+    wxJSONValue  root;
+    // construct a JSON parser
+    wxJSONReader reader;
+            
+    // now read the JSON text and store it in the 'root' structure
+    // check for errors before retreiving values...
+    int numErrors = reader.Parse( message_JSONText, &root );
+    if ( numErrors > 0 )  {
+        //              const wxArrayString& errors = reader.GetErrors();
+        return;
+    }
+    wxString path;
+    wxJSONValue value;
+    if( root.HasMember( _T("updates") ) )
+    {
+        wxString context = root[_T("context")].AsString();
+        
+        wxJSONValue  updates = root[_T("updates")];
+
+        for( size_t i = 0; i < updates.Size(); i++ )
+        {
+            if( updates[i].HasMember(_T("values")) )
+            {
+                for( size_t j = 0; j < updates[i][_T("values")].Size(); j++ )
+                {
+                    path = updates[i][_T("values")][j][_T("path")].AsString();
+                    value = updates[i][_T("values")][j][_T("value")];
+                    if( context.EndsWith( g_SignalKOwnContext ) ) //Our own context, update ownship
+                    {
+                        if( path == _T("navigation.position") )
+                        {
+                            gFrame->SetLatLon( value[_T("latitude")].AsDouble(), value[_T("longitude")].AsDouble(), true );
+                        }
+                        else if( path == _T("navigation.courseOverGroundTrue") )
+                        {
+                            gFrame->SetCog( value.AsDouble() * RADIAN );
+                        }
+                        else if( path == _T("navigation.speedOverGround") )
+                        {
+                            gFrame->SetSog( value.AsDouble() * MS_TO_KNOTS );
+                        }
+                        //TODO: Implement other own ship values
+                    }
+                    else //Other context, update AIS targets
+                    {
+                        //TODO: Implement handling of other vessels
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        //Let's set our context automatically if it is not configured by the user
+        if( g_SignalKOwnContext == wxEmptyString && root.HasMember(_T("self")) )
+            g_SignalKOwnContext = root[_T("self")].AsString();
+    }
+
+    //Send to plugins
+    if ( g_pi_manager )
+    {
+        g_pi_manager->SendSignalKSentenceToAllPlugIns( message_JSONText );
+    }
+}
+#endif
 
 void Multiplexer::OnEvtStream(OCPN_DataStreamEvent& event)
 {

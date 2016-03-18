@@ -282,10 +282,6 @@ private:
 };
 
 
-
-
-
-
 class MyApp: public wxApp
 {
   public:
@@ -334,6 +330,15 @@ class MyFrame: public wxFrame
     void OnFrameTimer1(wxTimerEvent& event);
     bool DoChartUpdate(void);
     void OnEvtTHREADMSG(OCPN_ThreadMessageEvent& event);
+    
+    void SetLatLon( double lat, double lon, bool post_process = false );
+    void SetCog( double cog );
+    void SetSog( double sog );
+    void SetVar( double var );
+    void SetHdt( double hdt );
+    void SetHdm( double hdm );
+    void SetSatsInView(int sats);
+    
     void OnEvtOCPN_NMEA(OCPN_DataStreamEvent & event);
     void OnEvtPlugInMessage( OCPN_MsgEvent & event );
     void OnMemFootTimer(wxTimerEvent& event);
@@ -510,7 +515,7 @@ class MyFrame: public wxFrame
     void SetChartUpdatePeriod(ViewPort &vp);
 
     void ApplyGlobalColorSchemetoStatusBar(void);
-    void PostProcessNNEA(bool pos_valid, const wxString &sfixtime);
+    void PostProcessNMEA(bool pos_valid, const wxString &sfixtime);
 
     bool ScrubGroupArray();
     wxString GetGroupName(int igroup);

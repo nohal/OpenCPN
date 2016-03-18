@@ -65,7 +65,8 @@ typedef enum
 {
     PROTO_NMEA0183 = 0,
     PROTO_SEATALK = 1,
-    PROTO_NMEA2000 = 2
+    PROTO_NMEA2000 = 2,
+    PROTO_SIGNALK = 3
 } DataProtocol;
 
 class ConnectionParams
@@ -97,6 +98,7 @@ public:
     wxArrayString   OutputSentenceList;
     int             Priority;
     bool            bEnabled;
+    bool            UseTLS;
 
     wxString        Serialize();
     void            Deserialize(const wxString &configStr);
