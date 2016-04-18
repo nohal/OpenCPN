@@ -1976,6 +1976,7 @@ wxEvent* OCPN_SignalKMessageEvent::Clone() const
 
 #define RECONNECTTION_RATE_SECS 2
 #define WEBSOCKETS_BUFFER_CHARS 50
+#define SUBSCRIPTION_MESSAGE "{\"context\": \"vessels\", \"subscribe\": [{ \"path\": \"*\"}]}"
 
 /**
  *  Definition of our protocol
@@ -2114,6 +2115,33 @@ void WebSockets_Thread::ClearConnections()
     connections.clear();
 }
 
+int WebSockets_Thread::websocket_write_back(struct lws *wsi_in, char *str, int str_size_in)
+{
+    if (str == NULL || wsi_in == NULL)
+        return -1;
+    
+    int n;
+    int len;
+    unsigned char *out = NULL;
+    
+    if (str_size_in < 1)
+        len = strlen(str);
+    else
+        len = str_size_in;
+    
+    out = (unsigned char *)malloc(sizeof(char)*(LWS_SEND_BUFFER_PRE_PADDING + len + LWS_SEND_BUFFER_POST_PADDING));
+    //* setup the buffer*/
+    memcpy (out + LWS_SEND_BUFFER_PRE_PADDING, str, len );
+    //* write out*/
+    n = lws_write(wsi_in, out + LWS_SEND_BUFFER_PRE_PADDING, len, LWS_WRITE_TEXT);
+    
+    //* free the buffer*/
+    free(out);
+    
+    return n;
+}
+
+
 /**
  *  Callback method handling websockets events received from libwebsockets
  */
@@ -2130,6 +2158,7 @@ int WebSockets_Thread::callback_sk_dump(struct lws *wsi, enum lws_callback_reaso
             
         case LWS_CALLBACK_CLIENT_ESTABLISHED:
             //lwsl_info("dump: LWS_CALLBACK_CLIENT_ESTABLISHED\n");
+            websocket_write_back(wsi, SUBSCRIPTION_MESSAGE, -1);
             break;
             
         case LWS_CALLBACK_CLOSED:

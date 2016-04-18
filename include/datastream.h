@@ -573,6 +573,7 @@ public:
     void *Entry();
     static void SetListener(wxEvtHandler *listener) { if( m_pInstance ) m_pInstance->m_pMessageTarget = listener; }
     
+    static int                  websocket_write_back(struct lws *wsi_in, char *str, int str_size_in);
     static int                  callback_sk_dump(struct lws *wsi, enum lws_callback_reasons reason,
                                            void *user, void *in, size_t len);
     void AddConnection(ConnectionParams *params);
