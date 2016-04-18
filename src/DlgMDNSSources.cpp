@@ -84,7 +84,8 @@ DlgMDNSSources::DlgMDNSSources( wxWindow* parent, wxWindowID id, const wxString&
     // mdns service scanner
     m_servscan = new wxServDisc(this, wxT("_signalk-ws._tcp.local."), QTYPE_PTR);
     
-    m_selected = wxEmptyString;
+    m_selected.host = wxEmptyString;
+    m_selected.self_context = wxEmptyString;
 }
 
 DlgMDNSSources::~DlgMDNSSources()
@@ -142,6 +143,7 @@ void DlgMDNSSources::OnSDNotify(wxCommandEvent& event)
                 return;
             }
             
+            SignalKSource src;
             std::vector<wxSDEntry> entries_srv = namescan.getResults();
             std::vector<wxSDEntry>::const_iterator it_srv;
             for( it_srv = entries_srv.begin(); it_srv != entries_srv.end(); it_srv++ )
@@ -150,6 +152,9 @@ void DlgMDNSSources::OnSDNotify(wxCommandEvent& event)
                 wxString port = wxString() << it_srv->port;
             
                 items.Add( hostname + _T(":") + port );
+                
+                src.host = hostname;
+                port.ToULong(&src.port);
             }
             
             wxServDisc txtscan(0, it->name, QTYPE_TXT);
@@ -174,13 +179,28 @@ void DlgMDNSSources::OnSDNotify(wxCommandEvent& event)
                 size_t tl = 1;
                 while( tl < text.Len() )
                 {
-                    wxString txt_key_val = text.Mid(tl, l);
+                    wxArrayString txt_key_val = wxSplit(text.Mid(tl, l), '=');
                     tl += l;
                     l = text[tl];
                     tl += 1;
-                    //TODO: What do we want to do with the values? When TLS will be available, we want that.
+                    if( txt_key_val[0] == _T("TLS") )
+                    {
+                        if( txt_key_val[1] == _T("0") )
+                        {
+                            src.tls = false;
+                            items.Last().Prepend( _T("ws://") );
+                        } else {
+                            src.tls = true;
+                            items.Last().Prepend( _T("wss://") );
+                        }
+                    }
+                    if( txt_key_val[0] == _T("self") )
+                    {
+                        src.self_context.Append(txt_key_val[1]);
+                        items.Last().Append( wxString::Format(_T(" (%s)"), txt_key_val[1].c_str()) );
+                    }
                 }
-
+                m_sources.push_back(src);
             }
         }
         m_stLabel->SetLabel( _("SignalK data sources detected on local network") );
@@ -190,13 +210,13 @@ void DlgMDNSSources::OnSDNotify(wxCommandEvent& event)
 
 void DlgMDNSSources::OnSourceSelect( wxCommandEvent& event )
 {
-    m_selected = m_lbSources->GetString( m_lbSources->GetSelection() );
+    m_selected = m_sources[ m_lbSources->GetSelection() ];
     event.Skip();
 }
 
 void DlgMDNSSources::OnSourceDblClick( wxCommandEvent& event )
 {
-    m_selected = m_lbSources->GetString( m_lbSources->GetSelection() );
+    m_selected = m_sources[ m_lbSources->GetSelection() ];
     event.Skip();
     this->EndModal(wxID_OK);
     this->Close();
@@ -207,7 +227,7 @@ void DlgMDNSSources::OnOK( wxCommandEvent& event )
     event.Skip();
 }
 
-const wxString DlgMDNSSources::GetSelectedServer()
+const SignalKSource DlgMDNSSources::GetSelectedServer()
 {
     return m_selected;
 }

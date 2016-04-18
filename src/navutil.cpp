@@ -2643,7 +2643,7 @@ void MyConfig::UpdateSettings()
     Write( _T ( "UseMagAPB" ), g_bMagneticAPB );
     
 #ifdef __OCPN_USE_WEBSOCKETS__
-    //Write( _T ( "SignalKOwnContext" ), g_SignalKOwnContext );
+    Write( _T ( "SignalKOwnContext" ), g_SignalKOwnContext );
 #endif
 
     Write( _T ( "OwnshipCOGPredictorMinutes" ), g_ownship_predictor_minutes );

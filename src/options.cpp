@@ -274,6 +274,10 @@ extern bool g_config_display_size_manual;
 
 extern "C" bool CheckSerialAccess(void);
 
+#ifdef __OCPN_USE_WEBSOCKETS__
+extern wxString g_SignalKOwnContext;
+#endif
+
 // sort callback for Connections list  Sort by priority.
 #if wxCHECK_VERSION(2, 9, 0)
 int wxCALLBACK SortConnectionOnPriority(long item1, long item2, wxIntPtr list)
@@ -1610,9 +1614,11 @@ void options::CreatePanel_NMEA_Compact(size_t parent, int border_size,
   m_rbNetProtoSIGNALK->Connect(
       wxEVT_COMMAND_RADIOBUTTON_SELECTED,
       wxCommandEventHandler(options::OnNetProtocolSelected), NULL, this);
+#ifdef __OCPN_USE_WEBSOCKETS__
   m_btnMDNSScan->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
                          wxCommandEventHandler(options::OnBtnMDNSScan), NULL,
                          this);
+#endif
   m_tNetAddress->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                          wxCommandEventHandler(options::OnConnValChange), NULL,
                          this);
@@ -2244,9 +2250,11 @@ void options::CreatePanel_NMEA(size_t parent, int border_size,
   m_rbNetProtoSIGNALK->Connect(
       wxEVT_COMMAND_RADIOBUTTON_SELECTED,
       wxCommandEventHandler(options::OnNetProtocolSelected), NULL, this);
+#ifdef __OCPN_USE_WEBSOCKETS__
   m_btnMDNSScan->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
                          wxCommandEventHandler(options::OnBtnMDNSScan), NULL,
                          this);
+#endif
   m_tNetAddress->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                          wxCommandEventHandler(options::OnConnValChange), NULL,
                          this);
@@ -7778,16 +7786,26 @@ void options::OnBtnOStcs(wxCommandEvent& event) {
   if (dlg.ShowModal() == wxID_OK) m_tcOutputStc->SetValue(dlg.GetSentences());
 }
 
+#ifdef __OCPN_USE_WEBSOCKETS__
 void options::OnBtnMDNSScan(wxCommandEvent& event) {
     DlgMDNSSources dlg(this);
     
-    if (dlg.ShowModal() == wxID_OK && dlg.GetSelectedServer() != wxEmptyString)
+    if (dlg.ShowModal() == wxID_OK && dlg.GetSelectedServer().host != wxEmptyString)
     {
-        size_t colon = dlg.GetSelectedServer().Find( ":" );
-        m_tNetAddress->SetValue( dlg.GetSelectedServer().Mid(0, colon) );
-        m_tNetPort->SetValue( dlg.GetSelectedServer().Right(dlg.GetSelectedServer().Len() - colon - 1) );
+        m_tNetAddress->SetValue( dlg.GetSelectedServer().host );
+        m_tNetPort->SetValue( wxString::Format( _T("%d"), dlg.GetSelectedServer().port) );
+        m_cbUseTLS->SetValue( dlg.GetSelectedServer().tls );
+        if( g_SignalKOwnContext != dlg.GetSelectedServer().self_context )
+        {
+            int answer = wxMessageBox( wxString::Format(_("The current SignalK own ship identifier '%s' is different from '%s' provided by the selected server. Do you want to switch to this new identifier?"), g_SignalKOwnContext.c_str(), dlg.GetSelectedServer().self_context.c_str()), _("New SignalK context detected"), wxYES_NO );
+            if (answer == wxYES)
+            {
+                g_SignalKOwnContext = dlg.GetSelectedServer().self_context;
+            }
+        }
     }
 }
+#endif
 
 void options::OnNetProtocolSelected(wxCommandEvent& event) {
   if (m_rbNetProtoGPSD->GetValue()) {
