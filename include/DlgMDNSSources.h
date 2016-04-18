@@ -44,6 +44,19 @@
 
 ///////////////////////////////////////////////////////////////////////////
 
+#include <vector>
+using namespace std;
+
+///////////////////////////////////////////////////////////////////////////////
+/// SignalK Source definition
+///////////////////////////////////////////////////////////////////////////////
+struct SignalKSource
+{
+    wxString host;
+    unsigned long port;
+    bool tls;
+    wxString self_context;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Class DlgMDNSSources
@@ -54,7 +67,8 @@ private:
     bool Scan();
     void OnSDNotify(wxCommandEvent& event);
     wxServDisc *m_servscan;
-    wxString m_selected;
+    SignalKSource m_selected;
+    vector<SignalKSource> m_sources;
 
 protected:
     wxStaticText* m_stLabel;
@@ -76,7 +90,7 @@ public:
     DlgMDNSSources( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("SignalK sources - zeroconf"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 450,300 ), long style = wxDEFAULT_DIALOG_STYLE );
     ~DlgMDNSSources();
     
-    const wxString GetSelectedServer();
+    const SignalKSource GetSelectedServer();
     
 };
 #endif /* DlgMDNSSources_h */

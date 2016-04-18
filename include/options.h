@@ -397,7 +397,9 @@ class options : private Uncopyable,
   void OnCbOutput(wxCommandEvent &event);
   void OnRbOutput(wxCommandEvent &event);
   void OnBtnOStcs(wxCommandEvent &event);
+#ifdef __OCPN_USE_WEBSOCKETS__
   void OnBtnMDNSScan(wxCommandEvent &event);
+#endif
   void OnConnValChange(wxCommandEvent &event);
   void OnValChange(wxCommandEvent &event);
   void OnUploadFormatChange(wxCommandEvent &event);
