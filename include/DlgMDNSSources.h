@@ -40,7 +40,9 @@
 #include <wx/sizer.h>
 #include <wx/dialog.h>
 
+#ifdef __OCPN_USE_MDNS__
 #include "wxServDisc.h"
+#endif
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -66,7 +68,9 @@ class DlgMDNSSources : public wxDialog
 private:
     bool Scan();
     void OnSDNotify(wxCommandEvent& event);
+#ifdef __OCPN_USE_MDNS__
     wxServDisc *m_servscan;
+#endif
     SignalKSource m_selected;
     vector<SignalKSource> m_sources;
 

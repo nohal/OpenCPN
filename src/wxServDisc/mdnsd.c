@@ -15,6 +15,21 @@
 // brute force garbage cleanup frequency, rarely needed (daily default)
 #define GC 86400
 
+#ifdef WIN32
+#include <sys/timeb.h>
+int
+gettimeofday(struct timeval * tp, struct timezone * tzp)
+{
+	struct _timeb timebuffer;
+
+	_ftime(&timebuffer);
+	tp->tv_sec = timebuffer.time;
+	tp->tv_usec = timebuffer.millitm * 1000;
+
+	return 0;
+}
+#endif
+
 /* messy, but it's the best/simplest balance I can find at the moment
 Some internal data types, and a few hashes: querys, answers, cached, and records (published, unique and shared)
 Each type has different semantics for processing, both for timeouts, incoming, and outgoing I/O

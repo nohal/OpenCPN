@@ -38,6 +38,9 @@
 #include <wx/sstream.h>
 #include <wx/intl.h>        // for _()
 #include <wx/filename.h>
+#ifdef __WXMSW__
+#include <ws2tcpip.h>
+#endif
 
 // The cURL library header:
 #include <curl/curl.h>
