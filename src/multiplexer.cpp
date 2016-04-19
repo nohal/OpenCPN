@@ -330,7 +330,7 @@ void Multiplexer::OnEvtSignalK(OCPN_SignalKMessageEvent& event)
                 {
                     path = updates[i][_T("values")][j][_T("path")].AsString();
                     value = updates[i][_T("values")][j][_T("value")];
-                    if( context.EndsWith( g_SignalKOwnContext ) ) //Our own context, update ownship
+                    if( g_SignalKOwnContext != wxEmptyString && context.EndsWith( g_SignalKOwnContext ) ) //Our own context, update ownship
                     {
                         if( path == _T("navigation.position") )
                         {
