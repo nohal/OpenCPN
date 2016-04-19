@@ -490,6 +490,7 @@ IF(MSVC)
     ADD_DEFINITIONS(-D__MSVC__)
     ADD_DEFINITIONS(-D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_DEPRECATE)
     ADD_DEFINITIONS(-DPSAPI_VERSION=1)
+    ADD_DEFINITIONS(-D_WINSOCKAPI_)
 ENDIF(MSVC)
 
 # Location where cmake first looks for cmake modules.
@@ -546,6 +547,137 @@ ENDIF (PORTAUDIO_FOUND)
 ENDIF(UNIX AND NOT QT_ANDROID)
 
 ENDIF (NOT WIN32 AND NOT APPLE)
+
+OPTION (USE_S57 "Enable S57 ENC support" ON)
+IF (USE_S57)
+	message (STATUS "S57 ENC support: enabled")
+	ADD_DEFINITIONS(-DUSE_S57)
+
+	SET(SRC_S57ENC
+                include/TexFont.h
+		include/s52plib.h
+		include/s52utils.h
+		include/s57chart.h
+		include/mygeom.h
+                src/TexFont.cpp
+		src/s52cnsy.cpp
+		src/s52plib.cpp
+		src/s52utils.cpp
+		src/s57chart.cpp
+		src/cm93.cpp
+		src/mygeom.cpp
+		include/cm93.h
+		src/tri.c
+		src/Osenc.cpp
+		include/Osenc.h
+                include/s57RegistrarMgr.h
+                src/s57RegistrarMgr.cpp
+
+		src/myiso8211/ddffielddefn.cpp
+		src/myiso8211/ddfmodule.cpp
+		src/myiso8211/ddfrecord.cpp
+		src/myiso8211/ddfsubfielddefn.cpp
+		src/myiso8211/ddffield.cpp
+		src/myiso8211/ddfutils.cpp
+		src/mygdal/cpl_config.h
+		src/mygdal/gdal_priv.h
+		src/mygdal/cpl_conv.h
+		src/mygdal/iso8211.h
+		src/mygdal/cpl_csv.h
+		src/mygdal/ogr_api.h
+		src/mygdal/cpl_error.h
+		src/mygdal/ogr_attrind.h
+		src/mygdal/cpl_list.h
+		src/mygdal/cpl_minixml.h
+		src/mygdal/ogr_feature.h
+		src/mygdal/cpl_multiproc.h
+		src/mygdal/ogr_geometry.h
+		src/mygdal/cpl_odbc.h
+		src/mygdal/ogr_p.h
+		src/mygdal/ogr_core.h
+		src/mygdal/cpl_port.h
+		src/mygdal/ogr_s57.h
+		src/mygdal/cpl_string.h
+		src/mygdal/ogr_spatialref.h
+		src/mygdal/cpl_vsi.h
+		src/mygdal/ogrsf_frmts.h
+		src/mygdal/gdal.h
+		src/mygdal/s57.h
+		src/mygdal/gdal_frmts.h
+		src/mygdal/ddfrecordindex.cpp
+		src/mygdal/cpl_conv.cpp
+		src/mygdal/cpl_csv.cpp
+		src/mygdal/cpl_error.cpp
+		src/mygdal/cpl_findfile.cpp
+		src/mygdal/cpl_minixml.cpp
+		src/mygdal/cpl_path.cpp
+		src/mygdal/cpl_string.cpp
+		src/mygdal/cpl_vsisimple.cpp
+		src/mygdal/cplgetsymbol.cpp
+		src/mygdal/ograssemblepolygon.cpp
+		src/mygdal/ogrcurve.cpp
+		src/mygdal/ogrfeature.cpp
+		src/mygdal/ogrfeaturedefn.cpp
+		src/mygdal/ogrfielddefn.cpp
+		src/mygdal/ogrgeometry.cpp
+		src/mygdal/ogrgeometrycollection.cpp
+		src/mygdal/ogrgeometryfactory.cpp
+		src/mygdal/ogrlinearring.cpp
+		src/mygdal/ogrlinestring.cpp
+		src/mygdal/ogrmultilinestring.cpp
+		src/mygdal/ogrmultipoint.cpp
+		src/mygdal/ogrmultipolygon.cpp
+		src/mygdal/ogrpoint.cpp
+		src/mygdal/ogrpolygon.cpp
+		src/mygdal/ogrs57datasource.cpp
+		src/mygdal/ogrlayer.cpp
+		src/mygdal/ogrs57layer.cpp
+		src/mygdal/ogrutils.cpp
+		src/mygdal/s57classregistrar.cpp
+		src/mygdal/s57featuredefns.cpp
+		src/mygdal/s57reader.cpp
+		src/mygdal/gdal_misc.cpp
+	)
+	ADD_LIBRARY(S57ENC ${SRC_S57ENC})
+	INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/mygdal)
+	SET(EXTRA_LIBS ${EXTRA_LIBS} S57ENC)
+ELSE (USE_S57)
+	message (STATUS "S57 ENC support: disabled")
+ENDIF (USE_S57)
+
+OPTION(OCPN_USE_WEBSOCKETS "Use websockets" ON)
+
+IF(OCPN_USE_WEBSOCKETS)
+
+  SET(SRC_WXSERVDISC
+    src/wxServDisc/1035.c
+    src/wxServDisc/mdnsd.c
+    src/wxServDisc/wxServDisc.cpp
+  )
+  ADD_LIBRARY(WXSERVDISC ${SRC_WXSERVDISC})
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/wxServDisc)
+  SET(EXTRA_LIBS ${EXTRA_LIBS} WXSERVDISC)
+  ADD_DEFINITIONS(-D__OCPN_USE_MDNS__)
+
+  IF(NOT WIN32)
+    INCLUDE("FindLibWebSockets.cmake")
+  ELSE(NOT WIN32)
+    SET(LIBWEBSOCKETS_LIBRARIES "${CMAKE_SOURCE_DIR}/buildwin/libwebsockets/websockets.lib")
+    SET(LIBWEBSOCKETS_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/buildwin/libwebsockets")
+    INSTALL(FILES "buildwin/libwebsockets/websockets.dll" DESTINATION ".")
+    INSTALL(FILES "buildwin/libwebsockets/libeay32.dll" DESTINATION ".")
+    INSTALL(FILES "buildwin/libwebsockets/ssleay32.dll" DESTINATION ".")
+    SET(LIBWEBSOCKETS_FOUND 1)
+  ENDIF(NOT WIN32)
+  IF(LIBWEBSOCKETS_FOUND)
+    MESSAGE(STATUS "libwebsockets Found")
+    INCLUDE_DIRECTORIES(${LIBWEBSOCKETS_INCLUDE_DIR})
+    SET(EXTRA_LIBS ${EXTRA_LIBS} ${LIBWEBSOCKETS_LIBRARIES})
+    ADD_DEFINITIONS(-D__OCPN_USE_WEBSOCKETS__)
+  ELSE(LIBWEBSOCKETS_FOUND)
+    MESSAGE(STATUS "libwebsockets Not Found...")
+  ENDIF(LIBWEBSOCKETS_FOUND)
+ENDIF(OCPN_USE_WEBSOCKETS)
 
 OPTION(OCPN_USE_CURL "Use Curl libraries" ON)
 
@@ -712,15 +844,6 @@ IF(OCPN_USE_SVG)
         ${GTK_LIBRARIES}
       )
     ENDIF(WIN32)
-
-    SET(SRC_WXSERVDISC
-      src/wxServDisc/1035.c
-      src/wxServDisc/mdnsd.c
-      src/wxServDisc/wxServDisc.cpp
-    )
-    ADD_LIBRARY(WXSERVDISC ${SRC_WXSERVDISC})
-    INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/wxServDisc)
-    SET(EXTRA_LIBS ${EXTRA_LIBS} WXSERVDISC)
 
     SET(SRC_WXSVG
       src/wxsvg/src/CSSStyleDeclaration.cpp
@@ -1132,116 +1255,7 @@ ENDIF(TINYXML_FOUND)
 
 
 
-OPTION (USE_S57 "Enable S57 ENC support" ON)
-IF (USE_S57)
-	message (STATUS "S57 ENC support: enabled")
-	ADD_DEFINITIONS(-DUSE_S57)
 
-	SET(SRC_S57ENC
-                include/TexFont.h
-		include/s52plib.h
-		include/s52utils.h
-		include/s57chart.h
-		include/mygeom.h
-                src/TexFont.cpp
-		src/s52cnsy.cpp
-		src/s52plib.cpp
-		src/s52utils.cpp
-		src/s57chart.cpp
-		src/cm93.cpp
-		src/mygeom.cpp
-		include/cm93.h
-		src/tri.c
-		src/Osenc.cpp
-		include/Osenc.h
-                include/s57RegistrarMgr.h
-                src/s57RegistrarMgr.cpp
-
-		src/myiso8211/ddffielddefn.cpp
-		src/myiso8211/ddfmodule.cpp
-		src/myiso8211/ddfrecord.cpp
-		src/myiso8211/ddfsubfielddefn.cpp
-		src/myiso8211/ddffield.cpp
-		src/myiso8211/ddfutils.cpp
-		src/mygdal/cpl_config.h
-		src/mygdal/gdal_priv.h
-		src/mygdal/cpl_conv.h
-		src/mygdal/iso8211.h
-		src/mygdal/cpl_csv.h
-		src/mygdal/ogr_api.h
-		src/mygdal/cpl_error.h
-		src/mygdal/ogr_attrind.h
-		src/mygdal/cpl_list.h
-		src/mygdal/cpl_minixml.h
-		src/mygdal/ogr_feature.h
-		src/mygdal/cpl_multiproc.h
-		src/mygdal/ogr_geometry.h
-		src/mygdal/cpl_odbc.h
-		src/mygdal/ogr_p.h
-		src/mygdal/ogr_core.h
-		src/mygdal/cpl_port.h
-		src/mygdal/ogr_s57.h
-		src/mygdal/cpl_string.h
-		src/mygdal/ogr_spatialref.h
-		src/mygdal/cpl_vsi.h
-		src/mygdal/ogrsf_frmts.h
-		src/mygdal/gdal.h
-		src/mygdal/s57.h
-		src/mygdal/gdal_frmts.h
-		src/mygdal/ddfrecordindex.cpp
-		src/mygdal/cpl_conv.cpp
-		src/mygdal/cpl_csv.cpp
-		src/mygdal/cpl_error.cpp
-		src/mygdal/cpl_findfile.cpp
-		src/mygdal/cpl_minixml.cpp
-		src/mygdal/cpl_path.cpp
-		src/mygdal/cpl_string.cpp
-		src/mygdal/cpl_vsisimple.cpp
-		src/mygdal/cplgetsymbol.cpp
-		src/mygdal/ograssemblepolygon.cpp
-		src/mygdal/ogrcurve.cpp
-		src/mygdal/ogrfeature.cpp
-		src/mygdal/ogrfeaturedefn.cpp
-		src/mygdal/ogrfielddefn.cpp
-		src/mygdal/ogrgeometry.cpp
-		src/mygdal/ogrgeometrycollection.cpp
-		src/mygdal/ogrgeometryfactory.cpp
-		src/mygdal/ogrlinearring.cpp
-		src/mygdal/ogrlinestring.cpp
-		src/mygdal/ogrmultilinestring.cpp
-		src/mygdal/ogrmultipoint.cpp
-		src/mygdal/ogrmultipolygon.cpp
-		src/mygdal/ogrpoint.cpp
-		src/mygdal/ogrpolygon.cpp
-		src/mygdal/ogrs57datasource.cpp
-		src/mygdal/ogrlayer.cpp
-		src/mygdal/ogrs57layer.cpp
-		src/mygdal/ogrutils.cpp
-		src/mygdal/s57classregistrar.cpp
-		src/mygdal/s57featuredefns.cpp
-		src/mygdal/s57reader.cpp
-		src/mygdal/gdal_misc.cpp
-	)
-	ADD_LIBRARY(S57ENC ${SRC_S57ENC})
-	INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/mygdal)
-	SET(EXTRA_LIBS ${EXTRA_LIBS} S57ENC)
-ELSE (USE_S57)
-	message (STATUS "S57 ENC support: disabled")
-ENDIF (USE_S57)
-
-OPTION(OCPN_USE_WEBSOCKETS "Use websockets" ON)
-
-IF(OCPN_USE_WEBSOCKETS)
-  INCLUDE("FindLibWebSockets.cmake")
-  IF(LIBWEBSOCKETS_FOUND)
-    MESSAGE(STATUS "libwebsockets Found")
-    INCLUDE_DIRECTORIES(${LIBWEBSOCKETS_INCLUDE_DIR})
-    SET(EXTRA_LIBS ${EXTRA_LIBS} ${LIBWEBSOCKETS_LIBRARIES})
-    ADD_DEFINITIONS(-D__OCPN_USE_WEBSOCKETS__)
-  ELSE(LIBWEBSOCKETS_FOUND)
-    MESSAGE(STATUS "libwebsockets Not Found...")
-  ENDIF(LIBWEBSOCKETS_FOUND)
-ENDIF(OCPN_USE_WEBSOCKETS)
 
 OPTION (USE_GARMINHOST "Enable Garmin Host Mode support" ON)
 IF (USE_GARMINHOST)

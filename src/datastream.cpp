@@ -47,6 +47,10 @@
 #include <netinet/tcp.h>
 #endif
 
+#ifdef __WXMSW__
+#include <signal.h>
+#endif
+
 #include "dychart.h"
 
 #include "datastream.h"
@@ -2015,6 +2019,21 @@ void sighandler(int sig)
     force_exit = 1;
 }
 
+#ifdef WIN32
+#include <sys/timeb.h>
+int
+gettimeofday(struct timeval * tp, struct timezone * tzp)
+{
+	struct _timeb timebuffer;
+
+	_ftime(&timebuffer);
+	tp->tv_sec = timebuffer.time;
+	tp->tv_usec = timebuffer.millitm * 1000;
+
+	return 0;
+}
+#endif
+
 /**
  *  Protects from retrying the connection to the websockets too fast
  *
@@ -2198,17 +2217,24 @@ int WebSockets_Thread::callback_sk_dump(struct lws *wsi, enum lws_callback_reaso
                         }
                         connectionsIterator->buffer.clear();
                     }
-                    else
+					else
                     {
-                        char last = *connectionsIterator->buffer.rbegin();
-                        if( ((char *)in)[0] == '{' && last != ':' && last != '[' && last != ',' ) //Beginning of a new sentence, we probably lost the end of the last one somehow :(, let's replace whatever we have in the buffer and try again
-                        {
-                            connectionsIterator->buffer = (char *)in;
-                        }
-                        else //Middle of a sentence, simply append to the buffer
-                        {
-                            connectionsIterator->buffer.append( (char *)in );
-                        }
+						if (connectionsIterator->buffer.length() > 0)
+						{
+							char last = *connectionsIterator->buffer.rbegin();
+							if (((char *)in)[0] == '{' && last != ':' && last != '[' && last != ',') //Beginning of a new sentence, we probably lost the end of the last one somehow :(, let's replace whatever we have in the buffer and try again
+							{
+								connectionsIterator->buffer = (char *)in;
+							}
+							else //Middle of a sentence, simply append to the buffer
+							{
+								connectionsIterator->buffer.append((char *)in);
+							}
+						}
+						else //Middle of a sentence and nothing in the buffer, simply append to the buffer
+						{
+							connectionsIterator->buffer.append((char *)in);
+						}
                     }
                 }
             }

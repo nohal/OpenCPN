@@ -60,9 +60,9 @@
 #endif
 
 #ifdef __WXMSW__
+#include <Ws2tcpip.h>
 #include <windows.h>
 #include <dbt.h>
-#include <windows.h>
 #include <winioctl.h>
 #include <initguid.h>
 #endif

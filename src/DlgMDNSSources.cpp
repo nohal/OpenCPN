@@ -25,12 +25,17 @@
 
 
 #include "DlgMDNSSources.h"
+#ifdef __OCPN_USE_MDNS__
 #include "wxServDisc.h"
+#endif
 #include <wx/msgdlg.h>
 #include <wx/log.h>
 
+
 BEGIN_EVENT_TABLE(DlgMDNSSources, wxDialog)
+#ifdef __OCPN_USE_MDNS__
 EVT_COMMAND  (wxID_ANY, wxServDiscNOTIFY, DlgMDNSSources::OnSDNotify)
+#endif
 END_EVENT_TABLE()
 
 DlgMDNSSources::DlgMDNSSources( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
@@ -81,9 +86,11 @@ DlgMDNSSources::DlgMDNSSources( wxWindow* parent, wxWindowID id, const wxString&
     m_sdbSizerBtnsCancel->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DlgMDNSSources::OnCancel ), NULL, this );
     m_sdbSizerBtnsOK->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DlgMDNSSources::OnOK ), NULL, this );
     
+#ifdef __OCPN_USE_MDNS__
     // mdns service scanner
     m_servscan = new wxServDisc(this, wxT("_signalk-ws._tcp.local."), QTYPE_PTR);
-    
+#endif
+
     m_selected.host = wxEmptyString;
     m_selected.self_context = wxEmptyString;
 }
@@ -96,17 +103,19 @@ DlgMDNSSources::~DlgMDNSSources()
     m_btnScan->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DlgMDNSSources::OnScanClick ), NULL, this );
     m_sdbSizerBtnsCancel->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DlgMDNSSources::OnCancel ), NULL, this );
     m_sdbSizerBtnsOK->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DlgMDNSSources::OnOK ), NULL, this );
-    
+#ifdef __OCPN_USE_MDNS__
     delete m_servscan;
+#endif
 }
 
 bool DlgMDNSSources::Scan()
 {
     m_lbSources->Clear();
     m_stLabel->SetLabel( _("Scanning for SignalK servers on local network, this may take a while...") );
+#ifdef __OCPN_USE_MDNS__
     delete m_servscan;
     m_servscan = new wxServDisc(this, wxT("_signalk-ws._tcp.local."), QTYPE_PTR);
-
+#endif
     return true;
 }
 
@@ -118,6 +127,7 @@ void DlgMDNSSources::OnScanClick( wxCommandEvent& event )
 
 void DlgMDNSSources::OnSDNotify(wxCommandEvent& event)
 {
+#ifdef __OCPN_USE_MDNS__
     if(event.GetEventObject() == m_servscan)
     {
         wxArrayString items;
@@ -206,6 +216,7 @@ void DlgMDNSSources::OnSDNotify(wxCommandEvent& event)
         m_stLabel->SetLabel( _("SignalK data sources detected on local network") );
         m_lbSources->Set(items);
     }
+#endif
 }
 
 void DlgMDNSSources::OnSourceSelect( wxCommandEvent& event )

@@ -909,7 +909,7 @@ wxJSONValue::AsDouble() const
     wxJSONRefData* data = GetRefData();
     wxJSON_ASSERT( data );
     double d = data->m_value.m_valDouble;
-    wxJSON_ASSERT( IsDouble());
+    wxJSON_ASSERT( IsDouble() );
     return d;
 }
 
