@@ -27,6 +27,9 @@
 
 #include "ais.h"
 #include <map>
+#ifdef __OCPN_USE_WEBSOCKETS__
+#include "datastream.h"
+#endif
 
 #define TRACKTYPE_DEFAULT       0
 #define TRACKTYPE_ALWAYS        1
@@ -65,6 +68,9 @@ public:
     ~AIS_Decoder(void);
 
     void OnEvtAIS(OCPN_DataStreamEvent& event);
+#ifdef __OCPN_USE_WEBSOCKETS__
+    void OnEvtSignalK(OCPN_SignalKMessageEvent& event);
+#endif
     AIS_Error Decode(const wxString& str);
     AIS_Target_Hash *GetTargetList(void) {return AISTargetList;}
     AIS_Target_Hash *GetAreaNoticeSourcesList(void) {return AIS_AreaNotice_Sources;}

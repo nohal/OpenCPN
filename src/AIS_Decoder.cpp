@@ -155,6 +155,7 @@ AIS_Decoder::AIS_Decoder( wxFrame *parent )
 
     //  Create/connect a dynamic event handler slot for wxEVT_OCPN_DATASTREAM(s)
     Connect(wxEVT_OCPN_DATASTREAM, (wxObjectEventFunction)(wxEventFunction)&AIS_Decoder::OnEvtAIS);
+    Connect(wxEVT_OCPN_SIGNALKMSG, (wxObjectEventFunction)(wxEventFunction)&AIS_Decoder::OnEvtSignalK);
 }
 
 AIS_Decoder::~AIS_Decoder( void )
@@ -305,6 +306,49 @@ void AIS_Decoder::OnEvtAIS( OCPN_DataStreamEvent& event )
         }
     }
 }
+
+#ifdef __OCPN_USE_WEBSOCKETS__
+void AIS_Decoder::OnEvtSignalK( OCPN_SignalKMessageEvent& event )
+{
+    AIS_Target_Data *pTargetData, *pStaleTarget;
+    time_t last_report_ticks;
+    long mmsi_long = 0;
+    
+    //TODO: Implement decoding of SignalK object
+    
+    //  Search the current AISTargetList for an MMSI match
+    AIS_Target_Hash::iterator it = AISTargetList->find( mmsi_long );
+    if( it == AISTargetList->end() )                  // not found
+    {
+        pTargetData = new AIS_Target_Data;
+        pStaleTarget = NULL;
+        m_n_targets++;
+    } else {
+        pTargetData = ( *AISTargetList )[mmsi_long];          // find current entry
+        pStaleTarget = pTargetData;
+    }
+    
+    //  Grab the stale targets's last report time
+    wxDateTime now = wxDateTime::Now();
+    now.MakeGMT();
+    
+    if( pStaleTarget )
+        last_report_ticks = pStaleTarget->PositionReportTicks;
+    else
+        last_report_ticks = now.GetTicks();
+    
+    // Delete the stale AIS Target selectable point
+    if( pStaleTarget )
+        pSelectAIS->DeleteSelectablePoint( (void *) mmsi_long, SELTYPE_AISTARGET );
+    
+    ( *AISTargetList )[pTargetData->MMSI] = pTargetData;
+    
+    if( pTargetData )
+        pTargetData->RecentPeriod = pTargetData->PositionReportTicks - last_report_ticks;
+    
+    gFrame->TouchAISActive();
+}
+#endif
 
 //----------------------------------------------------------------------------------
 //      Decode a single AIVDO sentence to a Generic Position Report
