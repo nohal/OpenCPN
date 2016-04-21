@@ -344,11 +344,29 @@ void Multiplexer::OnEvtSignalK(OCPN_SignalKMessageEvent& event)
                         {
                             gFrame->SetSog( value.AsDouble() * MS_TO_KNOTS );
                         }
+                        else if( path == _T("navigation.speedOverGround") )
+                        {
+                            gFrame->SetSog( value.AsDouble() * MS_TO_KNOTS );
+                        }
+                        else if( path == _T("navigation.headingVariation") )
+                        {
+                            gFrame->SetVar( value.AsDouble() * RADIAN );
+                        }
+                        else if( path == _T("navigation.magneticVariation") )
+                        {
+                            gFrame->SetVar( value.AsDouble() * RADIAN );
+                        }
+                        else if( path == _T("navigation.headingMagnetic") )
+                        {
+                            gFrame->SetHdm( value.AsDouble() * RADIAN );
+                        }
                         //TODO: Implement other own ship values
                     }
                     else //Other context, update AIS targets
                     {
-                        //TODO: Implement handling of other vessels
+                        //TODO: Shoulld we pass the event just if the context starts with "vessels"?
+                        if( m_aisconsumer )
+                            m_aisconsumer->AddPendingEvent(event);
                     }
                 }
             }
