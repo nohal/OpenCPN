@@ -6106,7 +6106,7 @@ void MyFrame::OnInitTimer(wxTimerEvent& event)
                 
                 if( cp->bEnabled ) {
 #ifdef __OCPN_USE_WEBSOCKETS__
-                    if( cp->NetProtocol == NetworkProtocol::SIGNALK )
+                    if( cp->NetProtocol == SIGNALK )
                     {
                         if( cp->bEnabled )
                             g_pMUX->AddWSStream(cp);

@@ -5802,7 +5802,7 @@ void options::OnApplyClick(wxCommandEvent& event) {
     }
 
 #ifdef __OCPN_USE_WEBSOCKETS__
-    if(cp->NetProtocol == NetworkProtocol::SIGNALK)
+    if(cp->NetProtocol == SIGNALK)
     {
         if( cp->bEnabled )
             g_pMUX->AddWSStream( cp );
@@ -7738,7 +7738,7 @@ void options::OnRemoveDatasourceClick(wxCommandEvent& event) {
       g_pConnectionParams->RemoveAt(params_index);
 
 #ifdef __OCPN_USE_WEBSOCKETS__
-      if(cp->NetProtocol == NetworkProtocol::SIGNALK)
+      if(cp->NetProtocol == SIGNALK)
       {
           g_pMUX->RemoveWSStream( cp );
       }
