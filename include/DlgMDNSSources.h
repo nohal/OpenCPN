@@ -69,7 +69,8 @@ private:
     bool Scan();
     void OnSDNotify(wxCommandEvent& event);
 #ifdef __OCPN_USE_MDNS__
-    wxServDisc *m_servscan;
+    wxServDisc *m_servscan, *m_servscan_tls;
+    bool m_serv_scanned, m_server_tls_scanned;
 #endif
     SignalKSource m_selected;
     vector<SignalKSource> m_sources;
