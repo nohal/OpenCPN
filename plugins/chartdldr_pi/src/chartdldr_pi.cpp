@@ -47,7 +47,9 @@
 #include <wx/wfstream.h>
 #include <memory>
 #include <wx/regex.h>
+#ifdef CHARTDLDR_USE_RAR
 #include "unrar/rar.hpp"
+#endif
 
 #include <wx/arrimpl.cpp>
     WX_DEFINE_OBJARRAY(wxArrayOfDateTime);
@@ -1326,6 +1328,7 @@ bool chartdldr_pi::ProcessFile( const wxString& aFile, const wxString& aTargetDi
 
 bool chartdldr_pi::ExtractRarFiles( const wxString& aRarFile, const wxString& aTargetDir, bool aStripPath, wxDateTime aMTime, bool aRemoveRar )
 {
+#ifdef CHARTDLDR_USE_RAR
     wxString cmd;
     if( aStripPath )
         cmd = _T("e");
@@ -1449,8 +1452,15 @@ bool chartdldr_pi::ExtractRarFiles( const wxString& aRarFile, const wxString& aT
     // and it corrupts navobj.xml file
     setlocale(LC_NUMERIC, "C");
 #endif
-
     return true;
+#else
+    wxArrayString output;
+    wxArrayString errors;
+    wxExecute( wxString::Format(_T("unar -f -o \"%s\" \"%s\""), aTargetDir.c_str(), aRarFile.c_str()) , output, errors);
+    if( aRemoveRar )
+        wxRemoveFile(aRarFile);
+    return true;
+#endif
 }
 
 bool chartdldr_pi::ExtractZipFiles( const wxString& aZipFile, const wxString& aTargetDir, bool aStripPath, wxDateTime aMTime, bool aRemoveZip )
