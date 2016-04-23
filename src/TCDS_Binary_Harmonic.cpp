@@ -26,9 +26,6 @@
 
 /* Declarations for zoneinfo compatibility */
 
-/* Most of these entries are loaded from the tzdata.h include file. That
- *   file was generated from tzdata200c.                                  */
-
 static const char *tz_names[][2] = {
 #include "tzdata.h"
 
