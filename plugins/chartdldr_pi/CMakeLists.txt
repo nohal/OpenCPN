@@ -19,6 +19,10 @@ SET(VERSION_MINOR "2")
 
 #SET(CMAKE_BUILD_TYPE Debug)
 
+OPTION(CHARTDLDR_USE_RAR "Use RAR" OFF)
+
+IF(CHARTDLDR_USE_RAR)
+ message (STATUS "Chartdldr_pi building with RAR support")
 # Definitions
 add_definitions (
 -D_FILE_OFFSET_BITS=64
@@ -28,6 +32,9 @@ add_definitions (
 -DUNRAR
 -DSILENT
 )
+ELSE(CHARTDLDR_USE_RAR)
+ message (STATUS "Chartdldr_pi building without RAR support")
+ENDIF(CHARTDLDR_USE_RAR)
 
 INCLUDE("cmake/PluginConfigure.cmake")
 
@@ -43,7 +50,9 @@ SET(SRC_CHARTDLDR
             src/base64.h
             src/chartcatalog.cpp
             src/chartcatalog.h
-
+        )
+IF(CHARTDLDR_USE_RAR)
+SET(SRC_CHARTDLDR
             src/unrar/rar.cpp
             src/unrar/strlist.cpp
             src/unrar/strfn.cpp
@@ -93,16 +102,16 @@ SET(SRC_CHARTDLDR
             #src/unrar/dll.cpp
             src/unrar/qopen.cpp
         )
-
-
-
+ENDIF(CHARTDLDR_USE_RAR)
 
 IF(UNIX)
  INCLUDE("cmake/FindTinyXML.cmake")
  FIND_PACKAGE(TinyXML QUIET)
 ENDIF(UNIX)
 
+IF(CHARTDLDR_USE_RAR)
 INCLUDE_DIRECTORIES(src/unrar/)
+ENDIF(CHARTDLDR_USE_RAR)
 
 IF(TINYXML_FOUND)
  message (STATUS "Chartdldr_pi building with system tinyxml")
