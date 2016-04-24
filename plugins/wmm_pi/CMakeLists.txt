@@ -47,6 +47,10 @@ SET(SRC_JSON
 	    src/jsonval.cpp
 	    src/jsonwriter.cpp
         )
+ELSE(WIN32)
+  IF(NOT EXISTS "src/jsonreader.h")
+    INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include/wx)
+  ENDIF(NOT EXISTS "src/jsonreader.h")
 ENDIF(WIN32)
 
 ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_WMM} ${SRC_JSON})
