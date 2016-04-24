@@ -21,6 +21,7 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,  USA.         *
  **************************************************************************/
 
+
 #include "TCDS_Binary_Harmonic.h"
 #include "tcmgr.h"
 
@@ -52,8 +53,9 @@ static const char *tz_names[][2] = {
  *    GNU General Public License for more details.
  *
  *    You should have received a copy of the GNU General Public License
- *    along with this program; if not, write to the Free Software
- *    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *    along with this program; if not, write to the 
+ *    Free Software Foundation, Inc.,
+ *    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,  USA.
  *
  *    Changes by Mike Hopper for WXTide32:
  *    Changed do_timestamp to shorten NT's LONG time zone names just the CAPS
