@@ -85,10 +85,10 @@ DlgMDNSSources::DlgMDNSSources( wxWindow* parent, wxWindowID id, const wxString&
     m_btnScan->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DlgMDNSSources::OnScanClick ), NULL, this );
     m_sdbSizerBtnsCancel->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DlgMDNSSources::OnCancel ), NULL, this );
     m_sdbSizerBtnsOK->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DlgMDNSSources::OnOK ), NULL, this );
-    
+#ifdef __OCPN_USE_MDNS__
     m_servscan = NULL;
     m_servscan_tls = NULL;
-    
+#endif
     Scan();
 
     m_selected.host = wxEmptyString;
@@ -113,8 +113,10 @@ DlgMDNSSources::~DlgMDNSSources()
 
 bool DlgMDNSSources::Scan()
 {
+#ifdef __OCPN_USE_MDNS__
     m_serv_scanned = false;
     m_server_tls_scanned = false;
+#endif
     m_lbSources->Clear();
     m_stLabel->SetLabel( _("Scanning for SignalK servers on local network, this may take a while...") );
 #ifdef __OCPN_USE_MDNS__

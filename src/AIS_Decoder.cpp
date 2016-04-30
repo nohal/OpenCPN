@@ -155,7 +155,9 @@ AIS_Decoder::AIS_Decoder( wxFrame *parent )
 
     //  Create/connect a dynamic event handler slot for wxEVT_OCPN_DATASTREAM(s)
     Connect(wxEVT_OCPN_DATASTREAM, (wxObjectEventFunction)(wxEventFunction)&AIS_Decoder::OnEvtAIS);
+#ifdef __OCPN_USE_WEBSOCKETS__
     Connect(wxEVT_OCPN_SIGNALKMSG, (wxObjectEventFunction)(wxEventFunction)&AIS_Decoder::OnEvtSignalK);
+#endif
 }
 
 AIS_Decoder::~AIS_Decoder( void )
