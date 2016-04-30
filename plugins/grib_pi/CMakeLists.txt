@@ -159,7 +159,7 @@ IF(QT_ANDROID)
 ENDIF(QT_ANDROID)
 
     #  Stripped jasper library courtesy of https://github.com/vmarkovtsev/jasper.git
-    
+
     file(GLOB jasper_base_sources "src/jasper/base/*.c")
     file(GLOB jasper_jp2_sources "src/jasper/jp2/*.c")
     file(GLOB jasper_jp2_headers "src/jasper/jp2/*.h")
@@ -169,12 +169,10 @@ ENDIF(QT_ANDROID)
     
     SET(SRC_GRIB ${SRC_GRIB} ${jasper_base_sources} ${jasper_headers} ${jasper_jp2_sources} ${jasper_jp2_headers} ${jasper_jpc_sources} ${jasper_jpc_headers})
 
+
     ADD_DEFINITIONS(-DJASPER)
     ADD_DEFINITIONS(-DEXCLUDE_MIF_SUPPORT -DEXCLUDE_PNM_SUPPORT -DEXCLUDE_BMP_SUPPORT -DEXCLUDE_RAS_SUPPORT -DEXCLUDE_JPG_SUPPORT -DEXCLUDE_PGX_SUPPORT)
-   
-    INCLUDE_DIRECTORIES("src/jasper/include")
-
-
+    INCLUDE_DIRECTORIES(BEFORE ${PLUGIN_SOURCE_DIR}/src/jasper/include)
 
 # On Android, PlugIns need a specific linkage set....
 IF (QT_ANDROID )
