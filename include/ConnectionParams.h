@@ -99,6 +99,7 @@ public:
     int             Priority;
     bool            bEnabled;
     bool            UseTLS;
+    wxString        SKSub;
 
     wxString        Serialize();
     void            Deserialize(const wxString &configStr);

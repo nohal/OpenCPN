@@ -376,6 +376,9 @@ class options : private Uncopyable,
   wxCheckBox *m_cbOutput, *m_cbAPBMagnetic;
   wxComboBox *m_comboPort;
   wxStdDialogButtonSizer *m_sdbSizerDlgButtons;
+  wxStaticText *m_stSignalKSub;
+  wxRadioButton *m_rbSubAll, *m_rbSubSelf, *m_rbSubCustom;
+  wxTextCtrl *m_tSubCustom;
 
   void OnSelectDatasource(wxListEvent &event);
   void OnAddDatasourceClick(wxCommandEvent &event);
@@ -399,6 +402,7 @@ class options : private Uncopyable,
   void OnBtnOStcs(wxCommandEvent &event);
 #ifdef __OCPN_USE_WEBSOCKETS__
   void OnBtnMDNSScan(wxCommandEvent &event);
+  void OnCustomSKSub( wxCommandEvent& event );
 #endif
   void OnConnValChange(wxCommandEvent &event);
   void OnValChange(wxCommandEvent &event);

@@ -2293,6 +2293,9 @@ void *WebSockets_Thread::Entry()
     struct lws_context_creation_info info;
     int ietf_version = -1; /* latest */
     const char *address;
+    const char *sksub;
+    char host[255];
+    char url[255];
     
     memset(&info, 0, sizeof info);
     
@@ -2344,16 +2347,18 @@ void *WebSockets_Thread::Entry()
         {
             address = connectionsIterator->params.NetworkAddress.c_str();
             port = connectionsIterator->params.NetworkPort;
+            sksub = connectionsIterator->params.SKSub.c_str();
             if( connectionsIterator->params.UseTLS )
                 use_ssl = 2; //Enable TLS with self-signed certs
             else
                 use_ssl = 0;
             if (!connectionsIterator->lws_ptr && ratelimit_connects(&rl_dump, RECONNECTTION_RATE_SECS)) {
                 //lwsl_notice("dump: connecting\n");
-                char host[255];
                 snprintf(host, 254, "%s:%d", address, port);
+                snprintf(url, 254, "/signalk/v1/stream?subscribe=%s", sksub);
+                
                 connectionsIterator->lws_ptr = lws_client_connect(context, address, port,
-                                          use_ssl, "/signalk/v1/stream", host, 0,
+                                          use_ssl, url, host, 0,
                                           protocols[PROTOCOL_SK_DUMP].name,
                                           ietf_version);
             }

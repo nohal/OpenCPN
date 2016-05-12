@@ -1618,6 +1618,9 @@ void options::CreatePanel_NMEA_Compact(size_t parent, int border_size,
   m_btnMDNSScan->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
                          wxCommandEventHandler(options::OnBtnMDNSScan), NULL,
                          this);
+  m_rbSubCustom->Connect( wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler( options::OnCustomSKSub ), NULL, this );
+  m_rbSubAll->Connect( wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler( options::OnCustomSKSub ), NULL, this );
+  m_rbSubSelf->Connect( wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler( options::OnCustomSKSub ), NULL, this );
 #endif
   m_tNetAddress->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                          wxCommandEventHandler(options::OnConnValChange), NULL,
@@ -2010,6 +2013,28 @@ void options::CreatePanel_NMEA(size_t parent, int border_size,
 
   sbSizerConnectionProps->Add(gSizerNetProps, 0, wxEXPAND, 5);
 
+  wxBoxSizer* bSizerSignalKSub;
+  bSizerSignalKSub = new wxBoxSizer( wxHORIZONTAL );
+    
+  m_stSignalKSub = new wxStaticText( m_pNMEAForm, wxID_ANY, wxT("Subscribe:"), wxDefaultPosition, wxDefaultSize, 0 );
+  m_stSignalKSub->Wrap( -1 );
+  bSizerSignalKSub->Add( m_stSignalKSub, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+    
+  m_rbSubAll = new wxRadioButton( m_pNMEAForm, wxID_ANY, _("all"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
+  m_rbSubAll->SetValue( TRUE );
+  bSizerSignalKSub->Add( m_rbSubAll, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+    
+  m_rbSubSelf = new wxRadioButton( m_pNMEAForm, wxID_ANY, _("self"), wxDefaultPosition, wxDefaultSize, 0 );
+  bSizerSignalKSub->Add( m_rbSubSelf, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+    
+  m_rbSubCustom = new wxRadioButton( m_pNMEAForm, wxID_ANY, _("custom"), wxDefaultPosition, wxDefaultSize, 0 );
+  bSizerSignalKSub->Add( m_rbSubCustom, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+    
+  m_tSubCustom = new wxTextCtrl( m_pNMEAForm, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+  bSizerSignalKSub->Add( m_tSubCustom, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+    
+  sbSizerConnectionProps->Add(bSizerSignalKSub, 0, wxEXPAND, 5);
+    
   gSizerSerProps = new wxFlexGridSizer(0, 1, 0, 0);
 
   wxFlexGridSizer* fgSizer1;
@@ -2254,6 +2279,9 @@ void options::CreatePanel_NMEA(size_t parent, int border_size,
   m_btnMDNSScan->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
                          wxCommandEventHandler(options::OnBtnMDNSScan), NULL,
                          this);
+  m_rbSubCustom->Connect( wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler( options::OnCustomSKSub ), NULL, this );
+  m_rbSubAll->Connect( wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler( options::OnCustomSKSub ), NULL, this );
+  m_rbSubSelf->Connect( wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler( options::OnCustomSKSub ), NULL, this );
 #endif
   m_tNetAddress->Connect(wxEVT_COMMAND_TEXT_UPDATED,
                          wxCommandEventHandler(options::OnConnValChange), NULL,
@@ -5552,6 +5580,12 @@ ConnectionParams* options::CreateConnectionParamsFromSelectedItem(void) {
   pConnectionParams->Priority = wxAtoi(m_choicePriority->GetStringSelection());
   pConnectionParams->ChecksumCheck = m_cbCheckCRC->GetValue();
   pConnectionParams->UseTLS = m_cbUseTLS->GetValue();
+  if( m_rbSubAll->GetValue() )
+      pConnectionParams->SKSub = _T("all");
+  if( m_rbSubSelf->GetValue() )
+      pConnectionParams->SKSub = _T("self");
+  if( m_rbSubCustom->GetValue() )
+        pConnectionParams->SKSub = m_tSubCustom->GetValue();
   pConnectionParams->Garmin = m_cbGarminHost->GetValue();
   pConnectionParams->InputSentenceList =
       wxStringTokenize(m_tcInputStc->GetValue(), _T(","));
@@ -7379,6 +7413,11 @@ void options::ShowNMEANet(bool visible) {
   m_rbNetProtoSIGNALK->Show(visible);
   m_btnMDNSScan->Show(visible);
   m_cbUseTLS->Show(visible);
+  m_rbSubCustom->Show(visible);
+  m_rbSubSelf->Show(visible);
+  m_rbSubAll->Show(visible);
+  m_tSubCustom->Show(visible);
+  m_stSignalKSub->Show(visible);
 }
 
 void options::ShowNMEASerial(bool visible) {
@@ -7516,6 +7555,11 @@ void options::SetDSFormRWStates(void) {
     m_cbCheckCRC->Enable(TRUE);
     m_btnMDNSScan->Enable(FALSE);
     m_cbUseTLS->Enable(FALSE);
+    m_rbSubAll->Enable(FALSE);
+    m_rbSubSelf->Enable(FALSE);
+    m_rbSubCustom->Enable(FALSE);
+    m_stSignalKSub->Enable(FALSE);
+    m_tSubCustom->Enable(FALSE);
   } else if (m_rbNetProtoSIGNALK->GetValue()) {
       if (m_tNetAddress->GetValue() == wxEmptyString)
           m_tNetPort->SetValue(_T("127.0.0.1"));
@@ -7534,6 +7578,11 @@ void options::SetDSFormRWStates(void) {
       m_cbCheckCRC->Enable(FALSE);
       m_btnMDNSScan->Enable(TRUE);
       m_cbUseTLS->Enable(TRUE);
+      m_rbSubAll->Enable(TRUE);
+      m_rbSubSelf->Enable(TRUE);
+      m_rbSubCustom->Enable(TRUE);
+      m_stSignalKSub->Enable(TRUE);
+      m_tSubCustom->Enable( m_rbSubCustom->GetValue() );
   } else {
     if (m_tNetPort->GetValue() == wxEmptyString)
       m_tNetPort->SetValue(_T("10110"));
@@ -7548,6 +7597,11 @@ void options::SetDSFormRWStates(void) {
     m_cbCheckCRC->Enable(TRUE);
     m_btnMDNSScan->Enable(FALSE);
     m_cbUseTLS->Enable(FALSE);
+    m_rbSubAll->Enable(FALSE);
+    m_rbSubSelf->Enable(FALSE);
+    m_rbSubCustom->Enable(FALSE);
+    m_stSignalKSub->Enable(FALSE);
+    m_tSubCustom->Enable(FALSE);
   }
 }
 
@@ -7556,6 +7610,15 @@ void options::SetConnectionParams(ConnectionParams* cp) {
   m_comboPort->SetValue(cp->Port);
   m_cbCheckCRC->SetValue(cp->ChecksumCheck);
   m_cbUseTLS->SetValue(cp->UseTLS);
+  if( cp->SKSub == _T("all") || cp->SKSub == wxEmptyString )
+      m_rbSubAll->SetValue( TRUE );
+  else if( cp->SKSub == _T("self") )
+      m_rbSubSelf->SetValue( TRUE );
+  else
+  {
+      m_rbSubCustom->SetValue( TRUE );
+      m_tSubCustom->SetValue( cp->SKSub );
+  }
   m_cbGarminHost->SetValue(cp->Garmin);
   m_cbInput->SetValue(cp->IOSelect != DS_TYPE_OUTPUT);
   m_cbOutput->SetValue(cp->IOSelect != DS_TYPE_INPUT);
@@ -7804,6 +7867,14 @@ void options::OnBtnMDNSScan(wxCommandEvent& event) {
             }
         }
     }
+}
+
+void options::OnCustomSKSub( wxCommandEvent& event )
+{
+    if( m_rbSubCustom->GetValue() )
+        m_tSubCustom->Enable();
+    else
+        m_tSubCustom->Disable();
 }
 #endif
 
