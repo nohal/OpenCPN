@@ -1772,6 +1772,8 @@ void options::CreatePanel_NMEA(size_t parent, int border_size,
 
   wxBoxSizer* bSizer161;
   bSizer161 = new wxBoxSizer(wxVERTICAL);
+    
+  int cb_space = 2;
 
   wxBoxSizer* bSizer171;
   bSizer171 = new wxBoxSizer(wxHORIZONTAL);
@@ -1780,28 +1782,23 @@ void options::CreatePanel_NMEA(size_t parent, int border_size,
                                     _("Filter NMEA Course and Speed data"),
                                     wxDefaultPosition, wxDefaultSize, 0);
   m_cbFilterSogCog->SetValue(g_bfilter_cogsog);
-  bSizer171->Add(m_cbFilterSogCog, 0, wxALL, 5);
+  bSizer171->Add(m_cbFilterSogCog, 0, wxALIGN_CENTER_VERTICAL|wxALL, 0);
 
   m_stFilterSec =
       new wxStaticText(m_pNMEAForm, wxID_ANY, _("Filter period (sec)"),
                        wxDefaultPosition, wxDefaultSize, 0);
   m_stFilterSec->Wrap(-1);
 
-  int nspace = 5;
-#ifdef __WXGTK__
-  nspace = 9;
-#endif
-  bSizer171->Add(m_stFilterSec, 0, wxALL, nspace);
+  bSizer171->Add(m_stFilterSec, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
   m_tFilterSec = new wxTextCtrl(m_pNMEAForm, wxID_ANY, wxEmptyString,
                                 wxDefaultPosition, wxDefaultSize, 0);
   wxString sfilt;
   sfilt.Printf(_T("%d"), g_COGFilterSec);
   m_tFilterSec->SetValue(sfilt);
-  bSizer171->Add(m_tFilterSec, 0, wxALL, 4);
-  bSizer161->Add(bSizer171, 1, wxEXPAND, 5);
+  bSizer171->Add(m_tFilterSec, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+  bSizer161->Add(bSizer171, 0, wxALL, cb_space);
 
-  int cb_space = 2;
   m_cbNMEADebug =
       new wxCheckBox(m_pNMEAForm, wxID_ANY, _("Show NMEA Debug Window"),
                      wxDefaultPosition, wxDefaultSize, 0);
