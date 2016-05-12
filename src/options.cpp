@@ -2013,6 +2013,16 @@ void options::CreatePanel_NMEA(size_t parent, int border_size,
 
   sbSizerConnectionProps->Add(gSizerNetProps, 0, wxEXPAND, 5);
 
+  wxBoxSizer* bSizerSignalKSelf;
+  bSizerSignalKSelf = new wxBoxSizer( wxHORIZONTAL );
+    
+  m_stSelfContext = new wxStaticText( m_pNMEAForm, wxID_ANY, wxT("Own ship SignalK context:"), wxDefaultPosition, wxDefaultSize, 0 );
+  bSizerSignalKSelf->Add( m_stSelfContext, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+  m_tSelfContext = new wxTextCtrl( m_pNMEAForm, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+  bSizerSignalKSelf->Add( m_tSelfContext, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+    
+  sbSizerConnectionProps->Add(bSizerSignalKSelf, 0, wxEXPAND, 5);
+
   wxBoxSizer* bSizerSignalKSub;
   bSizerSignalKSub = new wxBoxSizer( wxHORIZONTAL );
     
@@ -5756,6 +5766,8 @@ void options::OnApplyClick(wxCommandEvent& event) {
 
   // Connections page.
   g_bfilter_cogsog = m_cbFilterSogCog->GetValue();
+    
+  g_SignalKOwnContext = m_tSelfContext->GetValue();
 
   long filter_val = 1;
   m_tFilterSec->GetValue().ToLong(&filter_val);
@@ -7418,6 +7430,8 @@ void options::ShowNMEANet(bool visible) {
   m_rbSubAll->Show(visible);
   m_tSubCustom->Show(visible);
   m_stSignalKSub->Show(visible);
+  m_stSelfContext->Show(visible);
+  m_tSelfContext->Show(visible);
 }
 
 void options::ShowNMEASerial(bool visible) {
@@ -7560,6 +7574,8 @@ void options::SetDSFormRWStates(void) {
     m_rbSubCustom->Enable(FALSE);
     m_stSignalKSub->Enable(FALSE);
     m_tSubCustom->Enable(FALSE);
+    m_stSelfContext->Enable(FALSE);
+    m_tSelfContext->Enable(FALSE);
   } else if (m_rbNetProtoSIGNALK->GetValue()) {
       if (m_tNetAddress->GetValue() == wxEmptyString)
           m_tNetPort->SetValue(_T("127.0.0.1"));
@@ -7583,6 +7599,8 @@ void options::SetDSFormRWStates(void) {
       m_rbSubCustom->Enable(TRUE);
       m_stSignalKSub->Enable(TRUE);
       m_tSubCustom->Enable( m_rbSubCustom->GetValue() );
+      m_stSelfContext->Enable(TRUE);
+      m_tSelfContext->Enable(TRUE);
   } else {
     if (m_tNetPort->GetValue() == wxEmptyString)
       m_tNetPort->SetValue(_T("10110"));
@@ -7602,6 +7620,8 @@ void options::SetDSFormRWStates(void) {
     m_rbSubCustom->Enable(FALSE);
     m_stSignalKSub->Enable(FALSE);
     m_tSubCustom->Enable(FALSE);
+    m_stSelfContext->Enable(FALSE);
+    m_tSelfContext->Enable(FALSE);
   }
 }
 
@@ -7619,6 +7639,7 @@ void options::SetConnectionParams(ConnectionParams* cp) {
       m_rbSubCustom->SetValue( TRUE );
       m_tSubCustom->SetValue( cp->SKSub );
   }
+  m_tSelfContext->SetValue( g_SignalKOwnContext );
   m_cbGarminHost->SetValue(cp->Garmin);
   m_cbInput->SetValue(cp->IOSelect != DS_TYPE_OUTPUT);
   m_cbOutput->SetValue(cp->IOSelect != DS_TYPE_INPUT);

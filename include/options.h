@@ -379,6 +379,8 @@ class options : private Uncopyable,
   wxStaticText *m_stSignalKSub;
   wxRadioButton *m_rbSubAll, *m_rbSubSelf, *m_rbSubCustom;
   wxTextCtrl *m_tSubCustom;
+  wxStaticText *m_stSelfContext;
+  wxTextCtrl *m_tSelfContext;
 
   void OnSelectDatasource(wxListEvent &event);
   void OnAddDatasourceClick(wxCommandEvent &event);
