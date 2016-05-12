@@ -2177,7 +2177,7 @@ int WebSockets_Thread::callback_sk_dump(struct lws *wsi, enum lws_callback_reaso
             
         case LWS_CALLBACK_CLIENT_ESTABLISHED:
             //lwsl_info("dump: LWS_CALLBACK_CLIENT_ESTABLISHED\n");
-            websocket_write_back(wsi, SUBSCRIPTION_MESSAGE, -1);
+            //websocket_write_back(wsi, SUBSCRIPTION_MESSAGE, -1); - Not needed at this moment as we subscribe using the URL
             break;
             
         case LWS_CALLBACK_CLOSED:
