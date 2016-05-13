@@ -244,6 +244,8 @@ enum
 
 #define MAX_COG_AVERAGE_SECONDS        60
 #define MAX_COGSOG_FILTER_SECONDS      60
+
+#define MS_TO_KNOTS 1.944
 //----------------------------------------------------------------------------
 // fwd class declarations
 //----------------------------------------------------------------------------

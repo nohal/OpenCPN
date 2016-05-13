@@ -291,8 +291,6 @@ wxString Multiplexer::ProcessNMEA4Tags( wxString msg)
 extern wxString g_SignalKOwnContext;
 extern MyFrame *gFrame;
 
-#define MS_TO_KNOTS 1.944
-
 void Multiplexer::OnEvtSignalK(OCPN_SignalKMessageEvent& event)
 {
     wxString message_JSONText = event.GetSString();

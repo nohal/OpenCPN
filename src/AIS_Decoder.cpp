@@ -33,6 +33,7 @@
 #include <fstream>
 #include "OCPNPlatform.h"
 #include "pluginmanager.h"
+#include <wx/jsonreader.h>
 
 #if !defined(NAN)
 static const long long lNaN = 0xfff8000000000000;
@@ -316,39 +317,99 @@ void AIS_Decoder::OnEvtSignalK( OCPN_SignalKMessageEvent& event )
     time_t last_report_ticks;
     long mmsi_long = 0;
     
-    //TODO: Implement decoding of SignalK object
+    wxString message_JSONText = event.GetSString();
     
-    //  Search the current AISTargetList for an MMSI match
-    AIS_Target_Hash::iterator it = AISTargetList->find( mmsi_long );
-    if( it == AISTargetList->end() )                  // not found
-    {
-        pTargetData = new AIS_Target_Data;
-        pStaleTarget = NULL;
-        m_n_targets++;
-    } else {
-        pTargetData = ( *AISTargetList )[mmsi_long];          // find current entry
-        pStaleTarget = pTargetData;
+    //  We are free to use or ignore any or all of the PlugIn messages flying thru this pipe tee.
+    
+    //  We can possibly use the estimated magnetic variation if WMM_pi is present and active
+    //  and we have no other source of Variation
+    
+    // construct the JSON root object
+    wxJSONValue  root;
+    // construct a JSON parser
+    wxJSONReader reader;
+    
+    // now read the JSON text and store it in the 'root' structure
+    // check for errors before retreiving values...
+    int numErrors = reader.Parse( message_JSONText, &root );
+    if ( numErrors > 0 )  {
+        //              const wxArrayString& errors = reader.GetErrors();
+        return;
     }
+    wxString path;
+    wxJSONValue value;
+    if( root.HasMember( _T("updates") ) )
+    {
+        wxString context = root[_T("context")].AsString();
+        context.Right( context.Len() - context.Last( ':' ) - 1 ).ToLong( &mmsi_long );
+        
+        //  Search the current AISTargetList for an MMSI match
+        AIS_Target_Hash::iterator it = AISTargetList->find( mmsi_long );
+        if( it == AISTargetList->end() )                  // not found
+        {
+            pTargetData = new AIS_Target_Data;
+            pStaleTarget = NULL;
+            m_n_targets++;
+        } else {
+            pTargetData = ( *AISTargetList )[mmsi_long];          // find current entry
+            pStaleTarget = pTargetData;
+        }
+        
+        pTargetData->MMSI = (int)mmsi_long;
+        
+        wxJSONValue  updates = root[_T("updates")];
+        
+        for( size_t i = 0; i < updates.Size(); i++ )
+        {
+            if( updates[i].HasMember(_T("values")) )
+            {
+                for( size_t j = 0; j < updates[i][_T("values")].Size(); j++ )
+                {
+                    path = updates[i][_T("values")][j][_T("path")].AsString();
+                    value = updates[i][_T("values")][j][_T("value")];
+
+                    if( path == _T("navigation.position") )
+                    {
+                        pTargetData->Lat = value[_T("latitude")].AsDouble();
+                        pTargetData->Lon = value[_T("longitude")].AsDouble();
+                    }
+                    if( path == _T("navigation.courseOverGroundTrue") )
+                    {
+                        pTargetData->COG = value.AsDouble() * RADIAN;
+                    }
+                    if( path == _T("navigation.speedOverGround") )
+                    {
+                        pTargetData->SOG = value.AsDouble() * MS_TO_KNOTS;
+                    }
+                    if( path == _T("navigation.headingTrue") )
+                    {
+                        pTargetData->HDG = value.AsDouble() * RADIAN;
+                    }
+                    //TODO: Implement other ship values relevant to AIS
+                }
+            }
+        }
     
-    //  Grab the stale targets's last report time
-    wxDateTime now = wxDateTime::Now();
-    now.MakeGMT();
+        //  Grab the stale targets's last report time
+        wxDateTime now = wxDateTime::Now();
+        now.MakeGMT();
     
-    if( pStaleTarget )
-        last_report_ticks = pStaleTarget->PositionReportTicks;
-    else
-        last_report_ticks = now.GetTicks();
+        if( pStaleTarget )
+            last_report_ticks = pStaleTarget->PositionReportTicks;
+        else
+            last_report_ticks = now.GetTicks();
     
-    // Delete the stale AIS Target selectable point
-    if( pStaleTarget )
-        pSelectAIS->DeleteSelectablePoint( (void *) mmsi_long, SELTYPE_AISTARGET );
+        // Delete the stale AIS Target selectable point
+        if( pStaleTarget )
+            pSelectAIS->DeleteSelectablePoint( (void *) mmsi_long, SELTYPE_AISTARGET );
     
-    ( *AISTargetList )[pTargetData->MMSI] = pTargetData;
+        ( *AISTargetList )[pTargetData->MMSI] = pTargetData;
     
-    if( pTargetData )
-        pTargetData->RecentPeriod = pTargetData->PositionReportTicks - last_report_ticks;
+        if( pTargetData )
+            pTargetData->RecentPeriod = pTargetData->PositionReportTicks - last_report_ticks;
     
-    gFrame->TouchAISActive();
+        gFrame->TouchAISActive();
+    }
 }
 #endif
 
