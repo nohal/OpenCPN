@@ -373,15 +373,15 @@ void AIS_Decoder::OnEvtSignalK( OCPN_SignalKMessageEvent& event )
                         pTargetData->Lat = value[_T("latitude")].AsDouble();
                         pTargetData->Lon = value[_T("longitude")].AsDouble();
                     }
-                    if( path == _T("navigation.courseOverGroundTrue") )
+                    else if( path == _T("navigation.courseOverGroundTrue") )
                     {
                         pTargetData->COG = value.AsDouble() * RADIAN;
                     }
-                    if( path == _T("navigation.speedOverGround") )
+                    else if( path == _T("navigation.speedOverGround") )
                     {
                         pTargetData->SOG = value.AsDouble() * MS_TO_KNOTS;
                     }
-                    if( path == _T("navigation.headingTrue") )
+                    else if( path == _T("navigation.headingTrue") )
                     {
                         pTargetData->HDG = value.AsDouble() * RADIAN;
                     }
