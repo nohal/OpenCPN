@@ -6479,7 +6479,9 @@ void options::DoOnPageChange(size_t page) {
 
           wxLocale ltest(lang_list[it], 0);
 #if wxCHECK_VERSION(2, 9, 0)
-          ltest.AddCatalogLookupPathPrefix( wxStandardPaths::Get().GetInstallPrefix() + _T( "/share/locale" ) );
+#ifdef __WXGTK__
+          ltest.AddCatalogLookupPathPrefix(wxStandardPaths::Get().GetInstallPrefix() + _T( "/share/locale" ) );
+#endif
 #endif
           ltest.AddCatalog(_T("opencpn"));
 
