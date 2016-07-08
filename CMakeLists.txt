@@ -654,6 +654,8 @@ ELSE (USE_S57)
 	message (STATUS "S57 ENC support: disabled")
 ENDIF (USE_S57)
 
+SET(CODESIGN_IDENTITY "" CACHE STRING "Code signing identity")
+
 OPTION(OCPN_USE_WEBSOCKETS "Use websockets" ON)
 
 IF(OCPN_USE_WEBSOCKETS)
@@ -2206,19 +2208,23 @@ IF(APPLE)
   SET(LIBS ${LIBS} "\${CMAKE_INSTALL_PREFIX}/bin/OpenCPN.app/Contents/PlugIns/libwmm_pi.dylib")
 
   INSTALL(CODE "
+   execute_process(COMMAND ${CMAKE_SOURCE_DIR}/buildosx/fix_wx_linking.sh /usr/local/lib)
    include(BundleUtilities)
    fixup_bundle(\"${APPS}\"   \"${LIBS}\"   \"${DIRS}\")
+   execute_process(COMMAND ${CMAKE_SOURCE_DIR}/buildosx/codesign.sh BUNDLE \"${CODESIGN_IDENTITY}\" ${CMAKE_INSTALL_PREFIX}/bin/OpenCPN.app)
    " COMPONENT Runtime)
 
  ADD_CUSTOM_COMMAND(
    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}_${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}.dmg
    COMMAND ${CMAKE_SOURCE_DIR}/buildosx/create-dmg --volname "OpenCPN Installer" --background ${CMAKE_SOURCE_DIR}/buildosx/background.png --window-pos 200 120 --window-size 500 300 --icon-size 80 --icon OpenCPN.app 120 150 --hide-extension OpenCPN.app --app-drop-link 390 145 ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}_${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}.dmg ${CMAKE_INSTALL_PREFIX}/bin/
+   COMMAND ${CMAKE_SOURCE_DIR}/buildosx/codesign.sh DMG "${CODESIGN_IDENTITY}" "${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}_${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}.dmg"
    DEPENDS ${CMAKE_INSTALL_PREFIX}/bin/OpenCPN.app
    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
    COMMENT "create-dmg [${PACKAGE_NAME}]: Generated dmg file."
  )
 
  ADD_CUSTOM_TARGET(create-dmg COMMENT "create-dmg: Done." DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}_${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}.dmg)
+ 
 ENDIF(APPLE)
 
 MESSAGE(STATUS "Writing spec file...")
