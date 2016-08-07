@@ -97,7 +97,9 @@ extern bool             g_bTrackDaily;
 extern bool             g_bHighliteTracks;
 extern double           g_TrackDeltaDistance;
 extern RouteProp                 *pRoutePropDialog;
+#ifdef ocpnUSE_GL
 extern float            g_GLMinSymbolLineWidth;
+#endif
 
 #if defined( __UNIX__ ) && !defined(__WXOSX__)  // high resolution stopwatch for profiling
 class OCPNStopWatch
@@ -613,6 +615,7 @@ void Track::Draw( ocpnDC& dc, ViewPort &VP, const LLBBox &box )
             delete [] points;
         }
     } else { // opengl version
+#ifdef ocpnUSE_GL
         glColor3ub(col.Red(), col.Green(), col.Blue());
         glLineWidth( wxMax( g_GLMinSymbolLineWidth, width ) );
 
@@ -642,6 +645,7 @@ void Track::Draw( ocpnDC& dc, ViewPort &VP, const LLBBox &box )
         glDisableClientState(GL_VERTEX_ARRAY);
 
         delete [] points;
+#endif
     }
 }
 

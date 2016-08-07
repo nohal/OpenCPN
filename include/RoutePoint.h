@@ -150,12 +150,12 @@ public:
       unsigned int m_iTextTexture;
       int m_iTextTextureWidth, m_iTextTextureHeight;
 
-      LLBBox m_wpBBox;
       double m_wpBBox_view_scale_ppm, m_wpBBox_rotation;
 
       bool m_pos_on_screen;
       wxPoint2DDouble m_screen_pos; // cached for arrows and points
 #endif
+      LLBBox m_wpBBox;
 
       double m_WaypointArrivalRadius;
       HyperlinkList     *m_HyperlinkList;
