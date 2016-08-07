@@ -1705,20 +1705,8 @@ ChartBaseBSB::~ChartBaseBSB()
       }
 
 //    Free the line cache
-
-      if(pLineCache)
-      {
-            CachedLine *pt;
-            for(int ylc = 0 ; ylc < Size_Y ; ylc++)
-            {
-                  pt = &pLineCache[ylc];
-                  free (pt->pTileOffset);
-                  free (pt->pPix);
-            }
-            free (pLineCache);
-      }
-
-
+      FreeLineCacheRows();
+      free (pLineCache);
 
       delete pPixCache;
 
@@ -1727,6 +1715,36 @@ ChartBaseBSB::~ChartBaseBSB()
             delete pPalettes[i];
 
 }
+
+void ChartBaseBSB::FreeLineCacheRows(int start, int end)
+{
+    if(pLineCache)
+    {
+        if(end < 0)
+            end = Size_Y;
+        else
+            end = wxMin(end, Size_Y);
+        for(int ylc = start ; ylc < end ; ylc++) {
+            CachedLine *pt = &pLineCache[ylc];
+            if(pt->bValid) {
+                free (pt->pTileOffset);
+                free (pt->pPix);
+                pt->bValid = false;
+            }
+        }
+    }
+}
+
+bool ChartBaseBSB::HaveLineCacheRow(int row)
+{
+    if(pLineCache)
+    {
+        CachedLine *pt = &pLineCache[row];
+        return pt->bValid;
+    }
+    return false;
+}
+
 
 //    Report recommended minimum and maximum scale values for which use of this chart is valid
 
@@ -4366,7 +4384,7 @@ int   ChartBaseBSB::BSBGetScanline( unsigned char *pLineBuf, int y, int xs, int 
               unsigned char *offset = lp - 1;
               if(byNext == 0 || lp == end) {
                   // finished early...corrupt?
-                  while(tileindex < Size_X/TILE_SIZE + 1) {
+                  while(tileindex < (unsigned int)Size_X/TILE_SIZE + 1) {
                       pt->pTileOffset[tileindex].offset = pt->pTileOffset[0].offset;
                       pt->pTileOffset[tileindex].pixel = 0;
                       tileindex++;

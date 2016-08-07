@@ -98,7 +98,7 @@ void GSHHSChart::RenderViewOnDC( ocpnDC& dc, ViewPort& vp )
     if( ! reader ) {
         reader = new GshhsReader( );
         if( reader->GetPolyVersion() < 210 || reader->GetPolyVersion() > 220 ) {
-            wxLogMessage( _T("GSHHS World chart files have wrong version. Found %ld, expected 210-220."),
+            wxLogMessage( _T("GSHHS World chart files have wrong version. Found %d, expected 210-220."),
                     reader->GetPolyVersion() );
         } else {
             wxLogMessage(
@@ -1217,10 +1217,9 @@ int GshhsReader::GSHHS_scaledPoints( GshhsPolygon *pol, wxPoint *pts, double dec
     for( itp = ( pol->lsPoints ).begin(); itp != ( pol->lsPoints ).end(); itp++ ) {
         x = ( *itp )->lon + declon;
         y = ( *itp )->lat;
-                                    {
         wxPoint2DDouble p = GetDoublePixFromLL(vp,  y, x );
         xx = p.m_x, yy = p.m_y;
-        if( j == 0 || ( oxx != xx || oyy != yy ) )  // Remove close points
+        if( j == 0 || ( oxx != xx || oyy != yy ) ) { // Remove close points
             oxx = xx;
             oyy = yy;
             pts[j].x = xx;
