@@ -27,6 +27,22 @@
 #ifndef __GLTEXTUREMANAGER_H__
 #define __GLTEXTUREMANAGER_H__
 
+#ifdef __WXMAC__
+#ifndef GLAPIENTRY
+#define GLAPIENTRY
+#endif
+
+#ifndef APIENTRY
+#define APIENTRY GLAPIENTRY
+#endif
+/* "P" suffix to be used for a pointer to a function */
+#ifndef APIENTRYP
+#define APIENTRYP APIENTRY *
+#endif
+typedef void (APIENTRYP PFNGLGETCOMPRESSEDTEXIMAGEPROC) (GLenum target, GLint level, GLvoid *img);
+#define GL_COMPRESSED_RGB_FXT1_3DFX       0x86B0
+#endif
+
 const wxEventType wxEVT_OCPN_COMPRESSIONTHREAD = wxNewEventType();
 
 class JobTicket;
