@@ -264,27 +264,6 @@ void Multiplexer::SetGPSHandler(wxEvtHandler *handler)
     m_gpsconsumer = handler;
 }
 
-wxString Multiplexer::ProcessNMEA4Tags( wxString msg)
-{
-    int idxFirst =  msg.Find('\\');
-    
-    if(wxNOT_FOUND == idxFirst)
-        return msg;
-    
-    if(idxFirst < (int)msg.Length()-1){
-        int idxSecond = msg.Mid(idxFirst + 1).Find('\\') + 1;
-        if(wxNOT_FOUND != idxSecond){
-            if(idxSecond < (int)msg.Length()-1){
-                
-                //wxString tag = msg.Mid(idxFirst+1, (idxSecond - idxFirst) -1);
-                return msg.Mid(idxSecond + 1);
-            }
-        }
-    }
-    
-    return msg;
-}
-
 #ifdef __OCPN_USE_WEBSOCKETS__
 #include "wx/jsonreader.h"
 
@@ -387,7 +366,7 @@ void Multiplexer::OnEvtSignalK(OCPN_SignalKMessageEvent& event)
 
 void Multiplexer::OnEvtStream(OCPN_DataStreamEvent& event)
 {
-    wxString message = ProcessNMEA4Tags(wxString(event.GetNMEAString().c_str(), wxConvUTF8) );
+    wxString message = event.ProcessNMEA4Tags();
     
     DataStream *stream = event.GetStream();
     wxString port(_T("Virtual:"));

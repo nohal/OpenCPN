@@ -71,7 +71,6 @@ class Multiplexer : public wxEvtHandler
 #ifdef __OCPN_USE_WEBSOCKETS__
         void OnEvtSignalK(OCPN_SignalKMessageEvent& event);
 #endif
-        wxString ProcessNMEA4Tags( wxString msg);
         
         void LogOutputMessage(const wxString &msg, wxString stream_name, bool b_filter);
         void LogOutputMessageColor(const wxString &msg, const wxString & stream_name, const wxString & color);
