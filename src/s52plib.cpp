@@ -50,6 +50,7 @@
 #include "TexFont.h"
 #include "ocpndc.h"
 #include "wx28compat.h"
+#include "ocpn_plugin.h"
 
 #include <wx/image.h>
 #include <wx/tokenzr.h>
@@ -2581,10 +2582,10 @@ bool s52plib::RenderRasterSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &r,
     symbox.Set( latmin, lonmin, latmax, lonmax );
 
     //  Special case for GEO_AREA objects with centred symbols
-    if( rzRules->obj->Primitive_type == GEO_AREA ) {
-        if( !rzRules->obj->BBObj.IntersectIn( symbox ) ) // Symbol is wholly outside base object
-            return true;
-    }
+     if( rzRules->obj->Primitive_type == GEO_AREA ) {
+         if( !rzRules->obj->BBObj.IntersectIn( symbox ) ) // Symbol is wholly outside base object
+             return true;
+     }
 
     //      Now render the symbol
 
@@ -2840,6 +2841,237 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     double scale_factor = vp->ref_scale/vp->chart_scale;
     if(scale_factor > 10.0)
         return RenderLS(rzRules, rules, vp);
+
+    if( !rzRules->obj->m_chart_context->chart )
+        return RenderLS(rzRules, rules, vp);    // this is where S63 PlugIn gets caught
+        
+    bool b_useVBO = false;
+    float *vertex_buffer = 0;
+    
+    if(rzRules->obj->auxParm2 > 0)             // Has VBO been defined and uploaded? 
+        b_useVBO = true;
+
+    if( !b_useVBO ){
+        if( rzRules->obj->m_chart_context->chart ){
+            vertex_buffer = rzRules->obj->m_chart_context->chart->GetLineVertexBuffer(); 
+        }
+        else {
+            vertex_buffer = rzRules->obj->m_chart_context->vertex_buffer; 
+        }
+        
+        
+        if(!vertex_buffer)
+            return RenderLS(rzRules, rules, vp);    // this is where cm93 gets caught
+    }
+
+    
+#ifdef ocpnUSE_GL
+
+    LLBBox BBView = vp->GetBBox();
+
+    //  Allow a little slop in calculating whether a segment
+    //  is within the requested Viewport
+    double margin = BBView.GetLonRange() * .05;
+    BBView.EnLarge( margin );
+
+    //  Try to determine if the feature needs to be drawn in the most efficient way
+    //  We need to look at priority and visibility of each segment
+    int bdraw = 0;
+    
+    //  Get the current display priority
+    //  Default comes from the LUP, unless overridden
+    int priority_current = rzRules->LUP->DPRI - '0';
+    if(rzRules->obj->m_DPRI >= 0)
+        priority_current = rzRules->obj->m_DPRI;
+    
+    line_segment_element *ls_list = rzRules->obj->m_ls_list;
+    while( ls_list){
+        
+        if( (ls_list->priority == priority_current) )   
+        {
+            //  Check visibility of the segment
+            if( (ls_list->ls_type == TYPE_EE) || (ls_list->ls_type == TYPE_EE_REV) ){
+                if((BBView.GetMinLat() < ls_list->pedge->edgeBBox.GetMaxLat() && BBView.GetMaxLat() > ls_list->pedge->edgeBBox.GetMinLat()) &&
+                    ((BBView.GetMinLon() <= ls_list->pedge->edgeBBox.GetMaxLon() && BBView.GetMaxLon() >= ls_list->pedge->edgeBBox.GetMinLon()) ||
+                    (BBView.GetMaxLon() >=  180 && BBView.GetMaxLon() - 360 > ls_list->pedge->edgeBBox.GetMinLon()) ||
+                    (BBView.GetMinLon() <= -180 && BBView.GetMinLon() + 360 < ls_list->pedge->edgeBBox.GetMaxLon()))) {
+                    // render the segment
+                        if(ls_list->pedge->nCount > 1){
+                            bdraw++;
+                            break;
+                        }
+                    }
+                    
+            }
+            else{
+                if((BBView.GetMinLat() < ls_list->pcs->cs_lat_avg && BBView.GetMaxLat() > ls_list->pcs->cs_lat_avg) &&
+                    ((BBView.GetMinLon() <= ls_list->pcs->cs_lon_avg && BBView.GetMaxLon() >= ls_list->pcs->cs_lon_avg) ||
+                    (BBView.GetMaxLon() >=  180 && BBView.GetMaxLon() - 360 > ls_list->pcs->cs_lon_avg) ||
+                    (BBView.GetMinLon() <= -180 && BBView.GetMinLon() + 360 < ls_list->pcs->cs_lon_avg))) {
+                // render the segment
+                    bdraw++;
+                    break;
+                }
+            }
+        }
+        
+        ls_list = ls_list->next;
+    }
+    
+    if(!bdraw)
+        return 0;
+        
+    char *str = (char*) rules->INSTstr;
+    S52color *c = getColor( str + 7 ); // Colour
+    int w = atoi( str + 5 ); // Width
+    
+    glColor3ub( c->R, c->G, c->B );
+    
+    //    Set drawing width
+    if( w > 1 ) {
+        GLint parms[2];
+        glGetIntegerv( GL_ALIASED_LINE_WIDTH_RANGE, &parms[0] );
+        if( w > parms[1] )
+            glLineWidth( wxMax(g_GLMinCartographicLineWidth, parms[1]) );
+        else
+            glLineWidth( wxMax(g_GLMinCartographicLineWidth, w) );
+    } else
+        glLineWidth( wxMax(g_GLMinCartographicLineWidth, 1) );
+    
+#ifndef ocpnUSE_GLES // linestipple is emulated poorly
+    if( !strncmp( str, "DASH", 4 ) ) {
+        glLineStipple( 1, 0x3F3F );
+        glEnable( GL_LINE_STIPPLE );
+    }
+    else if( !strncmp( str, "DOTT", 4 ) ) {
+        glLineStipple( 1, 0x3333 );
+        glEnable( GL_LINE_STIPPLE );
+    }
+    else
+        glDisable( GL_LINE_STIPPLE );
+#endif    
+
+        glDisable( GL_LINE_STIPPLE );
+        
+    glPushMatrix();
+    
+    // Set up the OpenGL transform matrix for this object
+    //  Transform from Simple Mercator (relative to chart reference point) to screen coordinates.
+    
+    //  First, the VP transform
+    glTranslatef( vp->pix_width / 2, vp->pix_height/2, 0 );
+    glScalef( vp->view_scale_ppm, -vp->view_scale_ppm, 0 );
+    glTranslatef( -rzRules->sm_transform_parms->easting_vp_center, -rzRules->sm_transform_parms->northing_vp_center, 0 );
+    
+    //  Next, the per-object transform
+    
+#if 0    
+    //      We may need to translate object coordinates by 360 degrees to conform.
+    if( BBView.GetMaxLon() > 180. ) {
+        if(rzRules->obj->BBObj.GetMinLon() < BBView.GetMaxLon() - 360.)
+            glTranslatef( mercator_k0 * WGS84_semimajor_axis_meters * 2.0 * PI, 0, 0 );
+    } else
+    if( (BBView.GetMinLon() <= -180. && rzRules->obj->BBObj.GetMaxLon() > BBView.GetMinLon() + 360.) ||
+        (BBView.GetMinLon() <= 0. && rzRules->obj->BBObj.GetMaxLon() > 180))
+        glTranslatef( -mercator_k0 * WGS84_semimajor_axis_meters * 2.0 * PI, 0, 0 );
+#endif
+        
+    if( rzRules->obj->m_chart_context->chart ){
+        glTranslatef( rzRules->obj->x_origin, rzRules->obj->y_origin, 0);
+        glScalef( rzRules->obj->x_rate, rzRules->obj->y_rate, 0 );
+    }
+    
+    //   Has line segment PBO been allocated for this chart?
+    if(b_useVBO){
+        (s_glBindBuffer)(GL_ARRAY_BUFFER, rzRules->obj->auxParm2);
+    }
+
+    
+    glEnableClientState(GL_VERTEX_ARRAY);             // activate vertex coords array
+
+  
+    // from above ls_list is the first drawable segment
+    while( ls_list){
+        
+        if( ls_list->priority == priority_current  )   
+        {
+            size_t seg_vbo_offset = 0;
+            size_t point_count = 0;
+            
+            //  Check visibility of the segment
+            bool b_drawit = false;
+            if( (ls_list->ls_type == TYPE_EE) || (ls_list->ls_type == TYPE_EE_REV) ){
+                if((BBView.GetMinLat() < ls_list->pedge->edgeBBox.GetMaxLat() && BBView.GetMaxLat() > ls_list->pedge->edgeBBox.GetMinLat()) &&
+                    ((BBView.GetMinLon() <= ls_list->pedge->edgeBBox.GetMaxLon() && BBView.GetMaxLon() >= ls_list->pedge->edgeBBox.GetMinLon()) ||
+                    (BBView.GetMaxLon() >=  180 && BBView.GetMaxLon() - 360 > ls_list->pedge->edgeBBox.GetMinLon()) ||
+                    (BBView.GetMinLon() <= -180 && BBView.GetMinLon() + 360 < ls_list->pedge->edgeBBox.GetMaxLon()))) {
+                    // render the segment
+                        b_drawit = true;
+                        seg_vbo_offset = ls_list->pedge->vbo_offset;
+                        point_count = ls_list->pedge->nCount;
+                    }
+                    
+            }
+            else{
+                if((BBView.GetMinLat() < ls_list->pcs->cs_lat_avg && BBView.GetMaxLat() > ls_list->pcs->cs_lat_avg) &&
+                    ((BBView.GetMinLon() <= ls_list->pcs->cs_lon_avg && BBView.GetMaxLon() >= ls_list->pcs->cs_lon_avg) ||
+                    (BBView.GetMaxLon() >=  180 && BBView.GetMaxLon() - 360 > ls_list->pcs->cs_lon_avg) ||
+                    (BBView.GetMinLon() <= -180 && BBView.GetMinLon() + 360 < ls_list->pcs->cs_lon_avg))) {
+                    // render the segment
+                        b_drawit = true;
+                        seg_vbo_offset = ls_list->pcs->vbo_offset;
+                        point_count = 2;
+                    }
+            }
+            
+            
+            
+            
+            
+            if( b_drawit) {
+                // render the segment
+                
+                if(b_useVBO){
+                    glVertexPointer(2, GL_FLOAT, 2 * sizeof(float), (GLvoid *)(seg_vbo_offset));
+                    glDrawArrays(GL_LINE_STRIP, 0, point_count);
+                }
+                else{
+                    glVertexPointer(2, GL_FLOAT, 2 * sizeof(float), (unsigned char *)vertex_buffer + seg_vbo_offset);
+                    glDrawArrays(GL_LINE_STRIP, 0, point_count);
+                }
+            }
+        }
+        ls_list = ls_list->next;
+    }
+    
+     if(b_useVBO) 
+         (s_glBindBuffer)(GL_ARRAY_BUFFER_ARB, 0);
+    
+    glDisableClientState(GL_VERTEX_ARRAY);            // deactivate vertex array
+
+    glPopMatrix();
+
+    glDisable( GL_LINE_STIPPLE );
+#endif                  // OpenGL
+    
+    return 1;
+}
+    
+#if 0
+// Line Simple Style, OpenGL
+int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
+{
+    
+    // for now don't use vbo model in non-mercator
+    if(vp->m_projection_type != PROJECTION_MERCATOR)
+        return RenderLS(rzRules, rules, vp);
+
+    if( !m_benableGLLS )                        // root chart cannot support VBO model, for whatever reason
+        return RenderLS(rzRules, rules, vp);
+
+    double scale_factor = vp->ref_scale/vp->chart_scale;
+    if(scale_factor > 10.0)
+        return RenderLS(rzRules, rules, vp);
     
     bool b_useVBO = false;
     float *vertex_buffer = 0;
@@ -3004,11 +3236,213 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     
     return 1;
 }
-    
-    
+#endif
+
 // Line Simple Style
 int s52plib::RenderLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 {
+    // catch cm93 and legacy PlugIns (e.g.s63_pi)
+    if( rzRules->obj->m_n_lsindex  && !rzRules->obj->m_ls_list) 
+        return RenderLSLegacy(rzRules, rules, vp);
+    
+    S52color *c;
+    int w;
+
+    char *str = (char*) rules->INSTstr;
+    c = getColor( str + 7 ); // Colour
+    wxColour color( c->R, c->G, c->B );
+    w = atoi( str + 5 ); // Width
+
+    double scale_factor = vp->ref_scale/vp->chart_scale;
+    double scaled_line_width = wxMax((scale_factor - g_overzoom_emphasis_base), 1);
+    bool b_wide_line = g_oz_vector_scale && vp->b_quilt && (scale_factor > g_overzoom_emphasis_base);
+    
+    wxPen wide_pen(*wxBLACK_PEN);
+    wxDash dashw[2];
+    dashw[0] = 3;
+    dashw[1] = 1; 
+    
+    if( b_wide_line)
+    {
+        int w = wxMax(scaled_line_width, 2);            // looks better
+        w = wxMin(w, 50);                               // upper bound
+        wide_pen.SetWidth( w );
+        wide_pen.SetColour(color);
+        
+        if( !strncmp( str, "DOTT", 4 ) ) {
+            dashw[0] = 1;
+            wide_pen.SetStyle(wxPENSTYLE_USER_DASH);
+            wide_pen.SetDashes( 2, dashw );
+        }        
+        else if( !strncmp( str, "DASH", 4 ) ){
+            wide_pen.SetStyle(wxPENSTYLE_USER_DASH);
+            if( m_pdc){ //DC mode
+                dashw[0] = 1;
+                dashw[1] = 2;
+            }
+                
+            wide_pen.SetDashes( 2, dashw );
+        }
+    }
+ 
+    wxPen thispen(color, w, wxPENSTYLE_SOLID);
+    wxDash dash1[2];
+    
+    if( m_pdc) //DC mode
+    {
+        if( !strncmp( str, "DOTT", 4 ) ) {
+            thispen.SetStyle(wxPENSTYLE_USER_DASH);
+            dash1[0] = 1;
+            dash1[1] = 2; 
+            thispen.SetDashes( 2, dash1 );
+        }        
+        else if( !strncmp( str, "DASH", 4 ) ){
+            thispen.SetStyle(wxPENSTYLE_SHORT_DASH);
+        }
+         
+        if(b_wide_line)
+            m_pdc->SetPen( wide_pen );
+        else
+            m_pdc->SetPen( thispen );
+        
+    }
+#ifdef ocpnUSE_GL
+    else // OpenGL mode
+    {
+        glColor3ub( c->R, c->G, c->B );
+        
+        //    Set drawing width
+        if( w > 1 ) {
+            GLint parms[2];
+            glGetIntegerv( GL_ALIASED_LINE_WIDTH_RANGE, &parms[0] );
+            if( w > parms[1] )
+                glLineWidth( wxMax(g_GLMinCartographicLineWidth, parms[1]) );
+            else
+                glLineWidth( wxMax(g_GLMinCartographicLineWidth, w) );
+        } else
+            glLineWidth( wxMax(g_GLMinCartographicLineWidth, 1) );
+        
+#ifndef ocpnUSE_GLES // linestipple is emulated poorly
+            if( !strncmp( str, "DASH", 4 ) ) {
+                glLineStipple( 1, 0x3F3F );
+                glEnable( GL_LINE_STIPPLE );
+            }
+            else if( !strncmp( str, "DOTT", 4 ) ) {
+                glLineStipple( 1, 0x3333 );
+                glEnable( GL_LINE_STIPPLE );
+            }
+            else
+                glDisable( GL_LINE_STIPPLE );
+#endif
+                
+    }
+#endif
+    
+
+    //    Get a true pixel clipping/bounding box from the vp
+    wxPoint pbb = vp->GetPixFromLL( vp->clat, vp->clon );
+    int xmin_ = pbb.x - (vp->rv_rect.width / 2) - (4 * scaled_line_width);
+    int xmax_ = xmin_ + vp->rv_rect.width + (8 * scaled_line_width);
+    int ymin_ = pbb.y - (vp->rv_rect.height / 2) - (4 * scaled_line_width) ;
+    int ymax_ = ymin_ + vp->rv_rect.height + (8 * scaled_line_width);
+
+    int x0, y0, x1, y1;
+
+    //  Get the current display priority
+    //  Default comes from the LUP, unless overridden
+    int priority_current = rzRules->LUP->DPRI - '0';
+    if(rzRules->obj->m_DPRI >= 0)
+        priority_current = rzRules->obj->m_DPRI;
+    
+    if( rzRules->obj->m_ls_list )
+    {
+        float *ppt;
+
+        unsigned char *vbo_point = (unsigned char *)rzRules->obj->m_chart_context->chart->GetLineVertexBuffer();;
+        line_segment_element *ls = rzRules->obj->m_ls_list;
+
+#ifdef ocpnUSE_GL
+        if( !m_pdc && !b_wide_line)
+            glBegin( GL_LINES );
+#endif
+            
+        while(ls){
+            if( ls->priority == priority_current  ) {  
+
+                int nPoints;
+            // fetch the first point
+                if( (ls->ls_type == TYPE_EE) || (ls->ls_type == TYPE_EE_REV) ){
+                    ppt = (float *)(vbo_point + ls->pedge->vbo_offset);
+                    nPoints = ls->pedge->nCount;
+                }
+                else{
+                    ppt = (float *)(vbo_point + ls->pcs->vbo_offset);
+                    nPoints = 2;
+                }
+
+                wxPoint l;
+                GetPointPixSingle( rzRules, ppt[1], ppt[0], &l, vp );
+                ppt += 2;
+            
+                for(int ip=0 ; ip < nPoints - 1 ; ip++){
+                    wxPoint r;
+                    GetPointPixSingle( rzRules, ppt[1], ppt[0], &r, vp );
+                            //        Draw the edge as point-to-point
+                    x0 = l.x, y0 = l.y;
+                    x1 = r.x, y1 = r.y;
+                            
+                        // Do not draw null segments
+                    if( ( x0 != x1 ) || ( y0 != y1 ) ){
+                    
+                        if(m_pdc){
+                        
+                            if( cohen_sutherland_line_clip_i( &x0, &y0, &x1, &y1, xmin_, xmax_,
+                                    ymin_, ymax_ ) != Invisible )
+                                    m_pdc->DrawLine( x0, y0, x1, y1 );
+                        }
+#ifdef ocpnUSE_GL
+                        else {
+                            // simplified faster test, let opengl do the rest
+                            if((x0 > xmin_ || x1 > xmin_) && (x0 < xmax_ || x1 < xmax_) &&
+                                (y0 > ymin_ || y1 > ymin_) && (y0 < ymax_ || y1 < ymax_)) {
+                                if(!b_wide_line) {
+                                    glVertex2i( x0, y0 );
+                                    glVertex2i( x1, y1 );
+                                } else
+                                    DrawGLThickLine( x0, y0, x1, y1, wide_pen, true );
+                            }
+                        }
+#endif      
+                        
+                    }
+                        
+                    l = r;
+                    ppt += 2;
+                }            
+            }
+            
+            ls = ls->next;
+        }
+#ifdef ocpnUSE_GL
+    if(!m_pdc && !b_wide_line)
+            glEnd();
+#endif              
+    }
+    
+#ifdef ocpnUSE_GL
+    if( !m_pdc )
+        glDisable( GL_LINE_STIPPLE );
+#endif                
+    return 1;
+}
+
+// Line Simple Style
+int s52plib::RenderLSLegacy( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
+{
+    if( !rzRules->obj->m_chart_context->chart )
+        return RenderLSPlugIn( rzRules, rules, vp );
+
+    // Must be cm93
     S52color *c;
     int w;
 
@@ -3112,27 +3546,22 @@ int s52plib::RenderLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
     int x0, y0, x1, y1;
 
-    //  Get the current display priority
-    //  Default comes from the LUP, unless overridden
-    int priority_current = rzRules->LUP->DPRI - '0';
-    if(rzRules->obj->m_DPRI >= 0)
-        priority_current = rzRules->obj->m_DPRI;
     
     if( rzRules->obj->m_n_lsindex ) {
         VE_Hash *ve_hash; 
         VC_Hash *vc_hash; 
-        
-        if( rzRules->obj->m_chart_context->chart ){
-            ve_hash = &rzRules->obj->m_chart_context->chart->Get_ve_hash(); 
-            vc_hash = &rzRules->obj->m_chart_context->chart->Get_vc_hash(); 
-        }
-        else {
-            ve_hash = (VE_Hash *)rzRules->obj->m_chart_context->m_pve_hash; 
-            vc_hash = (VC_Hash *)rzRules->obj->m_chart_context->m_pvc_hash; 
-        }
+        ve_hash = &rzRules->obj->m_chart_context->chart->Get_ve_hash();             // This is cm93 
+        vc_hash = &rzRules->obj->m_chart_context->chart->Get_vc_hash(); 
 
+
+        //  Get the current display priority
+        //  Default comes from the LUP, unless overridden
+        int priority_current = rzRules->LUP->DPRI - '0';
+        if(rzRules->obj->m_DPRI >= 0)
+            priority_current = rzRules->obj->m_DPRI;
+        
         int *index_run;
-        double *ppt;
+        float *ppt;
 
         VC_Element *pnode;
 
@@ -3244,9 +3673,466 @@ int s52plib::RenderLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     return 1;
 }
 
+class PI_connector_segment              // This was extracted verbatim from S63_pi private definition
+{
+public:
+    void *start;
+    void *end;
+    SegmentType type;
+    int vbo_offset;
+    int max_priority;
+};
+
+int s52plib::RenderLSPlugIn( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
+{
+    S52color *c;
+    int w;
+    
+    char *str = (char*) rules->INSTstr;
+    c = getColor( str + 7 ); // Colour
+    wxColour color( c->R, c->G, c->B );
+    w = atoi( str + 5 ); // Width
+    
+    double scale_factor = vp->ref_scale/vp->chart_scale;
+    double scaled_line_width = wxMax((scale_factor - g_overzoom_emphasis_base), 1);
+    bool b_wide_line = g_oz_vector_scale && vp->b_quilt && (scale_factor > g_overzoom_emphasis_base);
+    
+    wxPen wide_pen(*wxBLACK_PEN);
+    wxDash dashw[2];
+    dashw[0] = 3;
+    dashw[1] = 1; 
+    
+    if( b_wide_line)
+    {
+        int w = wxMax(scaled_line_width, 2);            // looks better
+        w = wxMin(w, 50);                               // upper bound
+        wide_pen.SetWidth( w );
+        wide_pen.SetColour(color);
+        
+        if( !strncmp( str, "DOTT", 4 ) ) {
+            dashw[0] = 1;
+            wide_pen.SetStyle(wxPENSTYLE_USER_DASH);
+            wide_pen.SetDashes( 2, dashw );
+        }        
+        else if( !strncmp( str, "DASH", 4 ) ){
+            wide_pen.SetStyle(wxPENSTYLE_USER_DASH);
+            if( m_pdc){ //DC mode
+                dashw[0] = 1;
+                dashw[1] = 2;
+            }
+            
+            wide_pen.SetDashes( 2, dashw );
+        }
+    }
+    
+    wxPen thispen(color, w, wxPENSTYLE_SOLID);
+    wxDash dash1[2];
+    
+    if( m_pdc) //DC mode
+    {
+        if( !strncmp( str, "DOTT", 4 ) ) {
+            thispen.SetStyle(wxPENSTYLE_USER_DASH);
+            dash1[0] = 1;
+            dash1[1] = 2; 
+            thispen.SetDashes( 2, dash1 );
+        }        
+        else if( !strncmp( str, "DASH", 4 ) ){
+            thispen.SetStyle(wxPENSTYLE_SHORT_DASH);
+        }
+        
+        if(b_wide_line)
+            m_pdc->SetPen( wide_pen );
+        else
+            m_pdc->SetPen( thispen );
+        
+    }
+    
+    #ifdef ocpnUSE_GL
+    else // OpenGL mode
+    {
+        glColor3ub( c->R, c->G, c->B );
+        
+        //    Set drawing width
+        if( w > 1 ) {
+            GLint parms[2];
+            glGetIntegerv( GL_ALIASED_LINE_WIDTH_RANGE, &parms[0] );
+            if( w > parms[1] )
+                glLineWidth( wxMax(g_GLMinCartographicLineWidth, parms[1]) );
+            else
+                glLineWidth( wxMax(g_GLMinCartographicLineWidth, w) );
+        } else
+            glLineWidth( wxMax(g_GLMinCartographicLineWidth, 1) );
+        
+        #ifndef ocpnUSE_GLES // linestipple is emulated poorly
+            if( !strncmp( str, "DASH", 4 ) ) {
+                glLineStipple( 1, 0x3F3F );
+                glEnable( GL_LINE_STIPPLE );
+            }
+            else if( !strncmp( str, "DOTT", 4 ) ) {
+                glLineStipple( 1, 0x3333 );
+                glEnable( GL_LINE_STIPPLE );
+            }
+            else
+                glDisable( GL_LINE_STIPPLE );
+            #endif
+                
+    }
+    #endif
+    
+    
+    //    Get a true pixel clipping/bounding box from the vp
+    wxPoint pbb = vp->GetPixFromLL( vp->clat, vp->clon );
+    int xmin_ = pbb.x - (vp->rv_rect.width / 2) - (4 * scaled_line_width);
+    int xmax_ = xmin_ + vp->rv_rect.width + (8 * scaled_line_width);
+    int ymin_ = pbb.y - (vp->rv_rect.height / 2) - (4 * scaled_line_width) ;
+    int ymax_ = ymin_ + vp->rv_rect.height + (8 * scaled_line_width);
+    
+    int x0, y0, x1, y1;
+    
+    //  Get the current display priority
+    //  Default comes from the LUP, unless overridden
+    int priority_current = rzRules->LUP->DPRI - '0';
+    if(rzRules->obj->m_DPRI >= 0)
+        priority_current = rzRules->obj->m_DPRI;
+    
+    if( rzRules->obj->m_ls_list_legacy )
+    {
+                 float *ppt;
+                
+                VE_Element *pedge;
+                
+                
+                PI_connector_segment *pcs;
+               
+                unsigned char *vbo_point = (unsigned char *)rzRules->obj->m_chart_context->vertex_buffer;
+                PI_line_segment_element *ls = rzRules->obj->m_ls_list_legacy;
+                
+                #ifdef ocpnUSE_GL
+                if(!b_wide_line)
+                    glBegin( GL_LINES );
+                #endif
+                    
+                    while(ls){
+                        if( ls->priority == priority_current  ) {  
+                            
+                            int nPoints;
+                            // fetch the first point
+                            if(ls->type == TYPE_EE){
+                                pedge = (VE_Element *)ls->private0;
+                                ppt = (float *)(vbo_point + pedge->vbo_offset);
+                                nPoints = pedge->nCount;
+                            }
+                            else{
+                                pcs = (PI_connector_segment *)ls->private0;
+                                ppt = (float *)(vbo_point + pcs->vbo_offset);
+                                nPoints = 2;
+                            }
+                            
+                            wxPoint l;
+                            GetPointPixSingle( rzRules, ppt[1], ppt[0], &l, vp );
+                            ppt += 2;
+                            
+                            for(int ip=0 ; ip < nPoints - 1 ; ip++){
+                                wxPoint r;
+                                GetPointPixSingle( rzRules, ppt[1], ppt[0], &r, vp );
+                                //        Draw the edge as point-to-point
+                                x0 = l.x, y0 = l.y;
+                                x1 = r.x, y1 = r.y;
+                                
+                                // Do not draw null segments
+                                if( ( x0 != x1 ) || ( y0 != y1 ) ){
+                                    
+                                    if(m_pdc){
+                                        
+                                        if( cohen_sutherland_line_clip_i( &x0, &y0, &x1, &y1, xmin_, xmax_,
+                                            ymin_, ymax_ ) != Invisible )
+                                            m_pdc->DrawLine( x0, y0, x1, y1 );
+                                    }
+                                    #ifdef ocpnUSE_GL
+                                    else {
+                                        // simplified faster test, let opengl do the rest
+                                        if((x0 > xmin_ || x1 > xmin_) && (x0 < xmax_ || x1 < xmax_) &&
+                                            (y0 > ymin_ || y1 > ymin_) && (y0 < ymax_ || y1 < ymax_)) {
+                                            if(!b_wide_line) {
+                                                glVertex2i( x0, y0 );
+                                                glVertex2i( x1, y1 );
+                                            } else
+                                                DrawGLThickLine( x0, y0, x1, y1, wide_pen, true );
+                                            }
+                                    }
+                                    #endif      
+                                    
+                                }
+                                
+                                l = r;
+                                ppt += 2;
+                            }            
+                        }
+                        
+                        ls = ls->next;
+                    }
+                    #ifdef ocpnUSE_GL
+                    if(!b_wide_line)
+                        glEnd();
+                    #endif              
+    }
+    
+    #ifdef ocpnUSE_GL
+    if( !m_pdc )
+        glDisable( GL_LINE_STIPPLE );
+    #endif                
+        return 1;
+}
+
 // Line Complex
 int s52plib::RenderLC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 {
+    //     if(rzRules->obj->Index != 7574)
+    //         return 0;
+    
+    // catch cm93 and legacy PlugIns (e.g.s63_pi)
+    if( rzRules->obj->m_n_lsindex  && !rzRules->obj->m_ls_list) 
+        return RenderLCLegacy(rzRules, rules, vp);
+    
+    wxPoint *ptp;
+    int npt;
+    wxPoint r;
+    
+    
+    int isym_len = rules->razRule->pos.line.bnbox_w.SYHL + (rules->razRule->pos.line.bnbox_x.LBXC - rules->razRule->pos.line.pivot_x.LICL);
+    float sym_len = isym_len * canvas_pix_per_mm / 100;
+    float sym_factor = 1.0; ///1.50;                        // gives nicer effect
+    
+    //      Create a color for drawing adjustments outside of HPGL renderer
+    char *tcolptr = rules->razRule->colRef.LCRF;
+    S52color *c = getColor( tcolptr + 1 ); // +1 skips "n" in HPGL SPn format
+    int w = 1; // arbitrary width
+    wxColour color( c->R, c->G, c->B );
+    double LOD = 2.0 / vp->view_scale_ppm;              // empirical value, by experiment
+    LOD = wxMin(LOD, 10.0);
+    
+    //  Get the current display priority
+    //  Default comes from the LUP, unless overridden
+    int priority_current = rzRules->LUP->DPRI - '0';
+    if(rzRules->obj->m_DPRI >= 0)
+        priority_current = rzRules->obj->m_DPRI;
+    
+    if( rzRules->obj->m_n_lsindex ) {
+        
+        
+        // Calculate the size of a work buffer
+        int max_points = 0;
+        if( rzRules->obj->m_n_edge_max_points > 0 ) 
+            max_points = rzRules->obj->m_n_edge_max_points;
+        else{
+            line_segment_element *lsa = rzRules->obj->m_ls_list;
+            
+            while(lsa){
+                
+                if( (lsa->ls_type == TYPE_EE) || (lsa->ls_type == TYPE_EE_REV) )
+                    max_points += lsa->pedge->nCount;
+                else
+                    max_points += 2;
+                
+                lsa = lsa->next;
+            }
+        }
+        
+        
+        //  Allocate some storage for converted points
+        wxPoint *ptp = (wxPoint *) malloc( ( max_points ) * sizeof(wxPoint) ); 
+        double *pdp = (double *)malloc( 2 * ( max_points ) * sizeof(double) ); 
+        
+        unsigned char *vbo_point = (unsigned char *)rzRules->obj->m_chart_context->chart->GetLineVertexBuffer();;
+        line_segment_element *ls = rzRules->obj->m_ls_list;
+        
+        unsigned int index = 0;
+        unsigned int idouble = 0;
+        int nls = 0;
+        wxPoint lp;
+        float *ppt;
+        
+        int direction = 1;
+        int ndraw = 0;
+        while(ls){
+            if( ls->priority == priority_current  ) {  
+ 
+                
+                //transcribe the segment in the proper order into the output buffer
+                int nPoints;
+                int idir = 1;
+                // fetch the first point
+                if( (ls->ls_type == TYPE_EE) || (ls->ls_type == TYPE_EE_REV) ){
+                    ppt = (float *)(vbo_point + ls->pedge->vbo_offset);
+                    nPoints = ls->pedge->nCount;
+                    if(ls->ls_type == TYPE_EE_REV)
+                        idir = -1;
+                    
+                }
+                else{
+                    ppt = (float *)(vbo_point + ls->pcs->vbo_offset);
+                    nPoints = 2;
+                }
+                
+                
+                int vbo_index = 0;
+                int vbo_inc = 2;
+                if(idir == -1){
+                    vbo_index = (nPoints-1) * 2;
+                    vbo_inc = -2;
+                }
+                for(int ip=0 ; ip < nPoints ; ip++){
+                    wxPoint r;
+                    GetPointPixSingle( rzRules, ppt[vbo_index + 1], ppt[vbo_index], &r, vp );
+                    if( (r.x != lp.x) || (r.y != lp.y) ){
+                        ptp[index++] = r;
+                        pdp[idouble++] = ppt[vbo_index];
+                        pdp[idouble++] = ppt[vbo_index + 1];
+                        
+                        nls++;
+                    }
+                    else{               // sKipping point
+                    }
+                    
+                    lp = r;
+                    vbo_index += vbo_inc;
+                }            
+                
+            }  // priority
+            
+            // inspect the next segment to see if it can be connected, or if the chain breaks
+            int idir = 1;
+            if(ls->next){
+                
+                int nPoints_next;
+                line_segment_element *lsn = ls->next;
+                // fetch the first point
+                if( (lsn->ls_type == TYPE_EE) || (lsn->ls_type == TYPE_EE_REV) ){
+                    ppt = (float *)(vbo_point + lsn->pedge->vbo_offset);
+                    nPoints_next = lsn->pedge->nCount;
+                    if(lsn->ls_type == TYPE_EE_REV)
+                        idir = -1;
+                    
+                }
+                else{
+                    ppt = (float *)(vbo_point + lsn->pcs->vbo_offset);
+                    nPoints_next = 2;
+                }
+                
+                wxPoint ptest;
+                if(idir == 1)
+                    GetPointPixSingle( rzRules, ppt[1], ppt[0], &ptest, vp );
+
+                else{
+                // fetch the last point
+                    int index_last_next = (nPoints_next-1) * 2;
+                    GetPointPixSingle( rzRules, ppt[index_last_next +1], ppt[index_last_next], &ptest, vp );
+                }
+                
+                // try to match the correct point in this segment with the last point in the previous segment
+
+                if(lp != ptest)         // not connectable?
+                {
+                    
+                    if(nls){
+                        wxPoint2DDouble *pReduced = 0;
+                        int nPointReduced = reduceLOD( LOD, nls, pdp, &pReduced);
+                    
+                        wxPoint *ptestp = (wxPoint *) malloc( ( max_points ) * sizeof(wxPoint) ); 
+                        GetPointPixArray( rzRules, pReduced, ptestp, nPointReduced, vp );
+                        free(pReduced);
+                    
+                        draw_lc_poly( m_pdc, color, w, ptestp, nPointReduced, sym_len, sym_factor, rules->razRule, vp );
+                        free(ptestp);
+                    
+                        ndraw++;
+                    }
+                    
+                    nls = 0;
+                    index = 0;
+                    idouble = 0;
+                    lp = wxPoint(0,0);
+                    direction = 1;
+                }
+                
+                
+            }
+            else{
+                // no more segments, so render what is available
+                if(nls){
+                    wxPoint2DDouble *pReduced = 0;
+                    int nPointReduced = reduceLOD( LOD, nls, pdp, &pReduced);
+                    
+                    wxPoint *ptestp = (wxPoint *) malloc( ( max_points ) * sizeof(wxPoint) ); 
+                    GetPointPixArray( rzRules, pReduced, ptestp, nPointReduced, vp );
+                    free(pReduced);
+                    
+                    draw_lc_poly( m_pdc, color, w, ptestp, nPointReduced, sym_len, sym_factor, rules->razRule, vp );
+                    free( ptestp );
+                }
+            }
+            
+            ls = ls->next;
+        }
+        
+        
+        free( ptp );
+        free(pdp);
+    }
+    
+    return 1;
+}
+
+
+int s52plib::reduceLOD( double LOD_meters, int nPoints, double *source, wxPoint2DDouble **dest)
+{
+    //      Reduce the LOD of this linestring
+    wxArrayInt index_keep;
+    if(nPoints > 5 && (LOD_meters > .01)){
+        index_keep.Clear();
+        index_keep.Add(0);
+        index_keep.Add(nPoints-1);
+        index_keep.Add(nPoints-2);
+        
+        DouglasPeucker(source, 1, nPoints-2, LOD_meters, &index_keep);
+        
+    }
+    else {
+        index_keep.Clear();
+        for(int i = 0 ; i < nPoints ; i++)
+            index_keep.Add(i);
+    }
+    
+    wxPoint2DDouble *pReduced = (wxPoint2DDouble *)malloc( ( index_keep.GetCount() ) * sizeof(wxPoint2DDouble) ); 
+    *dest = pReduced;
+    
+    double *ppr = source;  
+    int ir = 0;
+    for(int ip = 0 ; ip < nPoints ; ip++)
+    {
+        double x = *ppr++;
+        double y = *ppr++;
+        
+        for(unsigned int j=0 ; j < index_keep.GetCount() ; j++){
+            if(index_keep.Item(j) == ip){
+                pReduced[ir++] = wxPoint2DDouble(x, y);
+                break;
+            }
+        }
+    }
+    
+    return index_keep.GetCount();
+}
+    
+
+// Line Complex
+int s52plib::RenderLCLegacy( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
+{
+    if( !rzRules->obj->m_chart_context->chart )
+        return RenderLCPlugIn( rzRules, rules, vp );
+    
+    //  Must be cm93
+        
     wxPoint *ptp;
     int npt;
     wxPoint r;
@@ -3268,18 +4154,9 @@ int s52plib::RenderLC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         priority_current = rzRules->obj->m_DPRI;
 
     if( rzRules->obj->m_n_lsindex ) {
-        VE_Hash *ve_hash; 
-        VC_Hash *vc_hash; 
         
-        if( rzRules->obj->m_chart_context->chart ){
-            ve_hash = &rzRules->obj->m_chart_context->chart->Get_ve_hash(); 
-            vc_hash = &rzRules->obj->m_chart_context->chart->Get_vc_hash(); 
-        }
-        else {
-            ve_hash = (VE_Hash *)rzRules->obj->m_chart_context->m_pve_hash; 
-            vc_hash = (VC_Hash *)rzRules->obj->m_chart_context->m_pvc_hash; 
-        }
-        
+        VE_Hash *ve_hash = &rzRules->obj->m_chart_context->chart->Get_ve_hash(); 
+        VC_Hash *vc_hash = &rzRules->obj->m_chart_context->chart->Get_vc_hash(); 
         
         unsigned int nls_max;
         if( rzRules->obj->m_n_edge_max_points > 0 ) // size has been precalculated on SENC load
@@ -3308,7 +4185,7 @@ int s52plib::RenderLC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         wxPoint *ptp = (wxPoint *) malloc( ( nls_max + 2 ) * sizeof(wxPoint) ); // + 2 allows for end nodes
 
         int *index_run;
-        double *ppt;
+        float *ppt;
         double easting, northing;
         wxPoint pra( 0, 0 );
         VC_Element *pnode;
@@ -3387,34 +4264,35 @@ int s52plib::RenderLC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     else
         if( rzRules->obj->pPolyTessGeo ) {
             if( !rzRules->obj->pPolyTessGeo->IsOk() ) // perform deferred tesselation
-            rzRules->obj->pPolyTessGeo->BuildDeferredTess();
+                rzRules->obj->pPolyTessGeo->BuildDeferredTess();
 
             PolyTriGroup *pptg = rzRules->obj->pPolyTessGeo->Get_PolyTriGroup_head();
             float *ppolygeo = pptg->pgroup_geom;
+            if(ppolygeo){
+                int ctr_offset = 0;
+                for( int ic = 0; ic < pptg->nContours; ic++ ) {
 
-            int ctr_offset = 0;
-            for( int ic = 0; ic < pptg->nContours; ic++ ) {
+                    int npt = pptg->pn_vertex[ic];
+                    wxPoint *ptp = (wxPoint *) malloc( ( npt + 1 ) * sizeof(wxPoint) );
+                    wxPoint *pr = ptp;
+                    for( int ip = 0; ip < npt; ip++ ) {
+                        float plon = ppolygeo[( 2 * ip ) + ctr_offset];
+                        float plat = ppolygeo[( 2 * ip ) + ctr_offset + 1];
 
-                int npt = pptg->pn_vertex[ic];
-                wxPoint *ptp = (wxPoint *) malloc( ( npt + 1 ) * sizeof(wxPoint) );
-                wxPoint *pr = ptp;
-                for( int ip = 0; ip < npt; ip++ ) {
-                    float plon = ppolygeo[( 2 * ip ) + ctr_offset];
-                    float plat = ppolygeo[( 2 * ip ) + ctr_offset + 1];
-
+                        GetPointPixSingle( rzRules, plat, plon, pr, vp );
+                        pr++;
+                    }
+                    float plon = ppolygeo[ctr_offset]; // close the polyline
+                    float plat = ppolygeo[ctr_offset + 1];
                     GetPointPixSingle( rzRules, plat, plon, pr, vp );
-                    pr++;
+
+                    draw_lc_poly( m_pdc, color, w, ptp, npt + 1, sym_len, sym_factor, rules->razRule,
+                            vp );
+
+                    free( ptp );
+
+                    ctr_offset += npt * 2;
                 }
-                float plon = ppolygeo[ctr_offset]; // close the polyline
-                float plat = ppolygeo[ctr_offset + 1];
-                GetPointPixSingle( rzRules, plat, plon, pr, vp );
-
-                draw_lc_poly( m_pdc, color, w, ptp, npt + 1, sym_len, sym_factor, rules->razRule,
-                        vp );
-
-                free( ptp );
-
-                ctr_offset += npt * 2;
             }
         }
 
@@ -3448,10 +4326,11 @@ int s52plib::RenderLC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                 }
             }
 
+#if 0            
             else
-                if( rzRules->obj->geoPt ) // if the object is not described by a poly structure
+                if( rzRules->obj->mgeoPt ) // if the object is not described by a poly structure
                 {
-                    pt *ppt = rzRules->obj->geoPt;
+                    pt *ppt = rzRules->obj->mgeoPt;
 
                     npt = rzRules->obj->npt;
                     ptp = (wxPoint *) malloc( npt * sizeof(wxPoint) );
@@ -3474,8 +4353,434 @@ int s52plib::RenderLC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
                     free( ptp );
                 }
+#endif
 
     return 1;
+}
+
+int s52plib::RenderLCPlugIn( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
+{
+    int npt;
+    wxPoint r;
+    
+    int isym_len = rules->razRule->pos.line.bnbox_w.SYHL;
+    float sym_len = isym_len * canvas_pix_per_mm / 100;
+    float sym_factor = 1.0; ///1.50;                        // gives nicer effect
+    
+    //      Create a color for drawing adjustments outside of HPGL renderer
+    char *tcolptr = rules->razRule->colRef.LCRF;
+    S52color *c = getColor( tcolptr + 1 ); // +1 skips "n" in HPGL SPn format
+    int w = 1; // arbitrary width
+    wxColour color( c->R, c->G, c->B );
+    
+    //  Get the current display priority
+    //  Default comes from the LUP, unless overridden
+    int priority_current = rzRules->LUP->DPRI - '0';
+    if(rzRules->obj->m_DPRI >= 0)
+        priority_current = rzRules->obj->m_DPRI;
+    
+ 
+    //  Calculate max malloc size required
+    unsigned int nls_max = 0;
+        
+    if( rzRules->obj->m_ls_list_legacy )
+    {
+        float *ppt;
+        
+        VE_Element *pedge;
+        PI_line_segment_element *ls = rzRules->obj->m_ls_list_legacy;
+        
+            
+        while(ls){
+            int nPoints;
+                    // fetch the first point
+            if(ls->type == TYPE_EE){
+                pedge = (VE_Element *)ls->private0;
+                nPoints = pedge->nCount;
+             }
+             else{
+                nPoints = 2;
+             }
+                
+             nls_max = wxMax(nls_max, nPoints);
+                
+            ls = ls->next;
+        }
+    }
+    
+    
+    //  Allocate some storage for converted points
+    wxPoint *ptp = (wxPoint *) malloc( ( nls_max + 2 ) * sizeof(wxPoint) ); // + 2 allows for end nodes
+    
+    
+    if( rzRules->obj->m_ls_list_legacy )
+    {
+        float *ppt;
+        
+        VE_Element *pedge;
+        
+        
+        PI_connector_segment *pcs;
+        
+        unsigned char *vbo_point = (unsigned char *)rzRules->obj->m_chart_context->vertex_buffer;
+        PI_line_segment_element *ls = rzRules->obj->m_ls_list_legacy;
+        
+        while(ls){
+                if( ls->priority == priority_current  ) {  
+                    
+                    int nPoints;
+                    // fetch the first point
+                    if(ls->type == TYPE_EE){
+                        pedge = (VE_Element *)ls->private0;
+                        ppt = (float *)(vbo_point + pedge->vbo_offset);
+                        nPoints = pedge->nCount;
+                    }
+                    else{
+                        pcs = (PI_connector_segment *)ls->private0;
+                        ppt = (float *)(vbo_point + pcs->vbo_offset);
+                        nPoints = 2;
+                    }
+                    
+                    for(int ip=0 ; ip < nPoints ; ip++){
+                        wxPoint r;
+                        GetPointPixSingle( rzRules, ppt[1], ppt[0], &ptp[ip], vp );
+                        
+                        ppt += 2;
+                    }
+                    
+                    if(nPoints)
+                        draw_lc_poly( m_pdc, color, w, &ptp[0], nPoints, sym_len, sym_factor, rules->razRule, vp );
+                }
+                
+                ls = ls->next;
+        }
+        
+        free(ptp);
+    }
+    
+    return 1;
+    
+        
+                    
+    
+    
+    
+    
+    
+#if 0    
+    
+    if( rzRules->obj->m_n_lsindex_legacy ) {
+        VE_Hash *ve_hash; 
+        VC_Hash *vc_hash; 
+        
+        ve_hash = (VE_Hash *)rzRules->obj->m_chart_context->m_pve_hash; 
+        vc_hash = (VC_Hash *)rzRules->obj->m_chart_context->m_pvc_hash; 
+        
+        
+        unsigned int nls_max;
+        if( rzRules->obj->m_n_edge_max_points > 0 ) // size has been precalculated on SENC load
+            nls_max = rzRules->obj->m_n_edge_max_points;
+        else {
+            //  Calculate max malloc size required
+            nls_max = 0;
+            int *index_run_x = rzRules->obj->m_lsindex_array;
+            for( int imseg = 0; imseg < rzRules->obj->m_n_lsindex; imseg++ ) {
+                index_run_x++; //Skip cNode
+                //  Get the edge
+                unsigned int enode = *index_run_x;
+                if( enode ){
+                    VE_Element *pedge = (*ve_hash)[enode];
+                    if(pedge){
+                        if( pedge->nCount > nls_max )
+                            nls_max = pedge->nCount;
+                    }
+                }
+                index_run_x += 2;
+            }
+            rzRules->obj->m_n_edge_max_points = nls_max; // Got it, cache for next time
+        }
+        
+        //  Allocate some storage for converted points
+        wxPoint *ptp = (wxPoint *) malloc( ( nls_max + 2 ) * sizeof(wxPoint) ); // + 2 allows for end nodes
+        
+        int *index_run;
+        float *ppt;
+        double easting, northing;
+        wxPoint pra( 0, 0 );
+        VC_Element *pnode;
+        
+        for( int iseg = 0; iseg < rzRules->obj->m_n_lsindex; iseg++ ) {
+            int seg_index = iseg * 3;
+            index_run = &rzRules->obj->m_lsindex_array[seg_index];
+            
+            //  Get first connected node
+            unsigned int inode = *index_run++;
+            if( inode ) {
+                pnode = (*vc_hash)[inode];
+                if( pnode ) {
+                    ppt = pnode->pPoint;
+                    easting = *ppt++;
+                    northing = *ppt;
+                    GetPointPixSingle( rzRules, (float) northing, (float) easting, &pra, vp );
+                }
+                ptp[0] = pra; // insert beginning node
+            }
+            
+            //  Get the edge
+            unsigned int enode = *index_run++;
+            VE_Element *pedge = 0;
+            if(enode)
+                pedge = (*ve_hash)[enode];
+            
+            int nls = 0;
+            if(pedge){
+                //  Here we decide to draw or not based on the highest priority seen for this segment
+                //  That is, if this segment is going to be drawn at a higher priority later, then don't draw it here.
+                
+                // This logic is not perfectly right for one case:
+                // If the segment has only two end connected nodes, and no intermediate edge,
+                // then we have no good way to evaluate the priority.
+                // This is due to the fact that priority is only precalculated for edge segments, not connector nodes.
+                // Only thing to do is take the conservative approach and draw the segment, in this case.
+                if( pedge->nCount ){
+                    if( pedge->max_priority != priority_current ) continue;
+                }
+                
+                //                if( pedge->max_priority != priority_current ) continue;
+                
+                nls = pedge->nCount;
+                
+                ppt = pedge->pPoints;
+                for( int ip = 0; ip < nls; ip++ ) {
+                    easting = *ppt++;
+                    northing = *ppt++;
+                    GetPointPixSingle( rzRules, (float) northing, (float) easting, &ptp[ip + 1], vp );
+                }
+            }
+            
+            //  Get last connected node
+            unsigned int jnode = *index_run++;
+            if( jnode ) {
+                pnode = (*vc_hash)[jnode];
+                if( pnode ) {
+                    ppt = pnode->pPoint;
+                    easting = *ppt++;
+                    northing = *ppt;
+                    GetPointPixSingle( rzRules, (float) northing, (float) easting, &pra, vp );
+                }
+                ptp[nls + 1] = pra; // insert ending node
+            }
+            
+            if( ( inode ) && ( jnode ) )
+                draw_lc_poly( m_pdc, color, w, ptp, nls + 2, sym_len, sym_factor, rules->razRule, vp );
+            else if(nls)
+                draw_lc_poly( m_pdc, color, w, &ptp[1], nls, sym_len, sym_factor, rules->razRule, vp );
+            
+        }
+        free( ptp );
+    }
+
+#endif
+
+#if 0    
+    S52color *c;
+    int w;
+    
+    char *str = (char*) rules->INSTstr;
+    c = getColor( str + 7 ); // Colour
+    wxColour color( c->R, c->G, c->B );
+    w = atoi( str + 5 ); // Width
+    
+    double scale_factor = vp->ref_scale/vp->chart_scale;
+    double scaled_line_width = wxMax((scale_factor - g_overzoom_emphasis_base), 1);
+    bool b_wide_line = g_oz_vector_scale && vp->b_quilt && (scale_factor > g_overzoom_emphasis_base);
+    
+    wxPen wide_pen(*wxBLACK_PEN);
+    wxDash dashw[2];
+    dashw[0] = 3;
+    dashw[1] = 1; 
+    
+    if( b_wide_line)
+    {
+        int w = wxMax(scaled_line_width, 2);            // looks better
+        w = wxMin(w, 50);                               // upper bound
+        wide_pen.SetWidth( w );
+        wide_pen.SetColour(color);
+        
+        if( !strncmp( str, "DOTT", 4 ) ) {
+            dashw[0] = 1;
+            wide_pen.SetStyle(wxPENSTYLE_USER_DASH);
+            wide_pen.SetDashes( 2, dashw );
+        }        
+        else if( !strncmp( str, "DASH", 4 ) ){
+            wide_pen.SetStyle(wxPENSTYLE_USER_DASH);
+            if( m_pdc){ //DC mode
+                dashw[0] = 1;
+                dashw[1] = 2;
+            }
+            
+            wide_pen.SetDashes( 2, dashw );
+        }
+    }
+    
+    wxPen thispen(color, w, wxPENSTYLE_SOLID);
+    wxDash dash1[2];
+    
+    if( m_pdc) //DC mode
+    {
+        if( !strncmp( str, "DOTT", 4 ) ) {
+            thispen.SetStyle(wxPENSTYLE_USER_DASH);
+            dash1[0] = 1;
+            dash1[1] = 2; 
+            thispen.SetDashes( 2, dash1 );
+        }        
+        else if( !strncmp( str, "DASH", 4 ) ){
+            thispen.SetStyle(wxPENSTYLE_SHORT_DASH);
+        }
+        
+        if(b_wide_line)
+            m_pdc->SetPen( wide_pen );
+        else
+            m_pdc->SetPen( thispen );
+        
+    }
+    
+    #ifdef ocpnUSE_GL
+    else // OpenGL mode
+    {
+        glColor3ub( c->R, c->G, c->B );
+        
+        //    Set drawing width
+        if( w > 1 ) {
+            GLint parms[2];
+            glGetIntegerv( GL_ALIASED_LINE_WIDTH_RANGE, &parms[0] );
+            if( w > parms[1] )
+                glLineWidth( wxMax(g_GLMinCartographicLineWidth, parms[1]) );
+            else
+                glLineWidth( wxMax(g_GLMinCartographicLineWidth, w) );
+        } else
+            glLineWidth( wxMax(g_GLMinCartographicLineWidth, 1) );
+        
+        #ifndef ocpnUSE_GLES // linestipple is emulated poorly
+            if( !strncmp( str, "DASH", 4 ) ) {
+                glLineStipple( 1, 0x3F3F );
+                glEnable( GL_LINE_STIPPLE );
+            }
+            else if( !strncmp( str, "DOTT", 4 ) ) {
+                glLineStipple( 1, 0x3333 );
+                glEnable( GL_LINE_STIPPLE );
+            }
+            else
+                glDisable( GL_LINE_STIPPLE );
+            #endif
+                
+    }
+    #endif
+    
+    
+    //    Get a true pixel clipping/bounding box from the vp
+    wxPoint pbb = vp->GetPixFromLL( vp->clat, vp->clon );
+    int xmin_ = pbb.x - (vp->rv_rect.width / 2) - (4 * scaled_line_width);
+    int xmax_ = xmin_ + vp->rv_rect.width + (8 * scaled_line_width);
+    int ymin_ = pbb.y - (vp->rv_rect.height / 2) - (4 * scaled_line_width) ;
+    int ymax_ = ymin_ + vp->rv_rect.height + (8 * scaled_line_width);
+    
+    int x0, y0, x1, y1;
+    
+    //  Get the current display priority
+    //  Default comes from the LUP, unless overridden
+    int priority_current = rzRules->LUP->DPRI - '0';
+    if(rzRules->obj->m_DPRI >= 0)
+        priority_current = rzRules->obj->m_DPRI;
+    
+    if( rzRules->obj->m_ls_list_legacy )
+    {
+        float *ppt;
+        
+        VE_Element *pedge;
+        
+        
+        PI_connector_segment *pcs;
+        
+        unsigned char *vbo_point = (unsigned char *)rzRules->obj->m_chart_context->vertex_buffer;
+        PI_line_segment_element *ls = rzRules->obj->m_ls_list_legacy;
+        
+        #ifdef ocpnUSE_GL
+        if(!b_wide_line)
+            glBegin( GL_LINES );
+        #endif
+            
+            while(ls){
+                if( ls->priority == priority_current  ) {  
+                    
+                    int nPoints;
+                    // fetch the first point
+                    if(ls->type == TYPE_EE){
+                        pedge = (VE_Element *)ls->private0;
+                        ppt = (float *)(vbo_point + pedge->vbo_offset);
+                        nPoints = pedge->nCount;
+                    }
+                    else{
+                        pcs = (PI_connector_segment *)ls->private0;
+                        ppt = (float *)(vbo_point + pcs->vbo_offset);
+                        nPoints = 2;
+                    }
+                    
+                    wxPoint l;
+                    GetPointPixSingle( rzRules, ppt[1], ppt[0], &l, vp );
+                    ppt += 2;
+                    
+                    for(int ip=0 ; ip < nPoints - 1 ; ip++){
+                        wxPoint r;
+                        GetPointPixSingle( rzRules, ppt[1], ppt[0], &r, vp );
+                        //        Draw the edge as point-to-point
+                        x0 = l.x, y0 = l.y;
+                        x1 = r.x, y1 = r.y;
+                        
+                        // Do not draw null segments
+                        if( ( x0 != x1 ) || ( y0 != y1 ) ){
+                            
+                            if(m_pdc){
+                                
+                                if( cohen_sutherland_line_clip_i( &x0, &y0, &x1, &y1, xmin_, xmax_,
+                                    ymin_, ymax_ ) != Invisible )
+                                    m_pdc->DrawLine( x0, y0, x1, y1 );
+                            }
+                            #ifdef ocpnUSE_GL
+                            else {
+                                // simplified faster test, let opengl do the rest
+                                if((x0 > xmin_ || x1 > xmin_) && (x0 < xmax_ || x1 < xmax_) &&
+                                    (y0 > ymin_ || y1 > ymin_) && (y0 < ymax_ || y1 < ymax_)) {
+                                    if(!b_wide_line) {
+                                        glVertex2i( x0, y0 );
+                                        glVertex2i( x1, y1 );
+                                    } else
+                                        DrawGLThickLine( x0, y0, x1, y1, wide_pen, true );
+                                    }
+                            }
+                            #endif      
+                            
+                        }
+                        
+                        l = r;
+                        ppt += 2;
+                    }            
+                }
+                
+                ls = ls->next;
+            }
+            #ifdef ocpnUSE_GL
+            if(!b_wide_line)
+                glEnd();
+            #endif              
+    }
+    
+    #ifdef ocpnUSE_GL
+    if( !m_pdc )
+        glDisable( GL_LINE_STIPPLE );
+    #endif                
+        return 1;
+#endif        
 }
 
 //      Render Line Complex Polyline
@@ -3483,6 +4788,9 @@ int s52plib::RenderLC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 void s52plib::draw_lc_poly( wxDC *pdc, wxColor &color, int width, wxPoint *ptp, int npt,
         float sym_len, float sym_factor, Rule *draw_rule, ViewPort *vp )
 {
+    if(npt < 2)
+        return;
+    
     wxPoint r;
 
     //  We calculate the winding direction of the poly
@@ -3596,8 +4904,12 @@ next_seg_dc:
     {
         //    Set up the color
         glColor4ub( color.Red(), color.Green(), color.Blue(), color.Alpha() );
-        glLineWidth( wxMax(g_GLMinCartographicLineWidth, (float)width * 0.7) );
-
+        
+        // Adjust line width up a bit, to improve render quality for GL_BLEND/GL_LINE_SMOOTH
+        float awidth = wxMax(g_GLMinCartographicLineWidth, (float)width * 0.7);
+        awidth = wxMax(awidth, 1.5);
+        glLineWidth( awidth );
+        
         int start_seg = 0;
         int end_seg = npt - 1;
         int inc = 1;
@@ -3646,12 +4958,12 @@ next_seg_dc:
 
                     //      Enable anti-aliased lines, at best quality
 #ifndef __OCPN__ANDROID__
-                    glEnable( GL_BLEND );
-                    glEnable( GL_LINE_SMOOTH );
+                    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                    glEnable (GL_BLEND);
+                    
+                    glEnable (GL_LINE_SMOOTH);
+                    glHint (GL_LINE_SMOOTH_HINT, GL_NICEST);
 #endif
-                    // if(m_pen.GetWidth() > 1)
-                    //   DrawThickLine(x1, y1, x2, y2, m_pen.GetWidth());
-                    //  else
                     {
                         glBegin( GL_LINES );
                         glVertex2i( xst1, yst1 );
@@ -3683,12 +4995,13 @@ next_seg_dc:
                         s += sym_len * sym_factor;
                     }
 #ifndef __OCPN__ANDROID__
-                    glEnable( GL_BLEND );
-                    glEnable( GL_LINE_SMOOTH );
+                    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                    glEnable (GL_BLEND);
+
+                    glEnable (GL_LINE_SMOOTH);
+                    glHint (GL_LINE_SMOOTH_HINT, GL_NICEST);
+
 #endif
-                    // if(m_pen.GetWidth() > 1)
-                    //   DrawThickLine(x1, y1, x2, y2, m_pen.GetWidth());
-                    //  else
                     {
                         glBegin( GL_LINES );
                         glVertex2i( xs, ys );
@@ -3818,7 +5131,7 @@ int s52plib::RenderMPS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     
     // We need a pixel bounding rectangle of the passed ViewPort.
     // Very important for partial screen renders, as with dc mode pans or OpenGL FBO operation.
-    
+   
     wxPoint cr0 = vp_local.GetPixFromLL( vp_local.GetBBox().GetMaxLat(), vp_local.GetBBox().GetMinLon());
     wxPoint cr1 = vp_local.GetPixFromLL( vp_local.GetBBox().GetMinLat(), vp_local.GetBBox().GetMaxLon());
     wxRect clip_rect(cr0, cr1);
@@ -4758,6 +6071,10 @@ int s52plib::RenderObjectToGL( const wxGLContext &glcc, ObjRazRules *rzRules, Vi
 
 int s52plib::DoRenderObject( wxDC *pdcin, ObjRazRules *rzRules, ViewPort *vp )
 {
+    //TODO  Debugging
+ //   if(rzRules->obj->Index == 534)
+ //       int yyp = 0;
+    
     if( !ObjectRenderCheckPos( rzRules, vp ) )
         return 0;
     
@@ -5066,6 +6383,33 @@ int s52plib::PrioritizeLineFeature( ObjRazRules *rzRules, int npriority )
         connector_segment *pcs;
         line_segment_element *ls = rzRules->obj->m_ls_list;
         while( ls ){
+            switch (ls->ls_type){
+                case TYPE_EE:
+                case TYPE_EE_REV:
+                    
+                    pedge = ls->pedge; //(VE_Element *)ls->private0;
+                    if(pedge)
+                        pedge->max_priority = npriority;// wxMax(pedge->max_priority, npriority);
+                    break;
+                    
+                default:
+                    pcs = ls->pcs; //(connector_segment *)ls->private0;
+                    if(pcs)
+                        pcs->max_priority_cs = npriority; //wxMax(pcs->max_priority, npriority);
+                    break;
+            }
+            
+            ls = ls->next;
+        }
+    }
+
+    else if(rzRules->obj->m_ls_list_legacy){            // PlugIn (S63)
+        
+        PI_connector_segment *pcs;
+        VE_Element *pedge;
+        
+        PI_line_segment_element *ls = rzRules->obj->m_ls_list_legacy;
+        while( ls ){
             switch (ls->type){
                 case TYPE_EE:
                     
@@ -5075,7 +6419,7 @@ int s52plib::PrioritizeLineFeature( ObjRazRules *rzRules, int npriority )
                     break;
                     
                 default:
-                    pcs = (connector_segment *)ls->private0;
+                    pcs = (PI_connector_segment *)ls->private0;
                     if(pcs)
                         pcs->max_priority = npriority; //wxMax(pcs->max_priority, npriority);
                     break;
@@ -5085,9 +6429,7 @@ int s52plib::PrioritizeLineFeature( ObjRazRules *rzRules, int npriority )
         }
     }
     
-    
-    
-    else if( rzRules->obj->m_n_lsindex ) {
+    else if( rzRules->obj->m_n_lsindex && rzRules->obj->m_lsindex_array) {
         VE_Hash *edge_hash; 
         
         if( rzRules->obj->m_chart_context->chart ){
@@ -6363,16 +7705,20 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     //  is within the requested Viewport
     double margin = BBView.GetLonRange() * .05;
     BBView.EnLarge( margin );
+
+    bool b_useVBO = g_b_EnableVBO  && !rzRules->obj->auxParm1 && vp->m_projection_type == PROJECTION_MERCATOR;
     
     if( rzRules->obj->pPolyTessGeo ) {
         
         bool b_temp_vbo = false;
+        bool b_transform = false;
         
         // Set up the OpenGL transform matrix for this object
         // We transform from SENC SM vertex data to screen.
 
         //  First, the VP transform
-        if(vp->m_projection_type == PROJECTION_MERCATOR) {
+        if(b_useVBO || vp->m_projection_type == PROJECTION_MERCATOR) {
+            b_transform = true;
             glPushMatrix();
 
             glTranslatef( vp->pix_width / 2, vp->pix_height/2, 0 );
@@ -6464,15 +7810,13 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                     
         }
             
-        bool b_useVBO = g_b_EnableVBO  && !rzRules->obj->auxParm1 &&    // VBO allowed?
-            vp->m_projection_type == PROJECTION_MERCATOR;
 
         if( b_useVBO ){        
         //  Has a VBO been built for this object?
             if( 1 ) {
                  
                  if(rzRules->obj->auxParm0 <= 0) {
-                    b_temp_vbo = (rzRules->obj->auxParm0 == -5);
+                    b_temp_vbo = (rzRules->obj->auxParm0 == -5);   // Must we use a temporary VBO?  Probably slower than simple glDrawArrays
                    
                     GLuint vboId;
                     // generate a new VBO and get the associated ID
@@ -6575,7 +7919,7 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         
         glDisableClientState(GL_VERTEX_ARRAY);            // deactivate vertex array
         
-        if(vp->m_projection_type == PROJECTION_MERCATOR)
+        if(b_transform)
             glPopMatrix();
         
         if( b_useVBO && b_temp_vbo){

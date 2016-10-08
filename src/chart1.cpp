@@ -123,7 +123,7 @@
 #include "cm93.h"
 #include "s52plib.h"
 #include "s57chart.h"
-#include "cpl_csv.h"
+#include "mygdal/cpl_csv.h"
 #include "s52utils.h"
 #endif
 
@@ -1141,17 +1141,31 @@ static wxStopWatch init_sw;
 class ParseENCWorkerThread : public wxThread
 {
 public:
-    ParseENCWorkerThread(wxString filename)
-        : wxThread(wxTHREAD_JOINABLE), m_filename(filename)
-        { Create(); }
+    ParseENCWorkerThread(wxString filename, Extent &ext, int scale)
+        : wxThread(wxTHREAD_JOINABLE)
+        {
+            m_filename = filename;
+            m_ext = ext;
+            m_scale = scale;
+            Create();
+        }
         
     void *Entry() {
-        ChartBase *pchart = ChartData->OpenChartFromDB(m_filename, FULL_INIT);
-        ChartData->DeleteCacheChart(pchart);
+//         ChartBase *pchart = ChartData->OpenChartFromDB(m_filename, FULL_INIT);
+//         ChartData->DeleteCacheChart(pchart);
+        s57chart *newChart = new s57chart;
+        
+        newChart->SetNativeScale(m_scale);
+        newChart->SetFullExtent(m_ext);
+        
+        newChart->FindOrCreateSenc(m_filename);
+        delete newChart;
         return 0;
     }
 
     wxString m_filename;
+    Extent m_ext;
+    int m_scale;
 };
 
 // begin duplicated code
@@ -1212,10 +1226,10 @@ void ParseAllENC()
     // Building the cache may take a long time....
     // Be a little smarter.
     // Build a sorted array of chart database indices, sorted on distance from the ownship currently.
-    // This way, a user may build a few charts textures for immediate use, then "skip" out on the rest until later.
+    // This way, a user may build a few chart SENCs for immediate use, then "skip" or "cancel"out on the rest until later.
     int count = 0;
     for(int i = 0; i<ChartData->GetChartTableEntries(); i++) {
-        /* skip if not kap */
+        /* skip if not ENC */
         const ChartTableEntry &cte = ChartData->GetChartTableEntry(i);
         if(CHART_TYPE_S57 != cte.GetChartType())
             continue;
@@ -1227,7 +1241,7 @@ void ParseAllENC()
                                    
     if(count == 0)
         return;
-
+    
     wxLogMessage(wxString::Format(_T("ParseAllENC() count = %d"), count ));
     
     //  Build another array of sorted compression targets.
@@ -1266,13 +1280,15 @@ void ParseAllENC()
     }
 */
     thread_count = 1; // for now because there is a problem with more than 1
-            
+
+#if 0    
     workers = new ParseENCWorkerThread*[thread_count];
     for(int t = 0; t < thread_count; t++)
         workers[t] = NULL;
-
-    long style = wxPD_SMOOTH | wxPD_ELAPSED_TIME | wxPD_ESTIMATED_TIME | wxPD_REMAINING_TIME | wxPD_CAN_SKIP;
-    wxProgressDialog prog(_("OpenCPN Parse ENC"), _T(""), count+1, GetOCPNCanvasWindow(), style );
+#endif
+        
+    long style =  wxPD_APP_MODAL | wxPD_SMOOTH | wxPD_ELAPSED_TIME | wxPD_ESTIMATED_TIME | wxPD_REMAINING_TIME | wxPD_CAN_SKIP ;
+    wxProgressDialog prog(_("OpenCPN  ENC"), _T(""), count+1, GetOCPNCanvasWindow(), style );
 
     // make wider to show long filenames
     wxSize csz = GetOCPNCanvasWindow()->GetClientSize();
@@ -1287,7 +1303,17 @@ void ParseAllENC()
     for(unsigned int j = 0; j<ct_array.GetCount(); j++) {
         wxString filename = ct_array.Item(j).chart_path;
         double distance = ct_array.Item(j).distance;
-
+        int index = ChartData->FinddbIndex(filename);
+        const ChartTableEntry &cte = ChartData->GetChartTableEntry(index);
+        Extent ext;
+        ext.NLAT = cte.GetLatMax();
+        ext.SLAT = cte.GetLatMin();
+        ext.WLON = cte.GetLonMin();
+        ext.ELON = cte.GetLonMax();
+        
+        int scale = cte.GetScale();
+        
+        
         wxString msg;
         msg.Printf( _("Distance from Ownship:  %4.0f NMi"), distance);
         if(sz.x > 600){
@@ -1295,13 +1321,28 @@ void ParseAllENC()
             msg += filename;
         }
 
-        prog.Update(count++, msg, &skip );
-        if(skip)
-            break;
+        count++;
+        if(wxThread::IsMain()){
+            prog.Update(count, msg, &skip );
+            if(skip)
+                break;
+        }
 
+#if 1
+        if(ps52plib){
+            s57chart *newChart = new s57chart;
+        
+            newChart->SetNativeScale(scale);
+            newChart->SetFullExtent(ext);
+        
+            newChart->FindOrCreateSenc(filename, false);
+            delete newChart;
+        }
+        
+#else        
         for(int t = 0;; t=(t+1)%thread_count) {
             if(!workers[t]) {
-                workers[t] = new ParseENCWorkerThread(filename);
+                workers[t] = new ParseENCWorkerThread(filename, ext, scale);
                 workers[t]->Run();
                 break;
             }
@@ -1316,8 +1357,10 @@ void ParseAllENC()
                 wxThread::Sleep(1); /* wait for a worker to finish */
             }
         }
+#endif        
     }
 
+#if 0    
     /* wait for workers to finish, and clean up after then */
     for(int t = 0; t<thread_count; t++) {
         if(workers[t]) {
@@ -1326,6 +1369,7 @@ void ParseAllENC()
         }
     }
     delete [] workers;
+#endif    
 }
 
 bool MyApp::OnInit()
@@ -6376,9 +6420,7 @@ void MyFrame::OnInitTimer(wxTimerEvent& event)
             g_bDeferredInitDone = true;
             
             if(b_reloadForPlugins)
-                ChartsRefresh(g_restore_dbindex, cc1->GetVP());
-
-            wxLogMessage( wxString::Format(_("OpenCPN Startup in %ld ms."), init_sw.Time() ) );
+                ChartsRefresh(g_restore_dbindex, cc1->GetVP(), false);
             break;
         }
     }   // switch
@@ -6501,6 +6543,7 @@ void MyFrame::OnFrameTimer1( wxTimerEvent& event )
 
         if( ChartData ) {
             if( ut_index < ChartData->GetChartTableEntries() ) {
+                printf("%d / %d\n", ut_index, ChartData->GetChartTableEntries());
                 const ChartTableEntry *cte = &ChartData->GetChartTableEntry( ut_index );
                 double lat = ( cte->GetLatMax() + cte->GetLatMin() ) / 2;
                 double lon = ( cte->GetLonMax() + cte->GetLonMin() ) / 2;
@@ -6522,7 +6565,11 @@ void MyFrame::OnFrameTimer1( wxTimerEvent& event )
                 cc1->ReloadVP();
 
                 ut_index++;
+                if(ut_index > 100)
+                    exit(0);
             }
+            else
+                exit(0);
         }
     }
     g_tick++;
