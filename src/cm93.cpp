@@ -4480,7 +4480,7 @@ int cm93chart::loadsubcell ( int cellindex, wxChar sub_char )
       // "nnn" determined by experimentation/intuition.
       // Could also be platform dependent.
       bool b_useNoFind = true;
-      if(m_noFindArray.GetCount() > 500)
+      if(m_noFindArray.size() > 500)
           b_useNoFind = false;
       
       
@@ -4505,11 +4505,11 @@ int cm93chart::loadsubcell ( int cellindex, wxChar sub_char )
       bool bfound = false;
       wxString compfile;
       if(b_useNoFind){
-        if(m_noFindArray.Index(key) == wxNOT_FOUND){
+        if(m_noFindArray.find(key) == m_noFindArray.end()){
             if ( ::wxFileExists ( file ) ) 
                 bfound = true;
             else
-                m_noFindArray.Add(key);
+                m_noFindArray.insert(key);
         }
       }
       else{
@@ -4519,13 +4519,13 @@ int cm93chart::loadsubcell ( int cellindex, wxChar sub_char )
       
       if(!bfound){                     // try compressed version
         if(b_useNoFind){
-            if(m_noFindArray.Index(key + _T(".xz")) == wxNOT_FOUND){
+            if(m_noFindArray.find(key + _T(".xz")) == m_noFindArray.end()){
                 if(::wxFileExists ( file+_T(".xz"))){
                     compfile = file + _T(".xz");
                 }
             }
             else{
-                m_noFindArray.Add(key + _T(".xz"));
+                m_noFindArray.insert(key + _T(".xz"));
             }
         }
         else{
@@ -4555,13 +4555,13 @@ int cm93chart::loadsubcell ( int cellindex, wxChar sub_char )
             file1.Prepend ( fileroot );
          
             if(b_useNoFind){
-                if(m_noFindArray.Index(key) == wxNOT_FOUND){
+                if(m_noFindArray.find(key) == m_noFindArray.end()){
                     if ( ::wxFileExists ( file1 ) ) {
                         bfound = true;
                         file = file1;                       // found the file as lowercase, substitute the name
                     }
                     else{
-                        m_noFindArray.Add(key);
+                        m_noFindArray.end(key);
                     }
                 }
             }
@@ -4574,11 +4574,11 @@ int cm93chart::loadsubcell ( int cellindex, wxChar sub_char )
             
             if(!bfound){                     // try compressed version
                 if(b_useNoFind){
-                    if(m_noFindArray.Index(key + _T(".xz")) == wxNOT_FOUND){
+                    if(m_noFindArray.find(key + _T(".xz")) == m_noFindArray.end()){
                         if(::wxFileExists ( file1+_T(".xz")))
                             compfile = file1 + _T(".xz");
                         else
-                            m_noFindArray.Add(key + _T(".xz"));
+                            m_noFindArray.insert(key + _T(".xz"));
                     }
                 }
                 else{
@@ -4591,7 +4591,7 @@ int cm93chart::loadsubcell ( int cellindex, wxChar sub_char )
       
       if ( g_bDebugCM93 )
       {
-          printf("noFind count: %d\n", m_noFindArray.GetCount());
+          printf("noFind count: %d\n", m_noFindArray.size());
       }
                 
       if(!bfound && !compfile.Length())

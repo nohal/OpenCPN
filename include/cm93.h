@@ -30,6 +30,8 @@
 
 #include    "s57chart.h"
 #include    "cutil.h"               // for types
+#include <string>
+#include <unordered_set>
 
 //    Some constants
 #define     INDEX_m_sor       217                // cm93 dictionary index for object type _m_sor
@@ -402,7 +404,7 @@ class cm93chart : public s57chart
             wxString          m_LastFileName;
 
             LLRegion            m_region;
-            wxArrayString       m_noFindArray;
+            std::unordered_set<std::string>  m_noFindArray;
 };
 
 //----------------------------------------------------------------------------
