@@ -489,11 +489,13 @@ bool PlugInManager::LoadAllPlugIns(const wxString &plugin_dir, bool load_enabled
     // Tell all the PlugIns about the current OCPN configuration
     SendConfigToAllPlugIns();
     
+#ifdef ocpnUSE_GL
     // Inform Plugins of OpenGL configuration, if enabled
     if(g_bopengl){
         if(cc1->GetglCanvas())
             cc1->GetglCanvas()->SendJSONConfigMessage();
     }
+#endif
     
     //  And then reload all catalogs.
     ReloadLocale();

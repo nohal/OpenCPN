@@ -112,9 +112,9 @@ RoutePoint::RoutePoint()
     m_wxcWaypointRangeRingsColour = g_colourWaypointRangeRingsColour;
 #ifdef ocpnUSE_GL
     m_pos_on_screen = false;
+    m_dragIconTexture = 0;
 #endif
     m_bDrawDragHandle = false;
-    m_dragIconTexture = 0;
     m_draggingOffsetx = m_draggingOffsety = 0;
 
 }
@@ -167,7 +167,9 @@ RoutePoint::RoutePoint( RoutePoint* orig )
     m_wxcWaypointRangeRingsColour = g_colourWaypointRangeRingsColour;
     
     m_bDrawDragHandle = false;
+#ifdef ocpnUSE_GL
     m_dragIconTexture = 0;
+#endif
     m_draggingOffsetx = m_draggingOffsety = 0;
 
     
@@ -246,7 +248,9 @@ RoutePoint::RoutePoint( double lat, double lon, const wxString& icon_ident, cons
     m_wxcWaypointRangeRingsColour = g_colourWaypointRangeRingsColour;
     
     m_bDrawDragHandle = false;
+#ifdef ocpnUSE_GL
     m_dragIconTexture = 0;
+#endif
     m_draggingOffsetx = m_draggingOffsety = 0;
 
 }
