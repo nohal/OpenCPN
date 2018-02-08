@@ -341,10 +341,15 @@ ELSE()
 ENDIF()
 
 OPTION (USE_GL "Enable OpenGL support" ON)
+IF(USE_GL)
+  SET(PLUGIN_GL ON)
+ELSE(USE_GL)
+  SET(PLUGIN_GL OFF)
+ENDIF(USE_GL)
 
 # Search for opengles, short of running a program to test the speed
 # of acceleration, I simply use gles on "native linux" arm systems
-IF (ARCH MATCHES "arm*" AND (NOT QT_ANDROID) )
+IF (USE_GL AND ARCH MATCHES "arm*" AND (NOT QT_ANDROID) )
   find_path(OPENGLESv1_INCLUDE_DIR GLES/gl.h )
   IF (OPENGLESv1_INCLUDE_DIR)
     MESSAGE (STATUS "Found OpenGLESv1")
@@ -385,7 +390,6 @@ IF(USE_GL)
 FIND_PACKAGE(OpenGL)
 ELSE(USE_GL)
     MESSAGE (STATUS "OpenGL disabled by option..." )
-ENDIF(USE_GL)
 
 IF(OPENGL_FOUND)
 
@@ -413,12 +417,14 @@ IF(OPENGL_FOUND)
 ELSE(OPENGL_FOUND)
     MESSAGE (STATUS "OpenGL not found..." )
 ENDIF(OPENGL_FOUND)
-
+ENDIF(USE_GL)
 ENDIF()
 
+IF(USE_GL)
 MESSAGE (STATUS "    Adding local GLU" )
 add_subdirectory(src/glu)
 SET( OPENGL_LIBRARIES "GLU_static" ${OPENGL_LIBRARIES}) 
+ENDIF(USE_GL)
 
 IF(NOT QT_ANDROID)
 # Find wxWidgets here, and the setting get inherited by all plugins.
@@ -1220,6 +1226,7 @@ SET(SRC_TINYXML
             include/tinyxml.h
       )
 
+IF(USE_GL)
 IF(OPENGL_FOUND)
   SET(HDRS ${HDRS} include/glChartCanvas.h
                    include/glTextureDescriptor.h
@@ -1234,7 +1241,7 @@ IF(OPENGL_FOUND)
                    src/TexFont.cpp
         )
 ENDIF(OPENGL_FOUND)
-
+ENDIF(USE_GL)
 
 IF(TINYXML_FOUND)
     message (STATUS "Building with tinyxml includes")
@@ -1422,6 +1429,7 @@ SET(EXTRA_LIBS ${EXTRA_LIBS} SYMBOLS)
 
 
 # Compile texcompression support library
+IF(USE_GL)
 IF (OPENGL_FOUND)
 
   SET(SRC_TEXCMP
@@ -1511,6 +1519,7 @@ IF (OPENGL_FOUND)
   ENDIF (NOT MSVC)
 
 ENDIF (OPENGL_FOUND)
+ENDIF(USE_GL)
 
 #TODO
 #dnl
@@ -1639,7 +1648,10 @@ ENDIF(BUNDLE_TCDATA MATCHES "ON")
 
 
 IF(APPLE)
-  INCLUDE_DIRECTORIES(/usr/X11/include /usr/X11/include/GL)
+  INCLUDE_DIRECTORIES(/usr/X11/include)
+  IF(USE_GL)
+    INCLUDE_LIBRARIES(/usr/X11/include/GL)
+  ENDIF(USE_GL)
 
   SET(CMAKE_C_FLAGS "-O2 -arch ${ARCH}")
   SET(CMAKE_C_FLAGS_DEBUG "-g -O0 -arch ${ARCH}")

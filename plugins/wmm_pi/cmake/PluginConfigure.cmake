@@ -80,7 +80,7 @@ ENDIF(MSYS)
 
 #  QT_ANDROID is a cross-build, so the native FIND_PACKAGE(OpenGL) is not useful.
 #
-IF (NOT QT_ANDROID )
+IF (PLUGIN_GL AND NOT QT_ANDROID )
 FIND_PACKAGE(OpenGL)
 IF(OPENGL_GLU_FOUND)
 
@@ -94,7 +94,7 @@ IF(OPENGL_GLU_FOUND)
 ELSE(OPENGL_GLU_FOUND)
     MESSAGE (STATUS "OpenGL not found..." )
 ENDIF(OPENGL_GLU_FOUND)
-ENDIF(NOT QT_ANDROID)
+ENDIF(PLUGIN_GL AND NOT QT_ANDROID)
 
 #  Building for QT_ANDROID involves a cross-building environment,
 #  So the OpenGL include directories, flags, etc must be stated explicitly
@@ -114,6 +114,7 @@ IF(QT_ANDROID)
 #    add_subdirectory(src/glu)
 
 ELSE(QT_ANDROID)
+  IF(PLUGIN_GL)
     FIND_PACKAGE(OpenGL)
     IF(OPENGL_GLU_FOUND)
 
@@ -127,7 +128,7 @@ ELSE(QT_ANDROID)
     ELSE(OPENGL_GLU_FOUND)
         MESSAGE (STATUS "OpenGL not found..." )
     ENDIF(OPENGL_GLU_FOUND)
-
+  ENDIF(PLUGIN_GL)
 ENDIF(QT_ANDROID)
 
 # On Android, PlugIns need a specific linkage set....
