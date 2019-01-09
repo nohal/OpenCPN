@@ -3414,24 +3414,28 @@ SaveDefaultsDialog::SaveDefaultsDialog(wxWindow* parent,wxWindowID id)
     wxStdDialogButtonSizer* StdDialogButtonSizer1;
     MarkInfoDlg* p = (MarkInfoDlg*)parent;
 
-    Create(parent, id, _("Save Defaults"), wxDefaultPosition, wxDefaultSize);
+    Create(parent, id, _("Save some defaults"), wxDefaultPosition, wxDefaultSize);
     GridBagSizer1 = new wxGridBagSizer(0, 0);
-    StaticText1 = new wxStaticText(this, wxID_ANY, _("Save marked properties as default for NEW waypoints."), wxDefaultPosition, wxDefaultSize, 0);
+    StaticText1 = new wxStaticText(this, wxID_ANY, _("Check which properties of current waypoint\n should be set as default for NEW waypoints."), wxDefaultPosition, wxDefaultSize, 0);
     GridBagSizer1->Add(StaticText1, wxGBPosition(0, 0), wxGBSpan(1, 2), wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-    NameCB = new wxCheckBox(this, wxID_ANY, _("Show Waypoint Name"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
-    //NameCB->SetValue(true);
+    wxString s = ( g_pMarkInfoDialog->m_checkBoxShowName->GetValue() ? _("Do use"): _("Don't use") );
+    NameCB = new wxCheckBox(this, wxID_ANY, _("Show Waypoint Name") + _T("    [") + s +_T("]"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
     GridBagSizer1->Add(NameCB, wxGBPosition(1, 1), wxDefaultSpan, wxALL, 5);
-    IconCB = new wxCheckBox(this, wxID_ANY, _("Icon"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
-    //IconCB->SetValue(true);
+    s = g_pMarkInfoDialog->m_pRoutePoint->GetIconName();    
+    IconCB = new wxCheckBox(this, wxID_ANY, _("Icon")+ _T("    [") + s +_T("]"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
     GridBagSizer1->Add(IconCB, wxGBPosition(2, 1), wxDefaultSpan, wxALL, 5);
-    RangRingsCB = new wxCheckBox(this, wxID_ANY, _("Range rings"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
-    //RangRingsCB->SetValue(true);
+    s = ( g_pMarkInfoDialog->m_SpinWaypointRangeRingsNumber->GetValue() ? 
+        _("Do use") + wxString::Format(_T(" (%i) "), g_pMarkInfoDialog->m_SpinWaypointRangeRingsNumber->GetValue() ): _("Don't use") );
+    RangRingsCB = new wxCheckBox(this, wxID_ANY, _("Range rings")+ _T("    [") + s +_T("]"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
     GridBagSizer1->Add(RangRingsCB, wxGBPosition(3, 1), wxDefaultSpan, wxALL, 5);
-    ArrivalRCB = new wxCheckBox(this, wxID_ANY, _("Arrival radius"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
-    //ArrivalRCB->SetValue(true);
+    s = ( g_pMarkInfoDialog->m_textArrivalRadius->GetValue());
+    ArrivalRCB = new wxCheckBox(this, wxID_ANY, _("Arrival radius")+ _T("    [") + s +_T("]"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
     GridBagSizer1->Add(ArrivalRCB, wxGBPosition(4, 1), wxDefaultSpan, wxALL, 5);
-    ScaleCB = new wxCheckBox(this, wxID_ANY, _("Show only at scale"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
-    //ScaleCB->SetValue(true);
+    s = ( g_pMarkInfoDialog->m_checkBoxScaMin->GetValue() ? 
+        _("Show only if")+_T(" < ") + g_pMarkInfoDialog->m_textScaMin->GetValue():
+        _("Show always") );
+    ScaleCB = new wxCheckBox(this, wxID_ANY, _("Show only at scale")+ _T("    [") + s +_T("]"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
+
     GridBagSizer1->Add(ScaleCB, wxGBPosition(5, 1), wxDefaultSpan, wxALL, 5);
     StdDialogButtonSizer1 = new wxStdDialogButtonSizer();
     StdDialogButtonSizer1->AddButton(new wxButton(this, wxID_OK, wxEmptyString));

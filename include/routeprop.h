@@ -349,7 +349,7 @@ class MarkInfoDlg : public wxDialog
     DECLARE_EVENT_TABLE()
     
 	private:
-        RoutePoint  *m_pRoutePoint;
+        
         static bool instanceFlag;
         int           i_htmlList_item;
         LinkPropImpl* m_pLinkProp;
@@ -382,10 +382,7 @@ class MarkInfoDlg : public wxDialog
         wxButton*               m_buttonExtDescription;
         wxButton*               m_buttonLinksMenu;
         wxButton*               DefaultsBtn;
-        wxCheckBox*             m_checkBoxScaMin;
-        wxCheckBox*             m_checkBoxShowName;
-        wxCheckBox*             m_checkBoxShowNameExt;
-        wxCheckBox*             m_checkBoxVisible;
+        
         wxChoice*               m_choiceWaypointRangeRingsUnits;
         wxColourPickerCtrl*     m_PickColor;
         wxDatePickerCtrl*       m_EtaDatePickerCtrl;
@@ -402,7 +399,7 @@ class MarkInfoDlg : public wxDialog
         wxPanel*                m_PanelExtendedProperties;
         wxSimpleHtmlListBox*    m_htmlList;
         wxSize                  m_defaultClientSize;
-        wxSpinCtrl*             m_SpinWaypointRangeRingsNumber;
+        
         wxStaticBitmap*         m_bitmapIcon;
         wxStaticBoxSizer*       sbS_Description;
         wxStaticBoxSizer*       sbSizerExtProperties;
@@ -431,7 +428,7 @@ class MarkInfoDlg : public wxDialog
         wxStaticText*           m_staticTextEta;
         wxStaticText*           m_staticTextPlSpeedUnits;
         wxStdDialogButtonSizer* m_sdbSizerButtons;
-        wxTextCtrl*             m_textArrivalRadius;
+
         wxTextCtrl*             m_textCtrlExtDescription;
         wxTextCtrl*             m_textCtrlGpx;
         wxTextCtrl*             m_textCtrlGuid;
@@ -439,7 +436,7 @@ class MarkInfoDlg : public wxDialog
         wxTextCtrl*             m_textLatitude;
         wxTextCtrl*             m_textLongitude;
         wxTextCtrl*             m_textName;
-        wxTextCtrl*             m_textScaMin;
+        
         wxTextCtrl*             m_textWaypointRangeRingsStep;
         wxTextCtrl*             m_textCtrlPlSpeed;
         wxTimePickerCtrl*       m_EtaTimePickerCtrl;
@@ -483,6 +480,14 @@ class MarkInfoDlg : public wxDialog
         wxSimpleHtmlListBox *GetSimpleBox()
             { return wxDynamicCast(m_htmlList, wxSimpleHtmlListBox); }
         void OnHtmlCellClicked(wxHtmlCellEvent &event);
+        wxCheckBox*             m_checkBoxScaMin;
+        wxCheckBox*             m_checkBoxShowName;
+        wxCheckBox*             m_checkBoxShowNameExt;
+        wxCheckBox*             m_checkBoxVisible;
+        RoutePoint*             m_pRoutePoint;
+        wxSpinCtrl*             m_SpinWaypointRangeRingsNumber;
+        wxTextCtrl*             m_textArrivalRadius;
+        wxTextCtrl*             m_textScaMin;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
