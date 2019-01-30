@@ -29,7 +29,7 @@ if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
   cd ..
   RESULT=0
 
-  git rebase origin/master || git rebase --abort
+  git rebase nohal/master || git rebase --abort
   RESULT=$(set_result $? $RESULT)
 
   ./ci_check_whitespace.sh master
