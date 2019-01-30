@@ -25,10 +25,8 @@ if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
   else
     # Build from tag, include the version number only
     cmake -DOCPN_CI_BUILD=OFF -DOCPN_USE_LIBCPP=ON -DwxWidgets_CONFIG_EXECUTABLE=/tmp/wx312_opencpn50_macos109/bin/wx-config -DwxWidgets_CONFIG_OPTIONS="--prefix=/tmp/wx312_opencpn50_macos109" -DCMAKE_INSTALL_PREFIX=/tmp/opencpn -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 ..
-    fi
   fi
-make -sj2
-if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+  make -sj2
   mkdir -p /tmp/opencpn/bin/OpenCPN.app/Contents/MacOS
   mkdir -p /tmp/opencpn/bin/OpenCPN.app/Contents/SharedSupport/plugins
   chmod 644 /usr/local/lib/lib*.dylib
@@ -37,6 +35,7 @@ if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
   make create-dmg
 fi
 if [[ "$TRAVIS_OS_NAME" == "linux" ]] && [[ "$TESTS" != "STATIC" ]]; then
+  make -sj2
   make package
 fi
 if [[ "$TRAVIS_OS_NAME" == "linux" ]] && [[ "$TESTS" == "STATIC" ]]; then
