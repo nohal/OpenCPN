@@ -43,7 +43,7 @@ if [[ "$TRAVIS_OS_NAME" == "linux" ]] && [[ "$TESTS" == "STATIC" ]]; then
   RESULT=0
   git status
   git branch -a
-  git rebase origin/master || git rebase --abort
+  git rebase origin/$TRAVIS_BRANCH || git rebase --abort
   RESULT=$(set_result $? $RESULT)
 
   ./ci_check_whitespace.sh master
