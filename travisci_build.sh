@@ -41,8 +41,9 @@ fi
 if [[ "$TRAVIS_OS_NAME" == "linux" ]] && [[ "$TESTS" == "STATIC" ]]; then
   cd ..
   RESULT=0
-
-  git rebase nohal/master || git rebase --abort
+  git status
+  git branch -a
+  git rebase nohal/OpenCPN/master || git rebase --abort
   RESULT=$(set_result $? $RESULT)
 
   ./ci_check_whitespace.sh master
