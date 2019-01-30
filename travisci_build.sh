@@ -25,3 +25,15 @@ fi
 if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
   make package
 fi
+if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+  cd ..
+  RESULT=0
+
+  git rebase origin/master || git rebase --abort
+  RESULT=$(set_result $? $RESULT)
+
+  ./ci_check_whitespace.sh master
+  RESULT=$(set_result $? $RESULT)
+
+  exit $RESULT
+fi
