@@ -15,7 +15,7 @@ set_result() {
 }
 
 mkdir build && cd build
-if [[ "$TRAVIS_OS_NAME" == "linux" && && "$TESTS" != "STATIC" ]];
+if [[ "$TRAVIS_OS_NAME" == "linux" ]] && [[ "$TESTS" != "STATIC" ]];
   then cmake -DCMAKE_BUILD_TYPE=Debug ..
 fi
 if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
@@ -36,10 +36,10 @@ if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
   make install # Dunno why the second is needed but it is, otherwise plugin data is not included in the bundle
   make create-dmg
 fi
-if [[ "$TRAVIS_OS_NAME" == "linux" && "$TESTS" != "STATIC" ]]; then
+if [[ "$TRAVIS_OS_NAME" == "linux" ]] && [[ "$TESTS" != "STATIC" ]]; then
   make package
 fi
-if [[ "$TRAVIS_OS_NAME" == "linux" && "$TESTS" == "STATIC" ]]; then
+if [[ "$TRAVIS_OS_NAME" == "linux" ]] && [[ "$TESTS" == "STATIC" ]]; then
   cd ..
   RESULT=0
 

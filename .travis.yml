@@ -5,7 +5,16 @@ matrix:
       dist: trusty
       compiler: gcc
     - os: linux
-      env: COMPILER=clang++-3.7 TESTS=STATIC
+      dist: trusty
+      env: TESTS=STATIC
+      compiler: clang
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-trusty-3.9
+          packages:
+          - clang-3.9
     - os: osx
       compiler: clang
   allow_failures:
