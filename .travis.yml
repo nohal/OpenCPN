@@ -1,9 +1,9 @@
 language: cpp
 matrix:
   include:
-    - os: linux
-      dist: trusty
-      compiler: gcc
+#    - os: linux
+#      dist: trusty
+#      compiler: gcc
     - os: linux
       dist: trusty
       env: TESTS=STATIC
@@ -15,8 +15,8 @@ matrix:
           - llvm-toolchain-trusty-3.9
           packages:
           - clang-3.9
-    - os: osx
-      compiler: clang
+ #   - os: osx
+ #     compiler: clang
   allow_failures:
     - env: TESTS=STATIC
 
