@@ -54,7 +54,7 @@ WPL::~WPL()
    Empty();
 }
 
-void WPL::Empty( void )
+void WPL::Empty()
 {
 
    Position.Empty();

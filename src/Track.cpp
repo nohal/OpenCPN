@@ -237,7 +237,7 @@ Track::Track()
     m_HighlightedTrackPoint = -1;
 }
 
-Track::~Track( void )
+Track::~Track()
 {
     for(size_t i = 0; i < TrackPoints.size(); i++)
         delete TrackPoints[i];
@@ -305,7 +305,7 @@ void ActiveTrack::SetPrecision( int prec ) {
     }
 }
 
-void ActiveTrack::Start( void )
+void ActiveTrack::Start()
 {
     if( !m_bRunning ) {
         AddPointNow( true );                   // Add initial point

@@ -1069,7 +1069,7 @@ ChartDatabase::ChartDatabase()
       UpdateChartClassDescriptorArray();
 }
 
-void ChartDatabase::UpdateChartClassDescriptorArray(void)
+void ChartDatabase::UpdateChartClassDescriptorArray()
 {
       m_ChartClassDescriptorArray.Clear();
 

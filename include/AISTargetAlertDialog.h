@@ -79,14 +79,14 @@ class AISTargetAlertDialog: public OCPN_AlertDialog
                                 long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU );
            void Init();
 
-           int Get_Dialog_MMSI(void){ return m_target_mmsi; }
+           int Get_Dialog_MMSI(){ return m_target_mmsi; }
            void UpdateText();
-           void RecalculateSize( void );
+           void RecalculateSize();
            
       private:
           void CreateControls();
-          bool GetAlertText(void);
-          void SetColorScheme( void );
+          bool GetAlertText();
+          void SetColorScheme();
             void OnClose(wxCloseEvent& event);
             void OnIdAckClick( wxCommandEvent& event );
             void OnMove( wxMoveEvent& event );

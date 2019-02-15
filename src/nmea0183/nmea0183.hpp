@@ -135,21 +135,21 @@ class NMEA0183
 
       SENTENCE sentence;
 
-      void initialize( void );
+      void initialize();
 
    protected:
 
       MRL response_table;
 
-      void set_container_pointers( void );
-      void sort_response_table( void );
+      void set_container_pointers();
+      void sort_response_table();
 
    public:
 
       NMEA0183();
       virtual ~NMEA0183();
 
-      wxArrayString GetRecognizedArray(void);
+      wxArrayString GetRecognizedArray();
       
       /*
       ** NMEA 0183 Sentences we understand
@@ -229,9 +229,9 @@ class NMEA0183
 
 //      MANUFACTURER_LIST Manufacturers;
 
-      virtual bool IsGood( void ) const;
-      virtual bool Parse( void );
-      virtual bool PreParse( void );
+      virtual bool IsGood() const;
+      virtual bool Parse();
+      virtual bool PreParse();
 
       NMEA0183& operator << ( wxString& source );
       NMEA0183& operator >> ( wxString& destination );

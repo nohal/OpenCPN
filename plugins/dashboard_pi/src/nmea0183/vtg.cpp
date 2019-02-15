@@ -55,7 +55,7 @@ VTG::~VTG()
    Empty();
 }
 
-void VTG::Empty( void )
+void VTG::Empty()
 {
 //   ASSERT_VALID( this );
 

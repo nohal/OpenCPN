@@ -152,14 +152,14 @@
 /*      Standard include files.                                         */
 /* ==================================================================== */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 #include <stdarg.h>
-#include <string.h>
-#include <ctype.h>
-#include <errno.h>
-#include <time.h>
+#include <cstring>
+#include <cctype>
+#include <cerrno>
+#include <ctime>
 
 #ifdef HAVE_LOCALE_H
 #  include <locale.h>

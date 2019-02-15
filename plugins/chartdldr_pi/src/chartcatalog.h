@@ -60,7 +60,7 @@ public:
     // public methods
     bool LoadFromFile( wxString path, bool headerOnly = false );
     bool LoadFromXml( TiXmlDocument * doc, bool headerOnly );
-    wxDateTime GetReleaseDate( void );
+    wxDateTime GetReleaseDate();
     // public properties
     wxString title;
     wxDateTime date_created;

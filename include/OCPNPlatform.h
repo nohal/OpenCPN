@@ -35,7 +35,7 @@
 #include <wx/log.h>
 #include <wx/stdpaths.h>
 
-#include <stdio.h>
+#include <cstdio>
 
 class MyConfig;
 
@@ -51,7 +51,7 @@ typedef struct {
 
 #ifdef __WXQT__
 extern bool LoadQtStyleSheet(wxString &sheet_file);
-extern QString getQtStyleSheet( void );
+extern QString getQtStyleSheet();
 #endif
 
 
@@ -73,31 +73,31 @@ public:
 //  Per-Platform initialization support    
     
     //  Called from MyApp() immediately upon entry to MyApp::OnInit()
-    static void Initialize_1( void );
+    static void Initialize_1();
     
     //  Called from MyApp() immediately before creation of MyFrame()
-    void Initialize_2( void );
+    void Initialize_2();
     
     //  Called from MyApp()::OnInit() just after gFrame is created, so gFrame is available
-    void Initialize_3( void );
+    void Initialize_3();
 
     //  Called from MyApp() just before end of MyApp::OnInit()
-    static void Initialize_4( void );
+    static void Initialize_4();
     
-    static void OnExit_1( void );
-    static void OnExit_2( void );
+    static void OnExit_1();
+    static void OnExit_2();
     
 
-    void SetDefaultOptions( void );
+    void SetDefaultOptions();
 
     void applyExpertMode(bool mode);
     
 //--------------------------------------------------------------------------
 //      Platform Display Support
 //--------------------------------------------------------------------------
-    static void ShowBusySpinner( void );
-    static void HideBusySpinner( void );
-    double getFontPointsperPixel( void );
+    static void ShowBusySpinner();
+    static void HideBusySpinner();
+    double getFontPointsperPixel();
     wxSize getDisplaySize();
     double GetDisplaySizeMM();
     void SetDisplaySizeMM( double size );
@@ -142,9 +142,9 @@ public:
                                 wxString suggestedName, wxString wildcard);
     int DoDirSelectorDialog( wxWindow *parent, wxString *file_spec, wxString Title, wxString initDir);
     
-    bool InitializeLogFile( void );
-    void CloseLogFile( void );
-    wxString    &GetLargeLogMessage( void ){ return large_log_message; }
+    bool InitializeLogFile();
+    void CloseLogFile();
+    wxString    &GetLargeLogMessage(){ return large_log_message; }
     FILE        *GetLogFilePtr(){ return flog; }
 
     
@@ -158,7 +158,7 @@ public:
 #define PLATFORM_CAP_FASTPAN   2
     void LaunchLocalHelp();
 
-    void SetLocaleSearchPrefixes( void );
+    void SetLocaleSearchPrefixes();
     wxString GetDefaultSystemLocale();
     wxString GetAdjustedAppLocale();
     

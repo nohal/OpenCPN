@@ -92,11 +92,11 @@ public:
     ~TCMgr();
 
     TC_Error_Code LoadDataSources(wxArrayString &sources);
-    wxArrayString GetDataSet( void ) {
+    wxArrayString GetDataSet() {
         return m_sourcefile_array;
     }
 
-    bool IsReady(void) {
+    bool IsReady() {
         return bTCMReady;
     }
 
@@ -125,10 +125,10 @@ public:
 private:
     void PurgeData();
 
-    void LoadMRU(void);
-    void SaveMRU(void);
+    void LoadMRU();
+    void SaveMRU();
     void AddMRU(Station_Data *psd);
-    void FreeMRU(void);
+    void FreeMRU();
 
     bool bTCMReady;
     wxString pmru_file_name;

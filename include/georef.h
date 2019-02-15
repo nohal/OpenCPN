@@ -33,10 +33,10 @@
 #ifndef     __GEOREF_H__
 #define     __GEOREF_H__
 
-#include <stdio.h>
-#include <string.h>
-//#include <math.h>
-#include <ctype.h>
+#include <cstdio>
+#include <cstring>
+//#include <cmath>
+#include <cctype>
 
 //------------------------
 struct DATUM {

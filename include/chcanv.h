@@ -62,8 +62,8 @@ void ShowAISTargetQueryDialog(wxWindow *parent, int mmsi);
 //
 //--------------------------------------------------------
 
-int InitScreenBrightness(void);
-int RestoreScreenBrightness(void);
+int InitScreenBrightness();
+int RestoreScreenBrightness();
 int SetScreenBrightness(int brightness);
 
 
@@ -190,7 +190,7 @@ public:
       ChartStack *GetpCurrentStack(){ return m_pCurrentStack; }
       void SetGroupIndex( int index, bool autoswitch = false );
       bool CheckGroup( int igroup );
-      void canvasRefreshGroupIndex( void );
+      void canvasRefreshGroupIndex();
       void canvasChartsRefresh( int dbi_hint );
       
       void CheckGroupValid( bool showMessage = true, bool switchGroup0 = true);
@@ -202,16 +202,16 @@ public:
       void OnRouteFinishTimerEvent( wxTimerEvent& event );
 
       void ClearS52PLIBStateHash(){ m_s52StateHash = 0; }
-      void SetupCanvasQuiltMode( void );
+      void SetupCanvasQuiltMode();
       void ApplyCanvasConfig(canvasConfig *pcc);
       
       void SetVPRotation(double angle){ VPoint.rotation = angle; }
-      double GetVPRotation(void) { return GetVP().rotation; }
-      double GetVPSkew(void) { return GetVP().skew; }
-      double GetVPTilt(void) { return GetVP().tilt; }
-      void ClearbFollow(void);
-      void SetbFollow(void);
-      void TogglebFollow( void );
+      double GetVPRotation() { return GetVP().rotation; }
+      double GetVPSkew() { return GetVP().skew; }
+      double GetVPTilt() { return GetVP().tilt; }
+      void ClearbFollow();
+      void SetbFollow();
+      void TogglebFollow();
       void JumpToPosition( double lat, double lon, double scale );
       void SetFirstAuto( bool b_auto ){m_bFirstAuto = b_auto; }
       
@@ -231,11 +231,11 @@ public:
       
       void UnlockQuilt();
       void SetQuiltMode(bool b_quilt);
-      bool GetQuiltMode(void);
-      std::vector<int> GetQuiltIndexArray(void);
-      bool IsQuiltDelta(void);
+      bool GetQuiltMode();
+      std::vector<int> GetQuiltIndexArray();
+      bool IsQuiltDelta();
       void SetQuiltChartHiLiteIndex(int dbIndex);
-      int GetQuiltReferenceChartIndex(void);
+      int GetQuiltReferenceChartIndex();
       double GetBestStartScale(int dbi_hint, const ViewPort &vp);
       void ConfigureChartBar();
       
@@ -267,8 +267,8 @@ public:
       Piano *GetPiano(){ return m_Piano; }
       int GetPianoHeight();
       
-      bool isRouteEditing( void ){ return m_bRouteEditing && m_pRoutePointEditTarget; }
-      bool isMarkEditing( void ){ return m_bMarkEditing && m_pRoutePointEditTarget; }
+      bool isRouteEditing(){ return m_bRouteEditing && m_pRoutePointEditTarget; }
+      bool isMarkEditing(){ return m_bMarkEditing && m_pRoutePointEditTarget; }
       
       GSHHSChart* GetWorldBackgroundChart() { return pWorldBackgroundChart; }
       void ResetWorldBackgroundChart() { pWorldBackgroundChart->Reset(); }
@@ -286,7 +286,7 @@ public:
       void GetCursorLatLon(double *lat, double *lon);
 
       bool PanCanvas(double dx, double dy);
-      void StopAutoPan(void);
+      void StopAutoPan();
 
       void ZoomCanvas(double factor, bool can_zoom_to_cursor=true, bool stoptimer=true );
       void DoZoomCanvas(double factor,  bool can_zoom_to_cursor = true);
@@ -295,9 +295,9 @@ public:
       void DoRotateCanvas( double rotation );
       void DoTiltCanvas( double tilt );
 
-      void ShowAISTargetList(void);
+      void ShowAISTargetList();
 
-      void ShowGoToPosition(void);
+      void ShowGoToPosition();
       void HideGlobalToolbar();
       void ShowGlobalToolbar();
 
@@ -305,20 +305,20 @@ public:
       ChartBase *GetFirstQuiltChart();
       ChartBase *GetNextQuiltChart();
       int GetQuiltChartCount();
-      void InvalidateAllQuiltPatchs(void);
+      void InvalidateAllQuiltPatchs();
       void SetQuiltRefChart(int dbIndex);
       std::vector<int> GetQuiltCandidatedbIndexArray(bool flag1 = true, bool flag2 = true);
       std::vector<int> GetQuiltExtendedStackdbIndexArray();
       std::vector<int> GetQuiltEclipsedStackdbIndexArray();
-      int GetQuiltRefChartdbIndex(void);
-      void InvalidateQuilt(void);
+      int GetQuiltRefChartdbIndex();
+      void InvalidateQuilt();
       double GetQuiltMaxErrorFactor();
       bool IsChartQuiltableRef(int db_index);
       bool IsChartLargeEnoughToRender( ChartBase* chart, ViewPort& vp );
       int GetCanvasChartNativeScale();
       int FindClosestCanvasChartdbIndex(int scale);
-      void UpdateCanvasOnGroupChange(void);
-      int AdjustQuiltRefChart( void );
+      void UpdateCanvasOnGroupChange();
+      int AdjustQuiltRefChart();
       void ToggleCourseUp( );
       void ToggleLookahead( );
       void SetShowGPS( bool show );
@@ -335,12 +335,12 @@ public:
       wxColour GetFogColor(){ return m_fog_color; }      
       
       void ShowChartInfoWindow(int x, int dbIndex);
-      void HideChartInfoWindow(void);
+      void HideChartInfoWindow();
     
       void StartMeasureRoute();
       void CancelMeasureRoute();
 
-      bool DoCanvasUpdate( void );
+      bool DoCanvasUpdate();
       void SelectQuiltRefdbChart( int db_index, bool b_autoscale = true );
       void SelectQuiltRefChart( int selected_index );
       double GetBestVPScale( ChartBase *pchart );
@@ -350,15 +350,15 @@ public:
       void HandlePianoClick( int selected_index, int selected_dbIndex );
       void HandlePianoRClick( int x, int y, int selected_index, int selected_dbIndex );
       void HandlePianoRollover( int selected_index, int selected_dbIndex );
-      void UpdateCanvasControlBar( void );
-      void FormatPianoKeys( void );
+      void UpdateCanvasControlBar();
+      void FormatPianoKeys();
       void PianoPopupMenu ( int x, int y, int selected_index, int selected_dbIndex );
       void OnPianoMenuDisableChart(wxCommandEvent& event);
       void OnPianoMenuEnableChart(wxCommandEvent& event);
       bool IsPianoContextMenuActive(){ return m_piano_ctx_menu != 0; }
       void SetCanvasToolbarItemState( int tool_id, bool state );
-      bool DoCanvasCOGSet( void );
-      void UpdateFollowButtonState( void );
+      bool DoCanvasCOGSet();
+      void UpdateFollowButtonState();
 
       
       //Todo build more accessors
@@ -386,10 +386,10 @@ public:
       bool        m_bLookAhead;
       double      m_VPRotate;
       
-      void DrawBlinkObjects( void );
+      void DrawBlinkObjects();
 
-      void StartRoute(void);
-      void FinishRoute(void);
+      void StartRoute();
+      void FinishRoute();
       
       void InvalidateGL();
       
@@ -421,8 +421,8 @@ public:
       ocpnFloatingToolbarDialog *RequestNewCanvasToolbar(bool bforcenew = true);
       void UpdateToolbarColorScheme( ColorScheme cs );
       void SetAISCanvasDisplayStyle(int StyleIndx);
-      void TouchAISToolActive( void );
-      void UpdateAISTBTool( void );
+      void TouchAISToolActive();
+      void UpdateAISTBTool();
       void SetToolbarScaleFactor( double scale_factor){ m_toolbar_scalefactor = scale_factor; }
       ocpnFloatingToolbarDialog *GetToolbar(){ return m_toolBar; }
       void SetToolbarConfigString( wxString& config){ m_toolbarConfig = config; }
@@ -433,8 +433,8 @@ public:
       void SetToolbarOrientation( long orient );
       long GetToolbarOrientation();
       
-      void SubmergeToolbar(void);
-      void SurfaceToolbar(void);
+      void SubmergeToolbar();
+      void SurfaceToolbar();
       void ToggleToolbar( bool b_smooth = false );
       bool IsToolbarShown();
       void DestroyToolbar();
@@ -464,8 +464,8 @@ public:
       void CreateMUIBar();
       
       
-      void ToggleChartOutlines(void);
-      void ToggleCanvasQuiltMode( void );
+      void ToggleChartOutlines();
+      void ToggleCanvasQuiltMode();
       
       wxString GetScaleText(){ return m_scaleText; }
       int GetScaleValue(){ return m_scaleValue; }
@@ -521,7 +521,7 @@ private:
       bool InvokeCanvasMenu(int x, int y, int seltype);
       
       ViewPort    VPoint;
-      void        PositionConsole(void);
+      void        PositionConsole();
       
       wxColour PredColor();
       wxColour ShipColor();

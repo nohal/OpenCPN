@@ -46,8 +46,8 @@
 #include "glChartCanvas.h"
 #endif
 
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 
 #include <wx/progdlg.h>
 
@@ -77,7 +77,7 @@ bool GetMemoryStatus(int *mem_total, int *mem_used);
 // ChartStack implementation
 // ============================================================================
 
-int ChartStack::GetCurrentEntrydbIndex(void)
+int ChartStack::GetCurrentEntrydbIndex()
 {
       if(nEntry /*&& b_valid*/)
             return DBIndex[CurrentStackEntry];
@@ -343,7 +343,7 @@ void ChartDB::PurgeCachePlugins()
 }
 
 
-void ChartDB::ClearCacheInUseFlags(void)
+void ChartDB::ClearCacheInUseFlags()
 {
     if( wxMUTEX_NO_ERROR == m_cache_mutex.Lock() ){
         unsigned int nCache = pChartCache->GetCount();

@@ -393,7 +393,7 @@ void TCWin::PREvent( wxCommandEvent& event )
     Refresh();
 }
 
-void TCWin::RePosition( void )
+void TCWin::RePosition()
 {
 //    Position the window
     double lon = pIDX->IDX_lon;

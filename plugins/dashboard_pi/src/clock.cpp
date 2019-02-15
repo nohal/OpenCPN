@@ -249,8 +249,8 @@ int DashboardInstrument_Moon::moon_phase(int y, int m, int d)
     return b;
 }
 
-#include <math.h>
-#include <time.h>
+#include <cmath>
+#include <ctime>
 
 #ifndef PI
       #define PI        3.1415926535897931160E0      /* pi */

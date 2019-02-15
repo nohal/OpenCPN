@@ -88,7 +88,7 @@ public:
     LUPArrayContainer();
     ~LUPArrayContainer();
     
-    wxArrayOfLUPrec     *GetLUPArray(void){ return LUPArray; }
+    wxArrayOfLUPrec     *GetLUPArray(){ return LUPArray; }
     LUPHashIndex        *GetArrayIndexHelper( const char *objectName );
     
 private:
@@ -119,15 +119,15 @@ public:
     S52color* getColor( const char *colorName );
     wxColour getwxColour( const wxString &colorName );
 
-    void UpdateMarinerParams( void );
-    void ClearCNSYLUPArray( void );
+    void UpdateMarinerParams();
+    void ClearCNSYLUPArray();
 
     void GenerateStateHash();
     long GetStateHash() { return m_state_hash;  }
 
     void SetPLIBColorScheme( wxString scheme );
     void SetPLIBColorScheme( ColorScheme cs );
-    wxString GetPLIBColorScheme( void ) { return m_ColorScheme; }
+    wxString GetPLIBColorScheme() { return m_ColorScheme; }
 
     void SetGLRendererString(const wxString &renderer);
     void SetGLOptions(bool b_useStencil,
@@ -149,14 +149,14 @@ public:
     
 //    Temporarily save/restore the current colortable index
 //    Useful for Thumbnail rendering
-    void SaveColorScheme( void ) { m_colortable_index_save = m_colortable_index;}
-    void RestoreColorScheme( void ) {}
+    void SaveColorScheme() { m_colortable_index_save = m_colortable_index;}
+    void RestoreColorScheme() {}
 
 //    Rendering stuff
     void PrepareForRender( ViewPort *vp );
-    void PrepareForRender( void );
+    void PrepareForRender();
     void AdjustTextList( int dx, int dy, int screenw, int screenh );
-    void ClearTextList( void );
+    void ClearTextList();
     int SetLineFeaturePriority( ObjRazRules *rzRules, int npriority );
     void FlushSymbolCaches();
 
@@ -184,8 +184,8 @@ public:
     void SetQualityOfData(bool val);
     bool GetQualityOfData();
     
-    int GetMajorVersion( void ) { return m_VersionMajor; }
-    int GetMinorVersion( void ) { return m_VersionMinor; }
+    int GetMajorVersion() { return m_VersionMajor; }
+    int GetMinorVersion() { return m_VersionMinor; }
 
     void SetTextOverlapAvoid( bool f ) { m_bDeClutterText = f; }
     void SetShowNationalText( bool f ) { m_bShowNationalTexts = f; }
@@ -220,7 +220,7 @@ public:
     bool IsObjNoshow( const char *objcl);
     void AddObjNoshow( const char *objcl);
     void RemoveObjNoshow( const char *objcl);
-    void ClearNoshow(void);
+    void ClearNoshow();
     void SaveObjNoshow() { m_saved_noshow = m_noshow_array; };
     void RestoreObjNoshow() { m_noshow_array = m_saved_noshow; };
     

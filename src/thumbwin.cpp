@@ -33,9 +33,9 @@
   #include "wx/wx.h"
 #endif //precompiled headers
 
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
+#include <cstdlib>
+#include <cmath>
+#include <ctime>
 
 #include "dychart.h"
 
@@ -65,7 +65,7 @@ ThumbWin::~ThumbWin()
 {
 }
 
-void ThumbWin::Resize( void )
+void ThumbWin::Resize()
 {
     if( pThumbChart ) {
         if( pThumbChart->GetThumbData()->pDIBThumb ) {
@@ -100,7 +100,7 @@ void ThumbWin::OnPaint( wxPaintEvent& event )
     }
 }
 
-const wxBitmap &ThumbWin::GetBitmap(void)
+const wxBitmap &ThumbWin::GetBitmap()
 {
     if( pThumbChart ) {
         if( pThumbChart->GetThumbData() ) {

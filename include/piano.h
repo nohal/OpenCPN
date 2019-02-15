@@ -57,7 +57,7 @@ public:
       void Paint(int y, wxDC &dc, wxDC *shapeDC=NULL);
       void Paint(int y, ocpnDC &dc, wxDC *shapeDC=NULL);
       void DrawGL(int y);
-      void FormatKeys(void);
+      void FormatKeys();
       bool MouseEvent(wxMouseEvent& event);
       void SetColorScheme(ColorScheme cs);
       void SetKeyArray(std::vector<int> piano_chart_index_array);
@@ -78,7 +78,7 @@ public:
       void onTimerEvent(wxTimerEvent &event);
       
       wxPoint GetKeyOrigin(int key_index);
-      void ResetRollover(void);
+      void ResetRollover();
       void SetRoundedRectangles(bool val){ m_brounded = val; m_hash.Clear();}
 
       int GetHeight();

@@ -58,7 +58,7 @@ class DashboardInstrument_Speedometer: public DashboardInstrument_Dial
             DashboardInstrument_Speedometer( wxWindow *parent, wxWindowID id, wxString title, int cap_flag,
                                     int s_value, int e_value);
 
-            ~DashboardInstrument_Speedometer(void){}
+            ~DashboardInstrument_Speedometer(){}
 
       private:
 

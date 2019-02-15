@@ -52,7 +52,7 @@ HDG::~HDG()
    Empty();
 }
 
-void HDG::Empty( void )
+void HDG::Empty()
 {
    MagneticSensorHeadingDegrees = 0.0;
    MagneticDeviationDegrees     = 0.0;

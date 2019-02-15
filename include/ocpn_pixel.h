@@ -182,13 +182,13 @@ class PixelCache
         ~PixelCache();
 
         void SelectIntoDC(wxMemoryDC &dc);
-        void Update(void);
+        void Update();
         RGBO GetRGBO(){return m_rgbo;}
         unsigned char *GetpData() const;
         int GetLinePitch() const { return line_pitch_bytes; }
-        int GetWidth(void){ return m_width; }
-        int GetHeight(void){ return m_height; }
-        size_t GetLength(void);
+        int GetWidth(){ return m_width; }
+        int GetHeight(){ return m_height; }
+        size_t GetLength();
 
       //    Data storage
     private:
@@ -273,7 +273,7 @@ public:
       // ctor
       // Create from Data
     ocpnBitmap(unsigned char *pPix, int width, int height, int depth)
-            { (void)CreateFromData(pPix, width, height, depth );}
+            { ()CreateFromData(pPix, width, height, depth );}
 
       // ctor
       // Create from wxImage

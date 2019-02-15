@@ -134,7 +134,7 @@
  * New
  */
 
-#include <ctype.h>
+#include <cctype>
 #include "cpl_minixml.h"
 #include "cpl_error.h"
 #include "cpl_conv.h"

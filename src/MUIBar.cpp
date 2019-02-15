@@ -616,7 +616,7 @@ void MUIBar::CreateControls()
     
 }
 
-void MUIBar::SetBestPosition( void )
+void MUIBar::SetBestPosition()
 {
 #if 0 // for wxWindow    
     int x = (m_parent->GetClientSize().x - GetSize().x) / 2;

@@ -31,7 +31,7 @@
 
 #include <wx/filename.h>
 #include <wx/dir.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include "OCPNPlatform.h"
 
 #include "styles.h"
@@ -716,7 +716,7 @@ void Style::Unload()
     }
 }
 
-Style::Style( void )
+Style::Style()
 {
     graphics = NULL;
     currentOrientation = 0;
@@ -744,7 +744,7 @@ Style::Style( void )
     }
 }
 
-Style::~Style( void )
+Style::~Style()
 {
     for( unsigned int i = 0; i < tools.Count(); i++ ) {
         delete (Tool*) ( tools[i] );
@@ -762,7 +762,7 @@ Style::~Style( void )
     iconIndex.clear();
 }
 
-StyleManager::StyleManager(void)
+StyleManager::StyleManager()
 {
     isOK = false;
     currentStyle = NULL;
@@ -785,7 +785,7 @@ StyleManager::StyleManager(const wxString & configDir)
     SetStyle( _T("") );
 }
 
-StyleManager::~StyleManager(void)
+StyleManager::~StyleManager()
 {
     for( unsigned int i = 0; i < styles.Count(); i++ ) {
         delete (Style*) ( styles[i] );

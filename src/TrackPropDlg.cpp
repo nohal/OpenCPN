@@ -180,7 +180,7 @@ TrackPropDlg::~TrackPropDlg()
     instanceFlag = false;
 }
 
-void TrackPropDlg::RecalculateSize( void )
+void TrackPropDlg::RecalculateSize()
 {
     //  Make an estimate of the dialog size, without scrollbars showing
 
@@ -511,7 +511,7 @@ void TrackPropDlg::CreateControlsCompact()
 }
 
 
-void TrackPropDlg::CreateControls( void )
+void TrackPropDlg::CreateControls()
 {
 
     wxBoxSizer* bSizerMain;
@@ -1512,7 +1512,7 @@ void TrackPropDlg::OnShowTimeTZ ( wxCommandEvent &event )
     InitializeList();
 }
 
-bool TrackPropDlg::SaveChanges( void )
+bool TrackPropDlg::SaveChanges()
 {
     if( m_pTrack && !m_pTrack->m_bIsInLayer ) {
         //  Get User input Text Fields

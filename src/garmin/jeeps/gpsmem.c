@@ -37,7 +37,7 @@
 ** @return [GPS_PPacket] virgin packet
 **********************************************************************/
 
-GPS_PPacket GPS_Packet_New(void)
+GPS_PPacket GPS_Packet_New()
 {
     GPS_PPacket ret;
     int hdr_size = sizeof(GPS_OPacket) ;
@@ -87,7 +87,7 @@ void GPS_Packet_Del(GPS_PPacket *thys)
 ** @return [GPS_PPvt_Data] virgin pvt
 **********************************************************************/
 
-GPS_PPvt_Data GPS_Pvt_New(void)
+GPS_PPvt_Data GPS_Pvt_New()
 {
     GPS_PPvt_Data ret;
 
@@ -129,7 +129,7 @@ void GPS_Pvt_Del(GPS_PPvt_Data *thys)
 ** @return [GPS_PAlmanac] virgin almanac
 **********************************************************************/
 
-GPS_PAlmanac GPS_Almanac_New(void)
+GPS_PAlmanac GPS_Almanac_New()
 {
     GPS_PAlmanac ret;
 
@@ -175,7 +175,7 @@ void GPS_Almanac_Del(GPS_PAlmanac *thys)
 ** @return [GPS_PTrack] virgin track
 **********************************************************************/
 
-GPS_PTrack GPS_Track_New(void)
+GPS_PTrack GPS_Track_New()
 {
     GPS_PTrack ret;
 
@@ -217,7 +217,7 @@ void GPS_Track_Del(GPS_PTrack *thys)
 ** @return [GPS_PWay] virgin waypoint
 **********************************************************************/
 
-GPS_PWay GPS_Way_New(void)
+GPS_PWay GPS_Way_New()
 {
     GPS_PWay ret;
     int32 i;
@@ -306,7 +306,7 @@ void GPS_Way_Del(GPS_PWay *thys)
 ** @return [GPS_PLap] virgin lap
 **********************************************************************/
 
-GPS_PLap GPS_Lap_New(void)
+GPS_PLap GPS_Lap_New()
 {
     GPS_PLap ret;
 
@@ -346,7 +346,7 @@ void GPS_Lap_Del(GPS_PLap *thys)
 **
 ** @return [GPS_PCourse] virgin Course
 **********************************************************************/
-GPS_PCourse GPS_Course_New(void)
+GPS_PCourse GPS_Course_New()
 {
     GPS_PCourse ret;
 
@@ -385,7 +385,7 @@ void GPS_Course_Del(GPS_PCourse *thys)
 ** @return [GPS_PCourse_Lap] virgin course lap
 **********************************************************************/
 
-GPS_PCourse_Lap GPS_Course_Lap_New(void)
+GPS_PCourse_Lap GPS_Course_Lap_New()
 {
     GPS_PCourse_Lap ret;
 
@@ -425,7 +425,7 @@ void GPS_Course_Lap_Del(GPS_PCourse_Lap *thys)
 ** @return [GPS_PCourse_Point] virgin course point
 **********************************************************************/
 
-GPS_PCourse_Point GPS_Course_Point_New(void)
+GPS_PCourse_Point GPS_Course_Point_New()
 {
     GPS_PCourse_Point ret;
 

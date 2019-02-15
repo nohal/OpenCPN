@@ -70,7 +70,7 @@
 
 #include "ogr_geometry.h"
 #include "ogr_p.h"
-#include <ctype.h>
+#include <cctype>
 
 /************************************************************************/
 /*                        OGRMakeWktCoordinate()                        */

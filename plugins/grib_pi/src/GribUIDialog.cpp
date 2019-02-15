@@ -38,9 +38,9 @@
 
 #include <wx/stdpaths.h>
 
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
+#include <cstdlib>
+#include <cmath>
+#include <ctime>
 
 #include "grib_pi.h"
 #include "GribTable.h"

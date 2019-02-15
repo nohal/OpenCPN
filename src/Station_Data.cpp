@@ -23,7 +23,7 @@
  */
 
 #include "Station_Data.h"
-#include <stdlib.h>
+#include <cstdlib>
 
 #include <wx/arrimpl.cpp>
 WX_DEFINE_OBJARRAY(ArrayOfStationData);

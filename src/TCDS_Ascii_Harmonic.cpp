@@ -24,7 +24,7 @@
 #include <wx/filename.h>
 #include <wx/tokenzr.h>
 
-#include <math.h>
+#include <cmath>
 
 #include "TCDS_Ascii_Harmonic.h"
 

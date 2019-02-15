@@ -41,7 +41,7 @@
 ** @return [time_t] number of bytes read
 **********************************************************************/
 
-time_t GPS_Time_Now(void)
+time_t GPS_Time_Now()
 {
     time_t secs;
 
@@ -109,8 +109,8 @@ int32 GPS_Serial_Packet_Read(gpsdevh *fd, GPS_PPacket *packet)
 	    {
 		if(u != DLE)
 		{
-//		    (void) fprintf(stderr,"GPS_Packet_Read: No DLE.  Data received, but probably not a garmin packet.\n");
-//		    (void) fflush(stderr);
+//		    () fprintf(stderr,"GPS_Packet_Read: No DLE.  Data received, but probably not a garmin packet.\n");
+//		    () fflush(stderr);
 		    return 0;
 		}
                 ++len;

@@ -61,9 +61,9 @@ class GLL : public RESPONSE
       ** Methods
       */
 
-      virtual void Empty( void );
+      virtual void Empty();
       virtual bool Parse( const SENTENCE& sentence );
-      virtual const wxString& PlainEnglish( void );
+      virtual const wxString& PlainEnglish();
       virtual bool Write( SENTENCE& sentence );
 
       /*

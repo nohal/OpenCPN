@@ -63,8 +63,8 @@ class LATITUDE
       ** Methods
       */
 
-      virtual void Empty( void );
-      virtual bool IsDataValid( void );
+      virtual void Empty();
+      virtual bool IsDataValid();
       virtual void Parse( int PositionFieldNumber, int NorthingFieldNumber, const SENTENCE& LineToParse );
       virtual void Set( double Position, const wxString& Northing );
       virtual void Write( SENTENCE& sentence );
@@ -96,8 +96,8 @@ class LONGITUDE
       ** Methods
       */
 
-      virtual void Empty( void );
-      virtual bool IsDataValid( void );
+      virtual void Empty();
+      virtual bool IsDataValid();
       virtual void Parse( int PositionFieldNumber, int EastingFieldNumber, const SENTENCE& LineToParse );
       virtual void Set( double Position, const wxString& Easting );
       virtual void Write( SENTENCE& sentence );
@@ -128,7 +128,7 @@ class LATLONG
       ** Methods
       */
 
-      virtual void Empty( void );
+      virtual void Empty();
       virtual bool Parse( int LatitudePostionFieldNumber, int NorthingFieldNumber, int LongitudePositionFieldNumber, int EastingFieldNumber, const SENTENCE& LineToParse );
       virtual void Write( SENTENCE& sentence );
 

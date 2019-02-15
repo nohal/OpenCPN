@@ -92,13 +92,13 @@ OCP_DataStreamInput_Thread::OCP_DataStreamInput_Thread(DataStream *Launcher,
     
 }
 
-OCP_DataStreamInput_Thread::~OCP_DataStreamInput_Thread(void)
+OCP_DataStreamInput_Thread::~OCP_DataStreamInput_Thread()
 {
     delete[] rx_buffer;
     delete[] temp_buf;
 }
 
-void OCP_DataStreamInput_Thread::OnExit(void)
+void OCP_DataStreamInput_Thread::OnExit()
 {
 }
 
@@ -1161,7 +1161,7 @@ bool OCP_DataStreamInput_Thread::CheckComPortPhysical(int port_descriptor)
 
     t.tv_sec  = 0;
     t.tv_usec = 1000;
-    (void) select(fd+1,&rec,NULL,NULL,&t);
+    () select(fd+1,&rec,NULL,NULL,&t);
     if(FD_ISSET(fd,&rec))
         return true;
 

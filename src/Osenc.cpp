@@ -30,7 +30,7 @@
   #include "wx/wx.h"
 #endif //precompiled headers
 
-#include <setjmp.h>
+#include <csetjmp>
 
 #include <wx/wfstream.h>
 #include <wx/filename.h>
@@ -266,7 +266,7 @@ Osenc::~Osenc()
     
 }
 
-void Osenc::init( void )
+void Osenc::init()
 {
     m_LOD_meters = 0;
     m_poRegistrar = NULL;
@@ -3746,7 +3746,7 @@ bool Osenc::CalculateExtent( S57Reader *poReader, S57ClassRegistrar *poRegistrar
 
 
 
-void Osenc::InitializePersistentBuffer( void ){
+void Osenc::InitializePersistentBuffer(){
 
     pBuffer = (unsigned char *)malloc(1024);
     bufferSize = 1024;

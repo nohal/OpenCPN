@@ -53,7 +53,7 @@ MDA::~MDA()
    Empty();
 }
 
-void MDA::Empty( void )
+void MDA::Empty()
 {
 //   ASSERT_VALID( this );
 

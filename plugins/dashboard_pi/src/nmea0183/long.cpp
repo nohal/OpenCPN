@@ -51,14 +51,14 @@ LONGITUDE::~LONGITUDE()
    Empty();
 }
 
-void LONGITUDE::Empty( void )
+void LONGITUDE::Empty()
 {
 
    Longitude = 0.0;
    Easting   = EW_Unknown;
 }
 
-bool LONGITUDE::IsDataValid( void )
+bool LONGITUDE::IsDataValid()
 {
    if ( Easting != East && Easting != West )
    {

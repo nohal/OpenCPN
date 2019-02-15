@@ -55,7 +55,7 @@ GGA::~GGA()
    Empty();
 }
 
-void GGA::Empty( void )
+void GGA::Empty()
 {
 //   ASSERT_VALID( this );
 

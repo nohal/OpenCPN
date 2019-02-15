@@ -40,7 +40,7 @@ public:
     
     static RoutePropDlgImpl* getInstance( wxWindow* parent );
     void SetRouteAndUpdate( Route *pR, bool only_points = FALSE );
-    Route *GetRoute(void) { return m_pRoute; }
+    Route *GetRoute() { return m_pRoute; }
     void SetEnroutePoint( RoutePoint* rp ) { return; } //TODO
     void UpdatePoints();
     void SetColorScheme( ColorScheme cs );

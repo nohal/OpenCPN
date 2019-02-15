@@ -104,12 +104,12 @@ public:
 class ChartSymbols
 {
 public:
-	ChartSymbols(void);
-	~ChartSymbols(void);
+	ChartSymbols();
+	~ChartSymbols();
 	bool LoadConfigFile(s52plib* plibArg, const wxString & path);
 
-	static void InitializeGlobals( void );
-	static void DeleteGlobals( void );
+	static void InitializeGlobals();
+	static void DeleteGlobals();
 	static int LoadRasterFileForColorTable( int tableNo, bool flush=false );
 	static wxArrayPtrVoid * GetColorTables();
 	static int FindColorTable(const wxString & tableName);

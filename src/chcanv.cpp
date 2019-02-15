@@ -113,15 +113,15 @@
 
 #ifdef __MSVC__
 #define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
+#include <cstdlib>
 #include <crtdbg.h>
 #define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__ )
 #define new DEBUG_NEW
 #endif
 
 #ifndef __WXMSW__
-#include <signal.h>
-#include <setjmp.h>
+#include <csignal>
+#include <csetjmp>
 
 
 extern struct sigaction sa_all;
@@ -1219,7 +1219,7 @@ extern bool     g_bPreserveScaleOnX;
 extern ChartDummy *pDummyChart;
 extern int      g_sticky_chart;
 
-void ChartCanvas::canvasRefreshGroupIndex( void )
+void ChartCanvas::canvasRefreshGroupIndex()
 {
     SetGroupIndex(m_groupIndex);
 }
@@ -1434,7 +1434,7 @@ void ChartCanvas::canvasChartsRefresh( int dbi_hint )
 }
 
 
-bool ChartCanvas::DoCanvasUpdate( void )
+bool ChartCanvas::DoCanvasUpdate()
 {
     
     double tLat, tLon;           // Chart Stack location
@@ -1935,7 +1935,7 @@ double ChartCanvas::GetBestVPScale( ChartBase *pchart )
         return 1.0;
 }
 
-void ChartCanvas::SetupCanvasQuiltMode( void )
+void ChartCanvas::SetupCanvasQuiltMode()
 {
     
     if( GetQuiltMode() )                               // going to quilt mode
@@ -2406,7 +2406,7 @@ void ChartCanvas::UnlockQuilt()
     m_pQuilt->UnlockQuilt();
 }
 
-std::vector<int>  ChartCanvas::GetQuiltIndexArray( void )
+std::vector<int>  ChartCanvas::GetQuiltIndexArray()
 {
     return m_pQuilt->GetQuiltIndexArray();;
 }
@@ -2417,17 +2417,17 @@ void ChartCanvas::SetQuiltMode( bool b_quilt )
     VPoint.b_FullScreenQuilt = g_bFullScreenQuilt;
 }
 
-bool ChartCanvas::GetQuiltMode( void )
+bool ChartCanvas::GetQuiltMode()
 {
     return VPoint.b_quilt;
 }
 
-int ChartCanvas::GetQuiltReferenceChartIndex(void)
+int ChartCanvas::GetQuiltReferenceChartIndex()
 {
     return m_pQuilt->GetRefChartdbIndex();
 }
 
-void ChartCanvas::InvalidateAllQuiltPatchs( void )
+void ChartCanvas::InvalidateAllQuiltPatchs()
 {
     m_pQuilt->InvalidateAllQuiltPatchs();
 }
@@ -2462,7 +2462,7 @@ std::vector<int>  ChartCanvas::GetQuiltCandidatedbIndexArray( bool flag1, bool f
     return m_pQuilt->GetCandidatedbIndexArray( flag1, flag2 );
 }
 
-int ChartCanvas::GetQuiltRefChartdbIndex( void )
+int ChartCanvas::GetQuiltRefChartdbIndex()
 {
     return m_pQuilt->GetRefChartdbIndex();
 }
@@ -2477,7 +2477,7 @@ std::vector<int>  ChartCanvas::GetQuiltEclipsedStackdbIndexArray()
     return m_pQuilt->GetEclipsedStackIndexArray();
 }
 
-void ChartCanvas::InvalidateQuilt( void )
+void ChartCanvas::InvalidateQuilt()
 {
     return m_pQuilt->Invalidate();
 }
@@ -3252,7 +3252,7 @@ void ChartCanvas::OnKeyUp( wxKeyEvent &event )
     event.Skip();
 }
 
-void ChartCanvas::ToggleChartOutlines( void )
+void ChartCanvas::ToggleChartOutlines()
 {
     m_bShowOutlines = !m_bShowOutlines;
     
@@ -3303,7 +3303,7 @@ void ChartCanvas::ToggleCourseUp( )
     gFrame->DoChartUpdate();
 }
 
-bool ChartCanvas::DoCanvasCOGSet( void )
+bool ChartCanvas::DoCanvasCOGSet()
 {
     if( !m_bCourseUp )
         return false;
@@ -4506,7 +4506,7 @@ void ChartCanvas::DoTiltCanvas( double tilt )
     Refresh( false );
 }
 
-void ChartCanvas::TogglebFollow( void )
+void ChartCanvas::TogglebFollow()
 {
     if( !m_bFollow )
         SetbFollow();
@@ -4514,7 +4514,7 @@ void ChartCanvas::TogglebFollow( void )
         ClearbFollow();
 }
 
-void ChartCanvas::ClearbFollow( void )
+void ChartCanvas::ClearbFollow()
 {
     m_bFollow = false;      // update the follow flag
     
@@ -4538,7 +4538,7 @@ void ChartCanvas::ClearbFollow( void )
     
 }
 
-void ChartCanvas::SetbFollow( void )
+void ChartCanvas::SetbFollow()
 {
     JumpToPosition(gLat, gLon, GetVPScale());
     m_bFollow = true;
@@ -4565,7 +4565,7 @@ void ChartCanvas::SetbFollow( void )
     parent_frame->SetChartUpdatePeriod( );
 }
 
-void ChartCanvas::UpdateFollowButtonState( void )
+void ChartCanvas::UpdateFollowButtonState()
 {
    if(m_muiBar){
         if(!m_bFollow)
@@ -4748,7 +4748,7 @@ double ChartCanvas::GetBestStartScale(int dbi_hint, const ViewPort &vp)
 
 //      Verify and adjust the current reference chart,
 //      so that it will not lead to excessive overzoom or underzoom onscreen
-int ChartCanvas::AdjustQuiltRefChart( void )
+int ChartCanvas::AdjustQuiltRefChart()
 {
     int ret = -1;
     if(m_pQuilt){
@@ -4817,7 +4817,7 @@ int ChartCanvas::AdjustQuiltRefChart( void )
 }
 
 
-void ChartCanvas::UpdateCanvasOnGroupChange( void )
+void ChartCanvas::UpdateCanvasOnGroupChange()
 {
     delete m_pCurrentStack;
     m_pCurrentStack = NULL;
@@ -6567,7 +6567,7 @@ void ChartCanvas::ShowChartInfoWindow( int x, int dbIndex )
     }
 }
 
-void ChartCanvas::HideChartInfoWindow( void )
+void ChartCanvas::HideChartInfoWindow()
 {
     if( m_pCIWin /*&& m_pCIWin->IsShown()*/ ){
         m_pCIWin->Hide();
@@ -9119,7 +9119,7 @@ void ChartCanvas::PopupMenuHandler( wxCommandEvent& event )
     
 }
 
-void ChartCanvas::StartRoute( void )
+void ChartCanvas::StartRoute()
 {
     // Do not allow more than one canvas to create a route at one time.
     if(g_brouteCreating)
@@ -9143,7 +9143,7 @@ void ChartCanvas::StartRoute( void )
     
 }
 
-void ChartCanvas::FinishRoute( void )
+void ChartCanvas::FinishRoute()
 {
     m_routeState = 0;
     m_prev_pMousePoint = NULL;
@@ -9213,7 +9213,7 @@ void ChartCanvas::ShowGlobalToolbar()
 
         
         
-void ChartCanvas::ShowAISTargetList( void )
+void ChartCanvas::ShowAISTargetList()
 {
     if( NULL == g_pAISTargetList ) {         // There is one global instance of the Dialog
         g_pAISTargetList = new AISTargetListDialog( parent_frame, g_pauimgr, g_pAIS );
@@ -11012,7 +11012,7 @@ void ChartCanvas::DrawAllWaypointsInBBox( ocpnDC& dc, LLBBox& BltBBox )
     }
 }
 
-void ChartCanvas::DrawBlinkObjects( void )
+void ChartCanvas::DrawBlinkObjects()
 {
     //  All RoutePoints
     wxRect update_rect;
@@ -11678,7 +11678,7 @@ void ShowAISTargetQueryDialog( wxWindow *win, int mmsi )
     g_pais_query_dialog_active->Show();
 }
 
-void ChartCanvas::ToggleCanvasQuiltMode( void )
+void ChartCanvas::ToggleCanvasQuiltMode()
 {
         bool cur_mode = GetQuiltMode();
         
@@ -11903,13 +11903,13 @@ long ChartCanvas::GetToolbarOrientation()
         return 0;
 }
 
-void ChartCanvas::SubmergeToolbar( void )
+void ChartCanvas::SubmergeToolbar()
 {
     if( m_toolBar )
         m_toolBar->Submerge();
 }
 
-void ChartCanvas::SurfaceToolbar( void )
+void ChartCanvas::SurfaceToolbar()
 {
     if( m_toolBar )
         m_toolBar->Surface();
@@ -12101,7 +12101,7 @@ void ChartCanvas::SetAISCanvasDisplayStyle(int StyleIndx)
 
 }
 
-void ChartCanvas::TouchAISToolActive( void )
+void ChartCanvas::TouchAISToolActive()
 {
     if(!m_toolBar)
         return;
@@ -12128,7 +12128,7 @@ void ChartCanvas::TouchAISToolActive( void )
     }
 }
 
-void ChartCanvas::UpdateAISTBTool( void )
+void ChartCanvas::UpdateAISTBTool()
 {
     if(!g_pAIS) return;
     if(!m_toolBar) return;
@@ -12549,7 +12549,7 @@ void ChartCanvas::HandlePianoRollover( int selected_index, int selected_dbIndex 
 }
 
 
-void ChartCanvas::UpdateCanvasControlBar( void )
+void ChartCanvas::UpdateCanvasControlBar()
 {
     
     if( !GetpCurrentStack() ) return;
@@ -12661,7 +12661,7 @@ void ChartCanvas::UpdateCanvasControlBar( void )
     
 }
 
-void ChartCanvas::FormatPianoKeys( void )
+void ChartCanvas::FormatPianoKeys()
 {
     m_Piano->FormatKeys();
     
@@ -12982,7 +12982,7 @@ WORD *g_pSavedGammaMap;
 
 #endif
 
-int InitScreenBrightness( void )
+int InitScreenBrightness()
 {
 #ifdef __WIN32__
     if( gFrame->GetPrimaryCanvas()->GetglCanvas() && g_bopengl ) {
@@ -13079,7 +13079,7 @@ int InitScreenBrightness( void )
 #endif
 }
 
-int RestoreScreenBrightness( void )
+int RestoreScreenBrightness()
 {
 #ifdef __WIN32__
 

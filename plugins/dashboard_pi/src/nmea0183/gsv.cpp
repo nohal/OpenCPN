@@ -53,7 +53,7 @@ GSV::~GSV()
    Empty();
 }
 
-void GSV::Empty( void )
+void GSV::Empty()
 {
    NumberOfMessages = 0;
    MessageNumber = 0;

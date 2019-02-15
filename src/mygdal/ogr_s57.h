@@ -92,7 +92,7 @@ class OGRS57Layer : public OGRLayer
 /************************************************************************/
 /*                          OGRS57DataSource                            */
 /************************************************************************/
-typedef bool (*CallBackFunction)(void);
+typedef bool (*CallBackFunction)();
 
 class OGRS57DataSource
 {

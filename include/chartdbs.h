@@ -227,11 +227,11 @@ struct ChartTableEntry
 
     bool GetbValid(){ return bValid;}
     void SetEntryOffset(int n) { EntryOffset = n;}
-    const wxString *GetpFileName(void) const { return m_pfilename; }
-    wxString *GetpsFullPath(void){ return m_psFullPath; }
+    const wxString *GetpFileName() const { return m_pfilename; }
+    wxString *GetpsFullPath(){ return m_psFullPath; }
     
-    const std::vector<int> &GetGroupArray(void) const { return m_GroupArray; }
-    void ClearGroupArray(void) { m_GroupArray.clear(); }
+    const std::vector<int> &GetGroupArray() const { return m_GroupArray; }
+    void ClearGroupArray() { m_GroupArray.clear(); }
     void AddIntToGroupArray( int val ) { m_GroupArray.push_back( val ); }
     void SetAvailable(bool avail ){ m_bavail = avail;}
 
@@ -331,7 +331,7 @@ public:
     bool CompareChartDirArray( ArrayOfCDI& test_array );
     wxString GetMagicNumberCached(wxString dir);
     
-    void UpdateChartClassDescriptorArray(void);
+    void UpdateChartClassDescriptorArray();
 
     int GetChartTableEntries() const { return active_chartTable.size(); }
     const ChartTableEntry &GetChartTableEntry(int index) const;

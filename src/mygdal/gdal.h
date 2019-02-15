@@ -291,7 +291,7 @@ typedef struct {
 #define GDAL_DCAP_CREATE     "DCAP_CREATE"
 #define GDAL_DCAP_CREATECOPY "DCAP_CREATECOPY"
 
-void CPL_DLL GDALAllRegister( void );
+void CPL_DLL GDALAllRegister();
 
 GDALDatasetH CPL_DLL GDALCreate( GDALDriverH hDriver,
                                  const char *, int, int, int, GDALDataType,
@@ -308,7 +308,7 @@ int CPL_DLL         GDALGetDriverCount();
 GDALDriverH CPL_DLL GDALGetDriver( int );
 int         CPL_DLL GDALRegisterDriver( GDALDriverH );
 void        CPL_DLL GDALDeregisterDriver( GDALDriverH );
-void        CPL_DLL GDALDestroyDriverManager( void );
+void        CPL_DLL GDALDestroyDriverManager();
 CPLErr      CPL_DLL GDALDeleteDataset( GDALDriverH, const char * );
 
 /* The following are deprecated */

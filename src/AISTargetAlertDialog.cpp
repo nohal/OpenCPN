@@ -72,7 +72,7 @@ OCPN_AlertDialog::~OCPN_AlertDialog()
 {
 }
 
-void OCPN_AlertDialog::Init(void)
+void OCPN_AlertDialog::Init()
 {
     m_pparent = NULL;
 }
@@ -272,7 +272,7 @@ void AISTargetAlertDialog::UpdateText()
         SetTransparent( 192 );
 }
 
-void AISTargetAlertDialog::RecalculateSize( void )
+void AISTargetAlertDialog::RecalculateSize()
 {
     //  Count the lines in the currently displayed text string
     unsigned int i=0;
@@ -322,7 +322,7 @@ void AISTargetAlertDialog::RecalculateSize( void )
     
 }
 
-void AISTargetAlertDialog::SetColorScheme( void )
+void AISTargetAlertDialog::SetColorScheme()
 {
     DimeControl( this );
     wxColor bg = GetBackgroundColour();

@@ -55,7 +55,7 @@ public:
       ~Route();
 
       virtual void Draw(ocpnDC& dc, ChartCanvas *canvas, const LLBBox &box);
-      virtual int GetnPoints(void) { return pRoutePointList->GetCount(); }
+      virtual int GetnPoints() { return pRoutePointList->GetCount(); }
       
       void AddPoint(RoutePoint *pNewPoint,
                     bool b_rename_in_sequence = true,
@@ -85,14 +85,14 @@ public:
       LLBBox &GetBBox();
       void SetHiLite( int width ) {m_hiliteWidth = width; }
       void Reverse(bool bRenamePoints = false);
-      void RebuildGUIDList(void);
+      void RebuildGUIDList();
       void RenameRoutePoints();
       void ReloadRoutePointIcons();
-      wxString GetNewMarkSequenced(void);
+      wxString GetNewMarkSequenced();
       void AssembleRoute();
       bool IsEqualTo(Route *ptargetroute);
       void CloneRoute(Route *psourceroute, int start_nPoint, int end_nPoint, const wxString & suffix, const bool duplicate_first_point = false);
-      void ClearHighlights(void);
+      void ClearHighlights();
       void RenderSegment(ocpnDC& dc, int xa, int ya, int xb, int yb, ViewPort &vp, bool bdraw_arrow, int hilite_width = 0);
       void RenderSegmentArrowsGL( int xa, int ya, int xb, int yb, ViewPort &vp);
 
@@ -105,7 +105,7 @@ public:
 
       int SendToGPS(const wxString & com_name, bool bsend_waypoints, wxGauge *pProgress);
 
-      double GetRouteArrivalRadius(void){ return m_ArrivalRadius;}
+      double GetRouteArrivalRadius(){ return m_ArrivalRadius;}
       void SetRouteArrivalRadius(double radius){m_ArrivalRadius = radius;}
       void SetDepartureDate(const wxDateTime &dt) { if( dt.IsValid() ) m_PlannedDeparture = dt; }
     

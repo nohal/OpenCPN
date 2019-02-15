@@ -17,7 +17,7 @@
 #include <SQLiteCpp/Exception.h>
 
 #include <fstream>
-#include <string.h>
+#include <cstring>
 
 #ifndef SQLITE_DETERMINISTIC
 #define SQLITE_DETERMINISTIC 0x800
@@ -213,8 +213,8 @@ void Database::loadExtension(const char* apExtensionName, const char *apEntryPoi
 {
 #ifdef SQLITE_OMIT_LOAD_EXTENSION
     // Unused
-    (void)apExtensionName;
-    (void)apEntryPointName;
+    ()apExtensionName;
+    ()apEntryPointName;
 
     throw std::runtime_error("sqlite extensions are disabled");
 #else

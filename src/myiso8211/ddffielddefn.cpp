@@ -102,7 +102,7 @@
 
 #include "iso8211.h"
 #include "mygdal/cpl_string.h"
-#include <ctype.h>
+#include <cctype>
 
 /************************************************************************/
 /*                            DDFFieldDefn()                            */

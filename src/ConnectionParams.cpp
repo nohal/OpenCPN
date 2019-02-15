@@ -395,7 +395,7 @@ void ConnectionParamsPanel::OnEnableCBClick(wxCommandEvent &event){
     }
 }
 
-void ConnectionParamsPanel::CreateControls( void ){
+void ConnectionParamsPanel::CreateControls(){
     int metric = GetCharHeight();
 
     wxFont *dFont = GetOCPNScaledFont_PlugIn(_("Dialog"));

@@ -302,7 +302,7 @@ jas_image_t *jas_image_create(int numcmpts,
   jas_image_cmptparm_t *cmptparms, jas_clrspc_t clrspc);
 
 /* Create an "empty" image. */
-jas_image_t *jas_image_create0(void);
+jas_image_t *jas_image_create0();
 
 /* Clone an image. */
 jas_image_t *jas_image_copy(jas_image_t *image);
@@ -455,7 +455,7 @@ int jas_image_getcmptbytype(jas_image_t *image, int ctype);
 \******************************************************************************/
 
 /* Clear the table of image formats. */
-void jas_image_clearfmts(void);
+void jas_image_clearfmts();
 
 /* Add entry to table of image formats. */
 int jas_image_addfmt(int id, char *name, char *ext, char *desc,

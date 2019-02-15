@@ -76,7 +76,7 @@
 #include <jasper/jas_malloc.h>
 #include <jasper/jas_math.h>
 
-static jas_cmprof_t *jas_cmprof_create(void);
+static jas_cmprof_t *jas_cmprof_create();
 static void jas_cmshapmatlut_cleanup(jas_cmshapmatlut_t *);
 static jas_cmreal_t jas_cmshapmatlut_lookup(jas_cmshapmatlut_t *lut, jas_cmreal_t x);
 
@@ -100,7 +100,7 @@ static int triclr(jas_iccprof_t *prof, int op, jas_cmpxformseq_t **retpxformseq)
 
 static void jas_cmpxformseq_destroy(jas_cmpxformseq_t *pxformseq);
 static int jas_cmpxformseq_delete(jas_cmpxformseq_t *pxformseq, int i);
-static jas_cmpxformseq_t *jas_cmpxformseq_create(void);
+static jas_cmpxformseq_t *jas_cmpxformseq_create();
 static jas_cmpxformseq_t *jas_cmpxformseq_copy(jas_cmpxformseq_t *pxformseq);
 static int jas_cmshapmat_invmat(jas_cmreal_t out[3][4], jas_cmreal_t in[3][4]);
 static int jas_cmpxformseq_insertpxform(jas_cmpxformseq_t *pxformseq,
@@ -129,13 +129,13 @@ static int jas_cmpxformseq_insertpxform(jas_cmpxformseq_t *pxformseq,
 #define gampxformseq(prof)	((prof)->pxformseqs[SEQGAM])
 
 static int icctoclrspc(int iccclrspc, int refflag);
-static jas_cmpxform_t *jas_cmpxform_create0(void);
-static jas_cmpxform_t *jas_cmpxform_createshapmat(void);
+static jas_cmpxform_t *jas_cmpxform_create0();
+static jas_cmpxform_t *jas_cmpxform_createshapmat();
 static void jas_cmshapmatlut_init(jas_cmshapmatlut_t *lut);
 static int jas_cmshapmatlut_set(jas_cmshapmatlut_t *lut, jas_icccurv_t *curv);
 
 static jas_cmpxformops_t shapmat_ops = {jas_cmshapmat_destroy, jas_cmshapmat_apply, 0};
-static jas_cmprof_t *jas_cmprof_createsycc(void);
+static jas_cmprof_t *jas_cmprof_createsycc();
 
 /******************************************************************************\
 * Color profile class.

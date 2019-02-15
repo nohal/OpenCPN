@@ -33,10 +33,10 @@
 
 #include <vector>
 #include <utility>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <math.h>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
+#include <cmath>
 
 #include "georef.h"
 #include "cutil.h"
@@ -1870,7 +1870,7 @@ const char *lm_shortmsg[] = {
 
 #define BUG 0
 #if BUG
-#include <stdio.h>
+#include <cstdio>
 #endif
 
 // the following values seem good for an x86:

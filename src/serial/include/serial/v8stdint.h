@@ -33,8 +33,8 @@
 #ifndef V8STDINT_H_
 #define V8STDINT_H_
 
-#include <stddef.h>
-#include <stdio.h>
+#include <cstddef>
+#include <cstdio>
 
 #if defined(_WIN32) && !defined(__MINGW32__)
 
@@ -50,7 +50,7 @@ typedef unsigned __int64 uint64_t;
 
 #else
 
-#include <stdint.h>
+#include <cstdint>
 
 #endif
 

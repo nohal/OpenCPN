@@ -316,7 +316,7 @@ jas_stream_t *jas_stream_fdopen(int fd, const char *mode);
 jas_stream_t *jas_stream_freopen(const char *path, const char *mode, FILE *fp);
 
 /* Open a temporary file as a stream. */
-jas_stream_t *jas_stream_tmpfile(void);
+jas_stream_t *jas_stream_tmpfile();
 
 /* Close a stream. */
 int jas_stream_close(jas_stream_t *stream);

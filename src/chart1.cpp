@@ -49,19 +49,19 @@
 
 #include "dychart.h"
 
-#include <limits.h>
+#include <climits>
 #include <algorithm>
 
 #ifdef __WXMSW__
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
+#include <cstdlib>
+#include <cmath>
+#include <ctime>
 #include <psapi.h>
 #endif
 
 #ifndef __WXMSW__
-#include <signal.h>
-#include <setjmp.h>
+#include <csignal>
+#include <csetjmp>
 #endif
 
 #ifdef OCPN_HAVE_X11
@@ -547,8 +547,8 @@ typedef DWORD (WINAPI *GetSysColor_t)(DWORD);
 SetSysColors_t            pSetSysColors;
 GetSysColor_t             pGetSysColor;
 
-void SaveSystemColors(void);
-void RestoreSystemColors(void);
+void SaveSystemColors();
+void RestoreSystemColors();
 
 DWORD                     color_3dface;
 DWORD                     color_3dhilite;
@@ -795,7 +795,7 @@ DEFINE_GUID( GARMIN_DETECT_GUID, 0x2c9c45c2L, 0x8e7d, 0x4c08, 0xa1, 0x2d, 0x81, 
 
 #ifdef __MSVC__
 #define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
+#include <cstdlib>
 #include <crtdbg.h>
 #define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__ )
 #define new DEBUG_NEW
@@ -809,11 +809,11 @@ static const long long lNaN = 0xfff8000000000000;
 //    Some static helpers
 void appendOSDirSlash( wxString* pString );
 
-static void InitializeUserColors( void );
-static void DeInitializeUserColors( void );
+static void InitializeUserColors();
+static void DeInitializeUserColors();
 static void SetSystemColors( ColorScheme cs );
 
-extern "C" bool CheckSerialAccess( void );
+extern "C" bool CheckSerialAccess();
 
 // Refresh the Piano Bar
 static void refresh_Piano()
@@ -1317,7 +1317,7 @@ static char *get_X11_property (Display *disp, Window win,
 #endif
 
 // Determine if a transparent toolbar is possible under linux with opengl
-static bool isTransparentToolbarInOpenGLOK(void) {
+static bool isTransparentToolbarInOpenGLOK() {
 #ifdef __WXOSX__
     return true;
 #else
@@ -2671,7 +2671,7 @@ void MyApp::OnFatalException () {
 }
 #endif
 
-void MyApp::TrackOff( void )
+void MyApp::TrackOff()
 {
     if( gFrame ) gFrame->TrackOff();
 }
@@ -3116,7 +3116,7 @@ void MyFrame::SetAndApplyColorScheme( ColorScheme cs )
 #endif
 }
 
-void MyFrame::ApplyGlobalColorSchemetoStatusBar( void )
+void MyFrame::ApplyGlobalColorSchemetoStatusBar()
 {
     if( m_pStatusBar != NULL ) {
         m_pStatusBar->SetBackgroundColour(GetGlobalColor(_T("UIBDR")));    //UINFF
@@ -3954,7 +3954,7 @@ void MyFrame::OnMove( wxMoveEvent& event )
     g_nframewin_posy = GetPosition().y;
 }
 
-void MyFrame::ProcessCanvasResize( void )
+void MyFrame::ProcessCanvasResize()
 {
     UpdateGPSCompassStatusBoxes( true );
 
@@ -4119,7 +4119,7 @@ void MyFrame::OnSize( wxSizeEvent& event )
     ODoSetSize();
 }
 
-void MyFrame::ODoSetSize( void )
+void MyFrame::ODoSetSize()
 {
     int x, y;
     GetClientSize( &x, &y );
@@ -4276,7 +4276,7 @@ void MyFrame::ODoSetSize( void )
 
 }
 
-void MyFrame::PositionConsole( void )
+void MyFrame::PositionConsole()
 {
     if( NULL == GetPrimaryCanvas() ) return;
     //    Reposition console based on its size and chartcanvas size
@@ -4347,7 +4347,7 @@ void MyFrame::DestroyPersistentDialogs()
 }
 
 
-void MyFrame::RefreshGroupIndices( void )
+void MyFrame::RefreshGroupIndices()
 {
     // ..For each canvas...
     for(unsigned int i=0 ; i < g_canvasArray.GetCount() ; i++){
@@ -4955,7 +4955,7 @@ void MyFrame::ToggleFullScreen()
     TriggerRecaptureTimer();
 }
 
-void MyFrame::ActivateMOB( void )
+void MyFrame::ActivateMOB()
 {
     //    The MOB point
     wxDateTime mob_time = wxDateTime::Now();
@@ -5025,7 +5025,7 @@ void MyFrame::ActivateMOB( void )
     wxLogMessage( mob_message );
 
 }
-void MyFrame::TrackOn( void )
+void MyFrame::TrackOn()
 {
     g_bTrackActive = true;
     g_pActiveTrack = new ActiveTrack();
@@ -5122,7 +5122,7 @@ Track *MyFrame::TrackOff( bool do_add_point )
     return return_val;
 }
 
-bool MyFrame::ShouldRestartTrack( void )
+bool MyFrame::ShouldRestartTrack()
 {
     if( !g_pActiveTrack || !g_bTrackDaily)
         return false;
@@ -5163,7 +5163,7 @@ bool MyFrame::ShouldRestartTrack( void )
     return false;
 }
 
-void MyFrame::TrackDailyRestart( void )
+void MyFrame::TrackDailyRestart()
 {
     if( !g_pActiveTrack )
         return;
@@ -5261,7 +5261,7 @@ bool MyFrame::ToggleLights( ChartCanvas *cc )
 }
 
 #if 0
-void MyFrame::ToggleRocks( void )
+void MyFrame::ToggleRocks()
 {
 #ifdef USE_S57
     if( ps52plib ) {
@@ -5396,7 +5396,7 @@ void MyFrame::ToggleChartOutlines( ChartCanvas *cc )
     SetMenubarItemState( ID_MENU_CHART_OUTLINES, cc->GetShowOutlines() );
 }
 
-void MyFrame::ToggleTestPause( void )
+void MyFrame::ToggleTestPause()
 {
     g_bPauseTest = !g_bPauseTest;
 }
@@ -5480,7 +5480,7 @@ wxString _menuText( wxString name, wxString shortcut ) {
     return menutext;
 }
 
-void MyFrame::BuildMenuBar( void )
+void MyFrame::BuildMenuBar()
 {
     /*
      * Menu Bar - add or remove it if necessary, and update the state of the menu items
@@ -5761,7 +5761,7 @@ void MyFrame::InvalidateAllCanvasUndo()
     
     
 
-void MyFrame::SubmergeAllCanvasToolbars( void )
+void MyFrame::SubmergeAllCanvasToolbars()
 {
     // .. for each canvas...
     for(unsigned int i=0 ; i < g_canvasArray.GetCount() ; i++){
@@ -5771,7 +5771,7 @@ void MyFrame::SubmergeAllCanvasToolbars( void )
     }
 }
 
-void MyFrame::SurfaceAllCanvasToolbars( void )
+void MyFrame::SurfaceAllCanvasToolbars()
 {
     if(g_bshowToolbar){
         // .. for each canvas...
@@ -7532,7 +7532,7 @@ bool MyFrame::SendJSON_WMM_Var_Request(double lat, double lon, wxDateTime date)
         return false;
 }    
     
-void MyFrame::TouchAISActive( void )
+void MyFrame::TouchAISActive()
 {
     // .. for each canvas...
     for(unsigned int i=0 ; i < g_canvasArray.GetCount() ; i++){
@@ -7542,7 +7542,7 @@ void MyFrame::TouchAISActive( void )
     }
 }
 
-void MyFrame::UpdateAISTool( void )
+void MyFrame::UpdateAISTool()
 {
     if(!g_pAIS) return;
 
@@ -7593,7 +7593,7 @@ void MyFrame::OnFrameCOGTimer( wxTimerEvent& event )
     FrameCOGTimer.Start( period_ms, wxTIMER_CONTINUOUS );
 }
 
-void MyFrame::DoCOGSet( void )
+void MyFrame::DoCOGSet()
 {
     // ..For each canvas...
     bool b_rotate = false;
@@ -7669,7 +7669,7 @@ void MyFrame::UpdateGPSCompassStatusBoxes( bool b_force_new )
 
 //    Application memory footprint management
 
-int MyFrame::GetApplicationMemoryUse( void )
+int MyFrame::GetApplicationMemoryUse()
 {
     int memsize = -1;
 #ifdef __LINUX__
@@ -7920,7 +7920,7 @@ void MyFrame::selectChartDisplay( int type, int family)
 //      Create a chartstack based on current lat/lon.
 //      Return true if a Refresh(false) was called within.
 //----------------------------------------------------------------------------------
-bool MyFrame::DoChartUpdate( void )
+bool MyFrame::DoChartUpdate()
 {
     bool return_val = false;
     
@@ -7952,7 +7952,7 @@ void MyFrame::MouseEvent( wxMouseEvent& event )
 #include <mach/message.h>  // for mach_msg_type_number_t
 #include <mach/kern_return.h>  // for kern_return_t
 #include <mach/task_info.h>
-#include <stdio.h>
+#include <cstdio>
 #include <malloc/malloc.h>
 #endif
 
@@ -8166,7 +8166,7 @@ bool GetMemoryStatus( int *mem_total, int *mem_used )
 
 }
 
-void MyFrame::DoPrint( void )
+void MyFrame::DoPrint()
 {
     if( NULL == g_printData ) {
         g_printData = new wxPrintData;
@@ -9111,7 +9111,7 @@ void MyFrame::PostProcessNNEA( bool pos_valid, bool cog_sog_valid, const wxStrin
 #endif            //ocpnUPDATE_SYSTEM_TIME
 }
 
-void MyFrame::FilterCogSog( void )
+void MyFrame::FilterCogSog()
 {            
     if( g_bfilter_cogsog && !g_own_ship_sog_cog_calc ) {
         //    Simple averaging filter for COG
@@ -9175,12 +9175,12 @@ void MyFrame::FilterCogSog( void )
     }
 }
 
-void MyFrame::StopSockets( void )
+void MyFrame::StopSockets()
 {
 //TODO: Can be removed?
 }
 
-void MyFrame::ResumeSockets( void )
+void MyFrame::ResumeSockets()
 {
 //TODO: Can be removed?
 }
@@ -10282,7 +10282,7 @@ void MyPrintout::GenerateGLbmp( )
 /*
  *     Enumerate all the serial ports on the system
  *
- *     wxArrayString *EnumerateSerialPorts(void)
+ *     wxArrayString *EnumerateSerialPorts()
 
  *     Very system specific, unavoidably.
  */
@@ -10385,7 +10385,7 @@ DEFINE_GUID(GUID_CLASS_COMPORT, 0x86e0d1e0L, 0x8089, 0x11d0, 0x9c, 0xe4, 0x08, 0
 # endif
 #endif
 
-wxArrayString *EnumerateSerialPorts( void )
+wxArrayString *EnumerateSerialPorts()
 {
     wxArrayString *preturn = new wxArrayString;
 #ifdef ocpnUSE_NEWSERIAL
@@ -10829,7 +10829,7 @@ wxArrayString *EnumerateSerialPorts( void )
 }
 
 
-bool CheckSerialAccess( void )
+bool CheckSerialAccess()
 {
     bool bret = true;
 #if defined(__UNIX__) && !defined(__OCPN__ANDROID__)
@@ -11154,7 +11154,7 @@ int get_static_line( char *d, const char **p, int index, int n )
     return strlen( d );
 }
 
-static void InitializeUserColors( void )
+static void InitializeUserColors()
 {
     const char **p = usercolors;
     char buf[81];
@@ -11244,7 +11244,7 @@ static void InitializeUserColors( void )
     pcurrent_user_color_hash = (wxColorHashMap *) UserColourHashTableArray->Item( 0 );
 }
 
-static void DeInitializeUserColors( void )
+static void DeInitializeUserColors()
 {
     unsigned int i;
     for( i = 0; i < UserColorTableArray->GetCount(); i++ ) {
@@ -11517,7 +11517,7 @@ public:
                     const wxString& caption = _T("Message box"), long style = wxOK | wxCANCEL,
                     int timeout_sec = -1, const wxPoint& pos = wxDefaultPosition );
     ~TimedMessageBox();
-    int GetRetVal(void){ return ret_val; }
+    int GetRetVal(){ return ret_val; }
     void OnTimer(wxTimerEvent &evt);
 
     wxTimer     m_timer;
@@ -12442,7 +12442,7 @@ OCPN_TimedHTMLMessageDialog::OCPN_TimedHTMLMessageDialog( wxWindow *parent,
        
 }
 
-void OCPN_TimedHTMLMessageDialog::RecalculateSize( void )
+void OCPN_TimedHTMLMessageDialog::RecalculateSize()
 {
     wxSize esize;
     esize.x = GetCharWidth() * 60;

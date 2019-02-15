@@ -1,7 +1,7 @@
 #if defined(__APPLE__)
 
 #include <sys/param.h>
-#include <stdint.h>
+#include <cstdint>
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
@@ -208,7 +208,7 @@ string rtrim(const string& str)
 }
 
 vector<PortInfo>
-serial::list_ports(void)
+serial::list_ports()
 {
     vector<PortInfo> devices_found;
     CFMutableDictionaryRef classes_to_match;

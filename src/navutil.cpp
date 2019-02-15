@@ -39,9 +39,9 @@
 
 #include "dychart.h"
 
-#include <stdlib.h>
-//#include <math.h>
-#include <time.h>
+#include <cstdlib>
+//#include <cmath>
+#include <ctime>
 #include <locale>
 #include <list>
 
@@ -1902,7 +1902,7 @@ void MyConfig::CreateConfigGroups( ChartGroupArray *pGroupArray )
     }
 }
 
-void MyConfig::DestroyConfigGroups( void )
+void MyConfig::DestroyConfigGroups()
 {
     DeleteGroup( _T ( "/Groups" ) );                //zap
 }
@@ -2699,7 +2699,7 @@ void MyConfig::UpdateSettings()
     Flush();
 }
 
-void MyConfig::UpdateNavObj( void )
+void MyConfig::UpdateNavObj()
 {
 
 //   Create the NavObjectCollection, and save to specified file
@@ -3950,7 +3950,7 @@ void X11FontPicker::OnChangeFont ( wxCommandEvent& WXUNUSED ( event ) )
     DoFontChange();
 }
 
-void X11FontPicker::DoFontChange ( void )
+void X11FontPicker::DoFontChange ()
 {
     wxString facename = familyChoice->GetStringSelection();
     wxString pointsize = pointSizeChoice->GetStringSelection();
@@ -4661,7 +4661,7 @@ void AlphaBlending( ocpnDC &dc, int x, int y, int size_x, int size_y, float radi
 }
 
 // RFC4122 version 4 compliant random UUIDs generator.
-wxString GpxDocument::GetUUID(void)
+wxString GpxDocument::GetUUID()
 {
     wxString str;
     struct {

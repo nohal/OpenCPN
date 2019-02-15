@@ -14,7 +14,7 @@
 #ifdef wxsvgUSE_EXIF
 #include "ExifHandler.h"
 #endif
-#include <math.h>
+#include <cmath>
 #include <wx/log.h>
 #include <wx/progdlg.h>
 #include <wx/filename.h>

@@ -53,7 +53,7 @@ VHW::~VHW()
    Empty();
 }
 
-void VHW::Empty( void )
+void VHW::Empty()
 {
 //   ASSERT_VALID( this );
 

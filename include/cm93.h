@@ -242,8 +242,8 @@ class cm93_dictionary
             ~cm93_dictionary();
 
             bool LoadDictionary(const wxString & dictionary_dir);
-            bool IsOk(void){ return m_ok; }
-            wxString GetDictDir(void){ return m_dict_dir; }
+            bool IsOk(){ return m_ok; }
+            wxString GetDictDir(){ return m_dict_dir; }
 
             wxString GetClassName(int iclass);
             wxString GetAttrName(int iattr);
@@ -337,7 +337,7 @@ class cm93chart : public s57chart
             covr_set *GetCoverSet(){ return m_pcovr_set; }
             LLRegion GetValidRegion();
 
-            const wxString & GetLastFileName(void) const { return m_LastFileName; }
+            const wxString & GetLastFileName() const { return m_LastFileName; }
 
             std::vector<int> GetVPCellArray(const ViewPort &vpt);
 
@@ -351,7 +351,7 @@ class cm93chart : public s57chart
             OCPNRegion          m_render_region;
 
       private:
-            InitReturn CreateHeaderDataFromCM93Cell(void);
+            InitReturn CreateHeaderDataFromCM93Cell();
             int read_header_and_populate_cib(header_struct *ph, Cell_Info_Block *pCIB);
             Extended_Geometry *BuildGeom(Object *pobject, wxFileOutputStream *postream, int iobject);
 
@@ -365,14 +365,14 @@ class cm93chart : public s57chart
 
             int CreateObjChain(int cell_index, int subcell, double view_scale_ppm);
 
-            void Unload_CM93_Cell(void);
+            void Unload_CM93_Cell();
 
             //    cm93 point manipulation methods
             void Transform(cm93_point *s, double trans_x, double trans_y, double *lat, double *lon);
 
             int loadcell_in_sequence(int, char);
             int loadsubcell(int, wxChar);
-            void ProcessVectorEdges(void);
+            void ProcessVectorEdges();
 
             wxPoint2DDouble FindM_COVROffset(double lat, double lon);
             M_COVR_Desc *FindM_COVR_InWorkingSet(double lat, double lon);
@@ -422,12 +422,12 @@ class cm93compchart : public s57chart
 
             InitReturn Init( const wxString& name, ChartInitFlag flags );
 
-            void Activate(void);
-            void Deactivate(void);
+            void Activate();
+            void Deactivate();
 
             double GetNormalScaleMin(double canvas_scale_factor, bool b_allow_overzoom);
             double GetNormalScaleMax(double canvas_scale_factor, int canvas_width);
-            int GetNativeScale(void);
+            int GetNativeScale();
 
             wxString GetPubDate();
 
@@ -457,11 +457,11 @@ class cm93compchart : public s57chart
                                                       ViewPort *VPoint, int selection_mask = MASK_ALL);
             S57ObjectDesc *CreateObjDescription(const ObjRazRules *obj);
 
-            VE_Hash&  Get_ve_hash(void);
-            VC_Hash&  Get_vc_hash(void);
+            VE_Hash&  Get_ve_hash();
+            VC_Hash&  Get_vc_hash();
 
             void UpdateLUPs(s57chart *pOwner);
-            void ForceEdgePriorityEvaluate(void);
+            void ForceEdgePriorityEvaluate();
             ListOfS57Obj *GetAssociatedObjects(S57Obj *obj);
             cm93chart *GetCurrentSingleScaleChart(){ return m_pcm93chart_current; }
 
@@ -471,7 +471,7 @@ class cm93compchart : public s57chart
                     m_subcell_special_outline = subcell; }
 
             void SetSpecialCellIndexOffset(int cell_index, int object_id, int subcell, int xoff, int yoff);
-            void CloseandReopenCurrentSubchart(void);
+            void CloseandReopenCurrentSubchart();
 
             void InvalidateCache();
       private:
@@ -550,7 +550,7 @@ class CM93OffsetDialog: public wxDialog
             void OnCellSelected( wxListEvent &event );
             void OnOffSetSet( wxCommandEvent& event );
 
-            void UpdateOffsets(void);
+            void UpdateOffsets();
 
             wxSpinCtrl        *m_pSpinCtrlXoff;
             wxSpinCtrl        *m_pSpinCtrlYoff;

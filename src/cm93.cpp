@@ -57,7 +57,7 @@
 #include "DetailSlider.h"
 #include "chcanv.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #ifdef ocpnUSE_GL
 #include "glChartCanvas.h"
@@ -67,7 +67,7 @@ extern ocpnGLOptions g_GLOptions;
 
 #ifdef __MSVC__
 #define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
+#include <cstdlib>
 #include <crtdbg.h>
 #define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__ )
 #define new DEBUG_NEW
@@ -1059,7 +1059,7 @@ cm93_dictionary::~cm93_dictionary()
 
 //    CM93 Decode support routines
 
-void CreateDecodeTable ( void )
+void CreateDecodeTable ()
 {
       int i;
       for ( i=0 ; i < 256 ; i++ )
@@ -1963,7 +1963,7 @@ cm93chart::~cm93chart()
 
 }
 
-void  cm93chart::Unload_CM93_Cell ( void )
+void  cm93chart::Unload_CM93_Cell ()
 {
       free ( m_CIB.pobject_block );
 //      free(m_CIB.m_2a);
@@ -2347,7 +2347,7 @@ std::vector<int> cm93chart::GetVPCellArray ( const ViewPort &vpt )
 
 
 
-void cm93chart::ProcessVectorEdges ( void )
+void cm93chart::ProcessVectorEdges ()
 {
       //    Create the vector(edge) map for this cell, appending to the existing member hash map
       VE_Hash &vehash = Get_ve_hash();
@@ -4175,7 +4175,7 @@ wxPoint2DDouble cm93chart::FindM_COVROffset ( double lat, double lon )
 
 
 //    Read the cm93 cell file header and create required Chartbase data structures
-InitReturn cm93chart::CreateHeaderDataFromCM93Cell ( void )
+InitReturn cm93chart::CreateHeaderDataFromCM93Cell ()
 {
 
       //    Figure out the scale from the file name
@@ -4711,7 +4711,7 @@ wxPoint *cm93chart::GetDrawBuffer ( int nSize )
 //  cm93manager Implementation
 //-----------------------------------------------------------------------------------------------
 
-cm93manager::cm93manager ( void )
+cm93manager::cm93manager ()
 {
 
       m_pcm93Dict = NULL;
@@ -4728,7 +4728,7 @@ cm93manager::cm93manager ( void )
 
 }
 
-cm93manager::~cm93manager ( void )
+cm93manager::~cm93manager ()
 {
       delete m_pcm93Dict;
 }
@@ -4943,7 +4943,7 @@ InitReturn cm93compchart::Init ( const wxString& name, ChartInitFlag flags )
 
 }
 
-void cm93compchart::Activate ( void )
+void cm93compchart::Activate ()
 {
 //       if ( g_bShowCM93DetailSlider )
 //       {
@@ -4962,7 +4962,7 @@ void cm93compchart::Activate ( void )
 //       }
 }
 
-void cm93compchart::Deactivate ( void )
+void cm93compchart::Deactivate ()
 {
       if ( pPopupDetailSlider )
       {
@@ -6382,7 +6382,7 @@ void cm93compchart::InvalidateCache()
       }
 }
 
-void cm93compchart::ForceEdgePriorityEvaluate ( void )
+void cm93compchart::ForceEdgePriorityEvaluate ()
 {
       for ( int i = 0 ; i < 8 ; i++ )
       {
@@ -6450,12 +6450,12 @@ ListOfObjRazRules *cm93compchart::GetObjRuleListAtLatLon ( float lat, float lon,
 
 }
 
-VE_Hash& cm93compchart::Get_ve_hash ( void )
+VE_Hash& cm93compchart::Get_ve_hash ()
 {
       return m_pcm93chart_current->Get_ve_hash();
 }
 
-VC_Hash& cm93compchart::Get_vc_hash ( void )
+VC_Hash& cm93compchart::Get_vc_hash ()
 {
       return m_pcm93chart_current->Get_vc_hash();
 }
@@ -6691,7 +6691,7 @@ cm93_dictionary *cm93compchart::FindAndLoadDictFromDir ( const wxString &dir )
 
 }
 
-void cm93compchart::CloseandReopenCurrentSubchart ( void )
+void cm93compchart::CloseandReopenCurrentSubchart ()
 {
       delete  m_pcm93chart_current;
       m_pcm93chart_current = NULL;
@@ -6949,7 +6949,7 @@ void CM93OffsetDialog::OnOffSetSet ( wxCommandEvent& event )
 
 }
 
-void CM93OffsetDialog::UpdateOffsets ( void )
+void CM93OffsetDialog::UpdateOffsets ()
 {
       if ( m_pcompchart )
       {

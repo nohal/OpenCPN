@@ -399,7 +399,7 @@ struct GPS_MODEL_PROTOCOL
 US     GPS_Protocol_Version_Change(US id, US version);
 int32  GPS_Protocol_Table_Set(US id);
 void   GPS_Protocol_Error(US tag, US data);
-void   GPS_Unknown_Protocol_Print(void);
+void   GPS_Unknown_Protocol_Print();
 
 
 #endif

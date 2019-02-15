@@ -51,7 +51,7 @@ LATLONG::~LATLONG()
    Empty();
 }
 
-void LATLONG::Empty( void )
+void LATLONG::Empty()
 {
 
    Latitude.Empty();

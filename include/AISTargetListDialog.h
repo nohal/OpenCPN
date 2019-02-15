@@ -53,11 +53,11 @@ class AISTargetListDialog: public wxPanel
             AISTargetListDialog( wxWindow *parent, wxAuiManager *auimgr, AIS_Decoder *pdecoder );
            ~AISTargetListDialog( );
 
-            void Shutdown( void );
+            void Shutdown();
             void OnClose(wxCloseEvent &event);
             void Disconnect_decoder();
 
-            void RecalculateSize( void );
+            void RecalculateSize();
             void SetColorScheme( );
             void UpdateAISTargetList( );     // Rebuild AIS target list
             void UpdateNVAISTargetList( );
@@ -70,7 +70,7 @@ class AISTargetListDialog: public wxPanel
             ArrayOfMMSI       *m_pMMSI_array;
 
       private:
-            void CreateControls( void );
+            void CreateControls();
            
             void OnPaneClose( wxAuiManagerEvent& event );
             void UpdateButtons();

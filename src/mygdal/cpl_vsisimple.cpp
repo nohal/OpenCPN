@@ -101,7 +101,7 @@
 #  include <direct.h>
 #endif
 #include <sys/stat.h>
-#include <time.h>
+#include <ctime>
 
 /************************************************************************/
 /*                              VSIFOpen()                              */
@@ -378,7 +378,7 @@ int VSIMkdir( const char *pszPathname, long mode )
 
 {
 #ifdef WIN32
-    (void) mode;
+    () mode;
     return mkdir( pszPathname );
 #elif defined(macos_pre10)
     return -1;

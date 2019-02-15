@@ -95,7 +95,7 @@
 * Local prototypes.
 \******************************************************************************/
 
-static jas_image_cmpt_t *jas_image_cmpt_create0(void);
+static jas_image_cmpt_t *jas_image_cmpt_create0();
 static void jas_image_cmpt_destroy(jas_image_cmpt_t *cmpt);
 static jas_image_cmpt_t *jas_image_cmpt_create(uint_fast32_t tlx, uint_fast32_t tly,
   uint_fast32_t hstep, uint_fast32_t vstep, uint_fast32_t width, uint_fast32_t

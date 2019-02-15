@@ -76,14 +76,14 @@ public:
       void SetALabel(const wxString &l);
       void SetAValue(const wxString &v);
       void OnPaint(wxPaintEvent& event);
-      void RefreshFonts(void);
+      void RefreshFonts();
       void SetLegendElement(const wxString &element);
       void SetValueElement(const wxString &element);
       void SetColorScheme(ColorScheme cs);
       void MouseEvent( wxMouseEvent& event );
       
 private:
-      void CalculateMinSize(void);
+      void CalculateMinSize();
 
       wxBrush     m_backBrush;
       wxColour    m_default_text_color;
@@ -114,13 +114,13 @@ public:
       ConsoleCanvas(wxWindow *frame);
       ~ConsoleCanvas();
       void UpdateRouteData();
-      void ShowWithFreshFonts(void);
-      void UpdateFonts(void);
+      void ShowWithFreshFonts();
+      void UpdateFonts();
       void SetColorScheme(ColorScheme cs);
       void LegRoute();
       void OnContextMenu( wxContextMenuEvent& event );
       void OnContextMenuSelection( wxCommandEvent& event );
-      void RefreshConsoleData(void);
+      void RefreshConsoleData();
       void ToggleRouteTotalDisplay();
       
       wxWindow          *m_pParent;

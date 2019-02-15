@@ -45,7 +45,7 @@ MWD::~MWD()
    Empty();
 }
 
-void MWD::Empty( void )
+void MWD::Empty()
 {
 //   ASSERT_VALID( this );
 

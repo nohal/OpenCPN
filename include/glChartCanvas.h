@@ -166,9 +166,9 @@ public:
     void Invalidate();
     void RenderRasterChartRegionGL(ChartBase *chart, ViewPort &vp, LLRegion &region);
     
-    void DrawGLOverLayObjects(void);
+    void DrawGLOverLayObjects();
     void GridDraw( );
-    void FlushFBO( void );
+    void FlushFBO();
     
     void DrawDynamicRoutesTracksAndWaypoints( ViewPort &vp );
     void DrawStaticRoutesTracksAndWaypoints( ViewPort &vp );

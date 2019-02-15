@@ -85,7 +85,7 @@ public:
     void SetSelected( bool selected );
     void OnPaint( wxPaintEvent &event );
     void OnEraseBackground( wxEraseEvent &event );
-    void CreateControls( void );
+    void CreateControls();
     void OnEnableCBClick(wxCommandEvent &event);
     void Update( ConnectionParams *ConnectionParams);
  

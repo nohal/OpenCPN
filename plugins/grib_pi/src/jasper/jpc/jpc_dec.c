@@ -140,17 +140,17 @@ typedef struct {
 
 static int jpc_dec_dump(jpc_dec_t *dec, FILE *out);
 
-jpc_ppxstab_t *jpc_ppxstab_create(void);
+jpc_ppxstab_t *jpc_ppxstab_create();
 void jpc_ppxstab_destroy(jpc_ppxstab_t *tab);
 int jpc_ppxstab_grow(jpc_ppxstab_t *tab, int maxents);
 int jpc_ppxstab_insert(jpc_ppxstab_t *tab, jpc_ppxstabent_t *ent);
 jpc_streamlist_t *jpc_ppmstabtostreams(jpc_ppxstab_t *tab);
 int jpc_pptstabwrite(jas_stream_t *out, jpc_ppxstab_t *tab);
-jpc_ppxstabent_t *jpc_ppxstabent_create(void);
+jpc_ppxstabent_t *jpc_ppxstabent_create();
 void jpc_ppxstabent_destroy(jpc_ppxstabent_t *ent);
 
 int jpc_streamlist_numstreams(jpc_streamlist_t *streamlist);
-jpc_streamlist_t *jpc_streamlist_create(void);
+jpc_streamlist_t *jpc_streamlist_create();
 int jpc_streamlist_insert(jpc_streamlist_t *streamlist, int streamno,
   jas_stream_t *stream);
 jas_stream_t *jpc_streamlist_remove(jpc_streamlist_t *streamlist, int streamno);

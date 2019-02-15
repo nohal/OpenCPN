@@ -51,7 +51,7 @@ class DashboardInstrument_Depth: public DashboardInstrument
       public:
             DashboardInstrument_Depth( wxWindow *parent, wxWindowID id, wxString title);
 
-            ~DashboardInstrument_Depth(void){}
+            ~DashboardInstrument_Depth(){}
 
             wxSize GetSize( int orient, wxSize hint );
             void SetData(int, double, wxString);

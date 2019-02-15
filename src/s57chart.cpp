@@ -54,7 +54,7 @@
 #include "ChartDataInputStream.h"
 
 #include "mygdal/cpl_csv.h"
-#include "setjmp.h"
+#include <csetjmp>
 
 #include "mygdal/ogr_s57.h"
 
@@ -66,7 +66,7 @@
 
 #ifdef __MSVC__
 #define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
+#include <cstdlib>
 #include <crtdbg.h>
 #define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__ )
 #define new DEBUG_NEW
@@ -134,7 +134,7 @@ static int              s_bInS57;         // Exclusion flag to prvent recursion 
                                           // Init() is not reentrant due to static wxProgressDialog callback....
 int s_cnt;
 
-static bool s_ProgressCallBack( void )
+static bool s_ProgressCallBack()
 {
     bool ret = true;
     s_cnt++;
@@ -206,7 +206,7 @@ render_canvas_parms::render_canvas_parms()
 }
 
 
-render_canvas_parms::~render_canvas_parms( void )
+render_canvas_parms::~render_canvas_parms()
 {
 }
 
@@ -757,12 +757,12 @@ void s57chart::SetFullExtent( Extent& ext )
     m_bExtentSet = true;
 }
 
-void s57chart::ForceEdgePriorityEvaluate( void )
+void s57chart::ForceEdgePriorityEvaluate()
 {
     m_bLinePrioritySet = false;
 }
 
-void s57chart::SetLinePriorities( void )
+void s57chart::SetLinePriorities()
 {
     if( !ps52plib ) return;
 
@@ -841,7 +841,7 @@ void s57chart::SetLinePriorities( void )
 }
 
 #if 0
-void s57chart::SetLinePriorities( void )
+void s57chart::SetLinePriorities()
 {
     if( !ps52plib ) return;
 
@@ -1008,7 +1008,7 @@ typedef struct segment_pair{
 }_segment_pair;
 
 
-void s57chart::AssembleLineGeometry( void )
+void s57chart::AssembleLineGeometry()
 {
     // Walk the hash tables to get the required buffer size
 
@@ -1420,7 +1420,7 @@ void s57chart::AssembleLineGeometry( void )
 
 
 
-void s57chart::BuildLineVBO( void )
+void s57chart::BuildLineVBO()
 {
 #ifdef ocpnUSE_GL
     // cm93 cannot efficiently use VBO, since the edge list is discovered incrementally,
@@ -2753,7 +2753,7 @@ InitReturn s57chart::PostInit( ChartInitFlag flags, ColorScheme cs )
     return INIT_OK;
 }
 
-void s57chart::ClearDepthContourArray( void )
+void s57chart::ClearDepthContourArray()
 {
 
     if( m_nvaldco_alloc ) {
@@ -2764,7 +2764,7 @@ void s57chart::ClearDepthContourArray( void )
     m_pvaldco_array = (double *) calloc( m_nvaldco_alloc, sizeof(double) );
 }
 
-void s57chart::BuildDepthContourArray( void )
+void s57chart::BuildDepthContourArray()
 {
     //    Build array of contour values for later use by conditional symbology
 
@@ -2809,7 +2809,7 @@ void s57chart::BuildDepthContourArray( void )
 }
 
 
-void s57chart::SetSafetyContour(void)
+void s57chart::SetSafetyContour()
 {
     // Iterate through the array of contours in this cell, choosing the best one to
     // render as a bold "safety contour" in the PLIB.
@@ -3007,7 +3007,7 @@ bool s57chart::BuildThumbnail( const wxString &bmpname )
 WX_DEFINE_ARRAY_PTR( float*, MyFloatPtrArray );
 
 //    Read the .000 ENC file and create required Chartbase data structures
-bool s57chart::CreateHeaderDataFromENC( void )
+bool s57chart::CreateHeaderDataFromENC()
 {
     if( !InitENCMinimal( m_TempFilePath ) ) {
         wxString msg( _T("   Cannot initialize ENC file ") );
@@ -3196,7 +3196,7 @@ bool s57chart::CreateHeaderDataFromENC( void )
 }
 
 //    Read the .S57 oSENC file (CURRENT_SENC_FORMAT_VERSION >= 200) and create required Chartbase data structures
-bool s57chart::CreateHeaderDataFromoSENC( void )
+bool s57chart::CreateHeaderDataFromoSENC()
 {
     bool ret_val = true;
 
@@ -3301,7 +3301,7 @@ bool s57chart::CreateHeaderDataFromoSENC( void )
 
 
 //    Read the .S57 SENC file and create required Chartbase data structures
-bool s57chart::CreateHeaderDataFromSENC( void )
+bool s57chart::CreateHeaderDataFromSENC()
 {
     bool ret_val = true;
     if(CURRENT_SENC_FORMAT_VERSION >= 200)
@@ -3786,7 +3786,7 @@ int s57chart::ValidateAndCountUpdates( const wxFileName file000, const wxString 
 }
 
 
-wxString s57chart::GetISDT( void )
+wxString s57chart::GetISDT()
 {
     if( m_date000.IsValid() ) return m_date000.Format( _T("%Y%m%d") );
     else
@@ -5728,7 +5728,7 @@ OGRFeature *s57chart::GetChartNextM_COVR( int &catcov )
 
 }
 
-int s57chart::GetENCScale( void )
+int s57chart::GetENCScale()
 {
     if( NULL == m_pENCDS ) return 0;
 

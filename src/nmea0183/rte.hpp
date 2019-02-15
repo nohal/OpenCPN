@@ -46,7 +46,7 @@ class RTE : public RESPONSE
 
    private:
 
-      void delete_all_entries( void );
+      void delete_all_entries();
 
       double last_message_number_received;
 
@@ -66,7 +66,7 @@ class RTE : public RESPONSE
       int m_skip_checksum;
       char m_complete_char;
       
-      virtual void Empty( void );
+      virtual void Empty();
       virtual bool Parse( const SENTENCE& sentence );
       virtual bool Write( SENTENCE& sentence );
       virtual bool AddWaypoint(const wxString& name);

@@ -66,7 +66,7 @@ public:
       bool        b_valid;
       int         nEntry;
       int         CurrentStackEntry;
-      int         GetCurrentEntrydbIndex(void);
+      int         GetCurrentEntrydbIndex();
       void        SetCurrentEntryFromdbIndex(int current_db_index);
       int         GetDBIndex(int stack_index);
       void        SetDBIndex(int stack_index, int db_index);
@@ -119,7 +119,7 @@ public:
       bool SearchForChartDir(const wxString &dir);
       ChartBase *OpenStackChartConditional(ChartStack *ps, int start_index, bool bLargest, ChartTypeEnum New_Type, ChartFamilyEnum New_Family_Fallback);
 
-      wxArrayPtrVoid *GetChartCache(void) { return pChartCache; }
+      wxArrayPtrVoid *GetChartCache() { return pChartCache; }
       std::vector<int> GetCSArray(ChartStack *ps);
 
       int GetStackEntry(ChartStack *ps, wxString fp);
@@ -151,7 +151,7 @@ public:
       void UnLockCacheChart( int index );
       void UnLockAllCacheCharts();
       
-      void ClearCacheInUseFlags(void);
+      void ClearCacheInUseFlags();
       void PurgeCacheUnusedCharts( double factor );
 
       bool IsBusy(){ return m_b_busy; }

@@ -34,7 +34,7 @@ extern char last_error[];
 gpsdevh *my_gps_devh;
 
 
-wxString GetLastGarminError(void)
+wxString GetLastGarminError()
 {
       return wxString(GetDeviceLastError(),  wxConvUTF8);
 }
@@ -91,7 +91,7 @@ int Garmin_GPS_GetPVT(void *pvt)
     
 }
 
-void Garmin_GPS_ClosePortVerify(void)
+void Garmin_GPS_ClosePortVerify()
 {
     VerifyPortClosed();
 }
@@ -369,14 +369,14 @@ int Garmin_GPS_SendRoute( const wxString &port_name, Route *pr, wxGauge *pProgre
 }
 
 /*
-int Garmin_USB_On(void)
+int Garmin_USB_On()
 {
       int ret_val = GPS_Device_On("usb:", &my_gps_devh);
 
       return ret_val;
 }
 
-int Garmin_USB_Off(void)
+int Garmin_USB_Off()
 {
       int ret_val = GPS_Device_Off(my_gps_devh);
 

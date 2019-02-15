@@ -34,10 +34,10 @@
 #ifndef GSHHS_H
 #define GSHHS_H
 
-#include <stdio.h>
+#include <cstdio>
 #include <string>
-#include <math.h>
-#include <assert.h>
+#include <cmath>
+#include <cassert>
 #include <vector>
 
 #include <wx/geometry.h>
@@ -256,7 +256,7 @@ public:
 
 private:
     int quality;  // 5 levels: 0=low ... 4=full
-    int selectBestQuality( void );
+    int selectBestQuality();
     int selectBestQuality( ViewPort &vp );
 
     int maxQualityAvailable;

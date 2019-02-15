@@ -101,7 +101,7 @@ class CPL_DLL OGRGeometry
     virtual void   flattenTo2D() = 0;
 
     void    assignSpatialReference( OGRSpatialReference * poSR );
-    OGRSpatialReference *getSpatialReference( void ) const { return poSRS; }
+    OGRSpatialReference *getSpatialReference() const { return poSRS; }
 
     virtual OGRErr  transform( OGRCoordinateTransformation *poCT ) = 0;
     OGRErr  transformTo( OGRSpatialReference *poSR );

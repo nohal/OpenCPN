@@ -458,10 +458,10 @@ public:
       
       size_t GetToolCount();
       void SetToolShowMask( wxString mask );
-      wxString GetToolShowMask( void ){ return m_toolShowMask; }
+      wxString GetToolShowMask(){ return m_toolShowMask; }
       
       void SetToolShowCount( int count );
-      int GetToolShowCount( void );
+      int GetToolShowCount();
       
       bool CheckAndAddPlugInTool( ocpnToolBarSimple *tb );
       bool AddDefaultPositionPlugInTools( ocpnToolBarSimple *tb );
@@ -571,7 +571,7 @@ public:
     ~ToolbarChoicesDialog();
     
     void SetColorScheme(ColorScheme cs);
-    void RecalculateSize( void );
+    void RecalculateSize();
     void CreateControls();
     
     void OnCancelClick( wxCommandEvent& event );

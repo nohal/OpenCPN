@@ -295,8 +295,8 @@ public:
       
       void SendResizeEventToAllPlugIns(int x, int y);
       void SetColorSchemeForAllPlugIns(ColorScheme cs);
-      void NotifyAuiPlugIns(void);
-      bool CallLateInit(void);
+      void NotifyAuiPlugIns();
+      bool CallLateInit();
       
       bool IsPlugInAvailable(wxString commonName);
       bool IsAnyPlugInChartEnabled();
@@ -309,7 +309,7 @@ public:
       void SendBaseConfigToAllPlugIns();
       void SendS52ConfigToAllPlugIns( bool bReconfig = false );
       
-      wxArrayString GetPlugInChartClassNameArray(void);
+      wxArrayString GetPlugInChartClassNameArray();
 
       ListOfPI_S57Obj *GetPlugInObjRuleListAtLatLon( ChartPlugInWrapper *target, float zlat, float zlon,
                                                        float SelectRadius, const ViewPort& vp );
@@ -324,7 +324,7 @@ private:
       bool CheckBlacklistedPlugin(opencpn_plugin* plugin);
       bool DeactivatePlugIn(PlugInContainer *pic);
       wxBitmap *BuildDimmedToolBitmap(wxBitmap *pbmp_normal, unsigned char dim_ratio);
-      bool UpDateChartDataTypes(void);
+      bool UpDateChartDataTypes();
       bool CheckPluginCompatibility(wxString plugin_file);
       bool LoadPlugInDirectory(const wxString &plugin_dir, bool enabled_plugins, bool b_enable_blackdialog);
 

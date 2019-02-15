@@ -35,7 +35,7 @@
 #define EURO_VIN_LEN   9
 
 void make_hash_ERI(int key, const wxString & description);
-void clear_hash_ERI( void );
+void clear_hash_ERI();
 
 
 
@@ -46,14 +46,14 @@ public:
     AIS_Target_Data();
     ~AIS_Target_Data();
 
-    wxString BuildQueryResult(void);
-    wxString GetRolloverString(void);
+    wxString BuildQueryResult();
+    wxString GetRolloverString();
     wxString Get_vessel_type_string(bool b_short = false);
     wxString Get_class_string(bool b_short = false);
-    wxString GetFullName( void );
+    wxString GetFullName();
     wxString GetCountryCode(bool b_CntryLongStr);
-    void Toggle_AIS_CPA(void);
-    void ToggleShowTrack(void);
+    void Toggle_AIS_CPA();
+    void ToggleShowTrack();
     void CloneFrom( AIS_Target_Data* q );
     
 

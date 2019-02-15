@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //#include "dychart.h"        // for some compile time fixups
 //#include "cutil.h"
-#include <stdlib.h>
+#include <cstdlib>
 
 //#include <QDateTime>
 

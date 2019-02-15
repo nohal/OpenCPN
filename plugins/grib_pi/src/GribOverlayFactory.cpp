@@ -372,7 +372,7 @@ void GRIBOverlayFactory::SetGribTimelineRecordSet( GribTimelineRecordSet *pGribT
 
 }
 
-void GRIBOverlayFactory::ClearCachedData( void )
+void GRIBOverlayFactory::ClearCachedData()
 {
     //    Clear out the cached bitmaps
     for(int i=0; i<GribOverlaySettings::SETTINGS_COUNT; i++) {

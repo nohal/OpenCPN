@@ -84,7 +84,7 @@
 * Prototypes.
 \******************************************************************************/
 
-static jpc_tagtree_t *jpc_tagtree_alloc(void);
+static jpc_tagtree_t *jpc_tagtree_alloc();
 
 /******************************************************************************\
 * Code for creating and destroying tag trees.

@@ -39,9 +39,9 @@
 #ifndef __WXMSW__
 #include <cxxabi.h>
 #endif // __WXMSW__
-#include <stdint.h>
+#include <cstdint>
 #include <fcntl.h>
-#include <errno.h>
+#include <cerrno>
 
 #ifdef USE_LIBELF
 #include <elf.h>
@@ -619,7 +619,7 @@ bool PlugInManager::LoadPlugInDirectory(const wxString &plugin_dir, bool load_en
     return ret;
 }
 
-bool PlugInManager::CallLateInit(void)
+bool PlugInManager::CallLateInit()
 {
     bool bret = true;
 
@@ -740,7 +740,7 @@ bool PlugInManager::UpdatePlugIns()
 }
 
 
-bool PlugInManager::UpDateChartDataTypes(void)
+bool PlugInManager::UpDateChartDataTypes()
 {
     bool bret = false;
     if(NULL == ChartData)
@@ -2168,7 +2168,7 @@ void PlugInManager::SendS52ConfigToAllPlugIns( bool bReconfig )
     SendMessageToAllPlugins(wxString(_T("OpenCPN Config")), out);
 }
 
-void PlugInManager::NotifyAuiPlugIns(void)
+void PlugInManager::NotifyAuiPlugIns()
 {
     for(unsigned int i = 0 ; i < plugin_array.GetCount() ; i++)
     {
@@ -2468,7 +2468,7 @@ wxBitmap *PlugInManager::BuildDimmedToolBitmap(wxBitmap *pbmp_normal, unsigned c
 }
 
 
-wxArrayString PlugInManager::GetPlugInChartClassNameArray(void)
+wxArrayString PlugInManager::GetPlugInChartClassNameArray()
 {
     wxArrayString array;
     for(unsigned int i = 0 ; i < plugin_array.GetCount() ; i++)
@@ -2639,7 +2639,7 @@ void RemoveCanvasContextMenuItem(int item)
 
 
 
-wxFileConfig *GetOCPNConfigObject(void)
+wxFileConfig *GetOCPNConfigObject()
 {
     if(s_ppim)
         return pConfig;         // return the global application config object
@@ -2779,7 +2779,7 @@ wxBitmap GetBitmapFromSVGFile(wxString filename, unsigned int width, unsigned in
 #endif // ocpnUSE_SVG   
 }
 
-bool IsTouchInterface_PlugIn(void)
+bool IsTouchInterface_PlugIn()
 {
     return g_btouch;
 }
@@ -2789,19 +2789,19 @@ wxColour GetFontColour_PlugIn(wxString TextElement)
     return FontMgr::Get().GetFontColor( TextElement );
 }
 
-wxString *GetpSharedDataLocation(void)
+wxString *GetpSharedDataLocation()
 {
     return g_Platform->GetSharedDataDirPtr();
 }
 
-wxString *GetpPrivateApplicationDataLocation(void)
+wxString *GetpPrivateApplicationDataLocation()
 {
     return g_Platform->GetPrivateDataDirPtr();
 }
 
 
 
-ArrayOfPlugIn_AIS_Targets *GetAISTargetArray(void)
+ArrayOfPlugIn_AIS_Targets *GetAISTargetArray()
 {
     if ( !g_pAIS )
         return NULL;
@@ -2832,7 +2832,7 @@ ArrayOfPlugIn_AIS_Targets *GetAISTargetArray(void)
 }
 
 
-wxAuiManager *GetFrameAuiManager(void)
+wxAuiManager *GetFrameAuiManager()
 {
     return g_pauimgr;
 }
@@ -3074,7 +3074,7 @@ bool DecodeSingleVDOMessage( const wxString& str, PlugIn_Position_Fix_Ex *pos, w
     return false;
 }
 
-int GetChartbarHeight( void )
+int GetChartbarHeight()
 {
     int val = 0;
     if(g_bShowChartBar){
@@ -3272,7 +3272,7 @@ PlugIn_Track::~PlugIn_Track(void )
 
 
 
-wxString GetNewGUID( void )
+wxString GetNewGUID()
 {
     return GpxDocument::GetUUID();
 }
@@ -3478,7 +3478,7 @@ bool GetSingleWaypoint(wxString GUID, PlugIn_Waypoint *pwaypoint)
     return true;
 }
 
-wxArrayString GetWaypointGUIDArray( void )
+wxArrayString GetWaypointGUIDArray()
 {
     wxArrayString result;
     RoutePointList *list = pWayPointMan->GetWaypointList();
@@ -3494,7 +3494,7 @@ wxArrayString GetWaypointGUIDArray( void )
     return result;
 }
 
-wxArrayString GetIconNameArray(void)
+wxArrayString GetIconNameArray()
 {
 	wxArrayString result;
 
@@ -3725,13 +3725,13 @@ void PlugInNormalizeViewport ( PlugIn_ViewPort *vp, float lat, float lon )
 opencpn_plugin::~opencpn_plugin()
 {}
 
-int opencpn_plugin::Init(void)
+int opencpn_plugin::Init()
 {
     return 0;
 }
 
 
-bool opencpn_plugin::DeInit(void)
+bool opencpn_plugin::DeInit()
 {
     return true;
 }
@@ -3789,12 +3789,12 @@ void opencpn_plugin::SetNMEASentence(wxString &sentence)
 void opencpn_plugin::SetAISSentence(wxString &sentence)
 {}
 
-int opencpn_plugin::GetToolbarToolCount(void)
+int opencpn_plugin::GetToolbarToolCount()
 {
     return 0;
 }
 
-int opencpn_plugin::GetToolboxPanelCount(void)
+int opencpn_plugin::GetToolboxPanelCount()
 {
     return 0;
 }
@@ -3825,7 +3825,7 @@ void opencpn_plugin::SetCursorLatLon(double lat, double lon)
 void opencpn_plugin::SetCurrentViewPort(PlugIn_ViewPort &vp)
 {}
 
-void opencpn_plugin::SetDefaults(void)
+void opencpn_plugin::SetDefaults()
 {}
 
 void opencpn_plugin::ProcessParentResize(int x, int y)
@@ -3834,7 +3834,7 @@ void opencpn_plugin::ProcessParentResize(int x, int y)
 void opencpn_plugin::SetColorScheme(PI_ColorScheme cs)
 {}
 
-void opencpn_plugin::UpdateAuiStatus(void)
+void opencpn_plugin::UpdateAuiStatus()
 {}
 
 
@@ -3851,7 +3851,7 @@ opencpn_plugin_16::opencpn_plugin_16(void *pmgr)
 {
 }
 
-opencpn_plugin_16::~opencpn_plugin_16(void)
+opencpn_plugin_16::~opencpn_plugin_16()
 {}
 
 bool opencpn_plugin_16::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
@@ -3868,7 +3868,7 @@ opencpn_plugin_17::opencpn_plugin_17(void *pmgr)
 {
 }
 
-opencpn_plugin_17::~opencpn_plugin_17(void)
+opencpn_plugin_17::~opencpn_plugin_17()
 {}
 
 
@@ -3892,7 +3892,7 @@ opencpn_plugin_18::opencpn_plugin_18(void *pmgr)
 {
 }
 
-opencpn_plugin_18::~opencpn_plugin_18(void)
+opencpn_plugin_18::~opencpn_plugin_18()
 {}
 
 
@@ -3919,11 +3919,11 @@ opencpn_plugin_19::opencpn_plugin_19(void *pmgr)
 {
 }
 
-opencpn_plugin_19::~opencpn_plugin_19(void)
+opencpn_plugin_19::~opencpn_plugin_19()
 {
 }
 
-void opencpn_plugin_19::OnSetupOptions(void)
+void opencpn_plugin_19::OnSetupOptions()
 {
 }
 
@@ -3933,11 +3933,11 @@ opencpn_plugin_110::opencpn_plugin_110(void *pmgr)
 {
 }
 
-opencpn_plugin_110::~opencpn_plugin_110(void)
+opencpn_plugin_110::~opencpn_plugin_110()
 {
 }
 
-void opencpn_plugin_110::LateInit(void)
+void opencpn_plugin_110::LateInit()
 {
 }
 
@@ -3947,7 +3947,7 @@ opencpn_plugin_111::opencpn_plugin_111(void *pmgr)
 {
 }
 
-opencpn_plugin_111::~opencpn_plugin_111(void)
+opencpn_plugin_111::~opencpn_plugin_111()
 {
 }
 
@@ -3958,7 +3958,7 @@ opencpn_plugin_112::opencpn_plugin_112(void *pmgr)
 {
 }
 
-opencpn_plugin_112::~opencpn_plugin_112(void)
+opencpn_plugin_112::~opencpn_plugin_112()
 {
 }
 
@@ -3977,7 +3977,7 @@ opencpn_plugin_113::opencpn_plugin_113(void *pmgr)
 {
 }
 
-opencpn_plugin_113::~opencpn_plugin_113(void)
+opencpn_plugin_113::~opencpn_plugin_113()
 {
 }
 
@@ -3996,7 +3996,7 @@ opencpn_plugin_114::opencpn_plugin_114(void *pmgr)
 {
 }
 
-opencpn_plugin_114::~opencpn_plugin_114(void)
+opencpn_plugin_114::~opencpn_plugin_114()
 {
 }
 
@@ -4006,7 +4006,7 @@ opencpn_plugin_115::opencpn_plugin_115(void *pmgr)
 {
 }
 
-opencpn_plugin_115::~opencpn_plugin_115(void)
+opencpn_plugin_115::~opencpn_plugin_115()
 {
 }
 
@@ -4016,7 +4016,7 @@ opencpn_plugin_116::opencpn_plugin_116(void *pmgr)
 {
 }
 
-opencpn_plugin_116::~opencpn_plugin_116(void)
+opencpn_plugin_116::~opencpn_plugin_116()
 {
 }
 
@@ -4378,7 +4378,7 @@ PlugInChartBase::PlugInChartBase()
 PlugInChartBase::~PlugInChartBase()
 {}
 
-wxString PlugInChartBase::GetFileSearchMask(void)
+wxString PlugInChartBase::GetFileSearchMask()
 {
     return _T("");
 }
@@ -4609,7 +4609,7 @@ ChartPlugInWrapper::~ChartPlugInWrapper()
         delete m_ppicb;
 }
 
-wxString ChartPlugInWrapper::GetFileSearchMask(void)
+wxString ChartPlugInWrapper::GetFileSearchMask()
 {
     if(m_ppicb)
         return m_ppicb->GetFileSearchMask();
@@ -5270,7 +5270,7 @@ int OCPNMessageBox_PlugIn(wxWindow *parent,
     return OCPNMessageBox( parent, message, caption, style, 100, x, y );
 }
 
-wxString GetOCPN_ExePath( void )
+wxString GetOCPN_ExePath()
 {
     return g_Platform->GetExePath();
 }
@@ -5280,7 +5280,7 @@ wxString *GetpPlugInLocation()
     return g_Platform->GetPluginDirPtr();
 }
 
-wxString GetWritableDocumentsDir( void )
+wxString GetWritableDocumentsDir()
 {
     return g_Platform->GetWritableDocumentsDir();
 }
@@ -5726,7 +5726,7 @@ void PI_PLIBSetLineFeaturePriority( PI_S57Obj *pObj, int prio )
 
 }
 
-void PI_PLIBPrepareForNewRender( void )
+void PI_PLIBPrepareForNewRender()
 {
     if(ps52plib){
         ps52plib->PrepareForRender();
@@ -6837,17 +6837,17 @@ void CanvasJumpToPosition( wxWindow *canvas, double lat, double lon, double scal
 
 }
 
-bool ShuttingDown( void )
+bool ShuttingDown()
 {
     return g_bquiting;
 }
 
-wxWindow* GetCanvasUnderMouse( void )
+wxWindow* GetCanvasUnderMouse()
 {
     return gFrame->GetCanvasUnderMouse();
 }
 
-int GetCanvasIndexUnderMouse( void )
+int GetCanvasIndexUnderMouse()
 {
     ChartCanvas *l_canvas = gFrame->GetCanvasUnderMouse();
     if(l_canvas) {

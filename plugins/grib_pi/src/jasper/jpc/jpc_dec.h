@@ -681,7 +681,7 @@ typedef struct {
 \******************************************************************************/
 
 /* Create a decoder segment object. */
-jpc_dec_seg_t *jpc_seg_alloc(void);
+jpc_dec_seg_t *jpc_seg_alloc();
 
 /* Destroy a decoder segment object. */
 void jpc_seg_destroy(jpc_dec_seg_t *seg);

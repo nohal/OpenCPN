@@ -30,9 +30,9 @@
 #include <wx/wfstream.h>
 #include <wx/imaglist.h>
 
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
+#include <cstdlib>
+#include <cmath>
+#include <ctime>
 
 #include "cutil.h"
 #include "FontMgr.h"

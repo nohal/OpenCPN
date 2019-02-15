@@ -84,7 +84,7 @@ bool RESPONSE::Write( SENTENCE& sentence )
    return( TRUE );
 }
 
-const wxString& RESPONSE::PlainEnglish( void )
+const wxString& RESPONSE::PlainEnglish()
 {
    static wxString return_string;
 

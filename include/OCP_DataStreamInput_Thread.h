@@ -107,10 +107,10 @@ public:
                                   dsPortType io_select
                               );
 
-    ~OCP_DataStreamInput_Thread(void);
+    ~OCP_DataStreamInput_Thread();
     void *Entry();
     bool SetOutMsg(const wxString &msg);
-    void OnExit(void);
+    void OnExit();
 
 
 private:

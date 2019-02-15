@@ -709,7 +709,7 @@ typedef struct jpc_msops_s {
 \******************************************************************************/
 
 /* Create a code-stream state object. */
-jpc_cstate_t *jpc_cstate_create(void);
+jpc_cstate_t *jpc_cstate_create();
 
 /* Destroy a code-stream state object. */
 void jpc_cstate_destroy(jpc_cstate_t *cstate);

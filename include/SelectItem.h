@@ -33,7 +33,7 @@ public:
       SelectItem();
       ~SelectItem();
 
-      int   GetUserData(void);
+      int   GetUserData();
       void  SetUserData(int data);
 
       float m_slat;

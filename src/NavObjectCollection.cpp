@@ -1253,7 +1253,7 @@ static void UpdateRouteA( Route *pTentRoute )
 }
 
                        
-bool NavObjectCollection1::CreateNavObjGPXPoints( void )
+bool NavObjectCollection1::CreateNavObjGPXPoints()
 {
     
     //    Iterate over the Routepoint list, creating Nodes for
@@ -1280,7 +1280,7 @@ bool NavObjectCollection1::CreateNavObjGPXPoints( void )
     return true;
 }
 
-bool NavObjectCollection1::CreateNavObjGPXRoutes( void )
+bool NavObjectCollection1::CreateNavObjGPXRoutes()
 {
     // Routes
     wxRouteListNode *node1 = pRouteList->GetFirst();
@@ -1295,7 +1295,7 @@ bool NavObjectCollection1::CreateNavObjGPXRoutes( void )
     return true;
 }
 
-bool NavObjectCollection1::CreateNavObjGPXTracks( void )
+bool NavObjectCollection1::CreateNavObjGPXTracks()
 {
     // Tracks
     wxTrackListNode *node1 = pTrackList->GetFirst();
@@ -1385,7 +1385,7 @@ bool NavObjectCollection1::AddGPXPointsList( RoutePointList *pRoutePoints )
 
 
 
-void NavObjectCollection1::SetRootGPXNode(void)
+void NavObjectCollection1::SetRootGPXNode()
 {
     if(!strlen(m_gpx_root.name())) {
         m_gpx_root = append_child("gpx");
@@ -1593,7 +1593,7 @@ void NavObjectChanges::AddTrackPoint( TrackPoint *pWP, const char *action, const
 }
 
 
-bool NavObjectChanges::ApplyChanges(void)
+bool NavObjectChanges::ApplyChanges()
 {
     //Let's reconstruct the unsaved changes
     

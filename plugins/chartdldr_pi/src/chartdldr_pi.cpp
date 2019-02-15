@@ -142,7 +142,7 @@ chartdldr_pi::chartdldr_pi( void *ppimgr ) : opencpn_plugin_113( ppimgr )
     
 }
 
-int chartdldr_pi::Init( void )
+int chartdldr_pi::Init()
 {
     AddLocaleCatalog( PLUGIN_CATALOG_NAME );
 
@@ -175,7 +175,7 @@ int chartdldr_pi::Init( void )
             );
 }
 
-bool chartdldr_pi::DeInit( void )
+bool chartdldr_pi::DeInit()
 {
     wxLogMessage(_T("chartdldr_pi: DeInit"));
     
@@ -239,7 +239,7 @@ Manages chart downloads and updates from sources supporting\n\
 NOAA Chart Catalog format");
 }
 
-void chartdldr_pi::OnSetupOptions( void )
+void chartdldr_pi::OnSetupOptions()
 {
     m_pOptionsPage = AddOptionsPage( PI_OPTIONS_PARENT_CHARTS, _("Chart Downloader") );
     if( ! m_pOptionsPage )
@@ -269,7 +269,7 @@ void chartdldr_pi::OnCloseToolboxPanel( int page_sel, int ok_apply_cancel )
     SaveConfig();
 }
 
-bool chartdldr_pi::LoadConfig( void )
+bool chartdldr_pi::LoadConfig()
 {
     wxFileConfig *pConf = (wxFileConfig *)m_pconfig;
 
@@ -296,7 +296,7 @@ bool chartdldr_pi::LoadConfig( void )
         return false;
 }
 
-bool chartdldr_pi::SaveConfig(void)
+bool chartdldr_pi::SaveConfig()
 {
     wxFileConfig *pConf = (wxFileConfig *)m_pconfig;
 

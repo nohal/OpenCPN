@@ -255,7 +255,7 @@ IsoLine::~IsoLine()
 }
 
 
-MySegList *IsoLine::BuildContinuousSegment(void)
+MySegList *IsoLine::BuildContinuousSegment()
 {
       MySegList::Node *node;
       Segment *seg;

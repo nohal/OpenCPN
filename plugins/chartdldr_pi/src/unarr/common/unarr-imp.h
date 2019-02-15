@@ -48,7 +48,7 @@ ar_stream *ar_open_stream(void *data, ar_stream_close_fn close, ar_stream_read_f
 #ifndef NDEBUG
 #define log(...) ar_log("-", __FILE__, __LINE__, __VA_ARGS__)
 #else
-#define log(...) ((void)0)
+#define log(...) (()0)
 #endif
 void ar_log(const char *prefix, const char *file, int line, const char *msg, ...);
 

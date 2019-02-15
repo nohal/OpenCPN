@@ -42,7 +42,7 @@ extern bool             g_b_legacy_input_filter_behaviour;
 extern int              g_maxWPNameLength;
 extern wxString         g_TalkerIdText;
 
-extern "C" bool CheckSerialAccess( void );
+extern "C" bool CheckSerialAccess();
 
 Multiplexer::Multiplexer()
 {
@@ -105,7 +105,7 @@ void Multiplexer::StopAndRemoveStream( DataStream *stream )
     }
 }
 
-void Multiplexer::StartAllStreams( void )
+void Multiplexer::StartAllStreams()
 {
     for ( size_t i = 0; i < g_pConnectionParams->Count(); i++ )
     {

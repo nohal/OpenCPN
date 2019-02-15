@@ -108,7 +108,7 @@
 #include "ogr_geometry.h"
 #include "ogr_api.h"
 #include "ogr_p.h"
-#include <assert.h>
+#include <cassert>
 
 int OGRGeometry::bGenerate_DB2_V72_BYTE_ORDER = FALSE;
 

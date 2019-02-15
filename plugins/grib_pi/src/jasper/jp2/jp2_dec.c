@@ -83,7 +83,7 @@
 
 #define	JP2_VALIDATELEN	(JAS_MIN(JP2_JP_LEN + 16, JAS_STREAM_MAXPUTBACK))
 
-static jp2_dec_t *jp2_dec_create(void);
+static jp2_dec_t *jp2_dec_create();
 static void jp2_dec_destroy(jp2_dec_t *dec);
 static int jp2_getcs(jp2_colr_t *colr);
 static int fromiccpcs(int cs);
@@ -481,7 +481,7 @@ int jp2_validate(jas_stream_t *in)
 	return 0;
 }
 
-static jp2_dec_t *jp2_dec_create(void)
+static jp2_dec_t *jp2_dec_create()
 {
 	jp2_dec_t *dec;
 

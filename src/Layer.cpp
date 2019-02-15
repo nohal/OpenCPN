@@ -30,7 +30,7 @@ WX_DEFINE_LIST(LayerList);
 extern bool g_bShowLayers;
 extern LayerList *pLayerList;
 
-Layer::Layer( void )
+Layer::Layer()
 {
     m_bIsVisibleOnChart = g_bShowLayers;
     m_bIsVisibleOnListing = false;
@@ -43,7 +43,7 @@ Layer::Layer( void )
     m_CreateTime = wxDateTime::Now();
 }
 
-Layer::~Layer( void )
+Layer::~Layer()
 {
 //  Remove this layer from the global layer list
     if( NULL != pLayerList ) pLayerList->DeleteObject( this );

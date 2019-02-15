@@ -21,7 +21,7 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,  USA.         *
  ***************************************************************************
  */
-#include <stdlib.h>
+#include <cstdlib>
 #include <thread>
 
 #include <wx/file.h>
@@ -96,10 +96,10 @@ bool SystemCmdSound::Load(const char* path, int deviceIndex)
 }
 
 
-bool SystemCmdSound::Stop(void)  { return false; }
+bool SystemCmdSound::Stop()  { return false; }
 
 
-bool SystemCmdSound::canPlay(void) 
+bool SystemCmdSound::canPlay() 
 {
     if (m_isPlaying)
         wxLogWarning("SystemCmdSound: cannot play: already playing");
@@ -107,7 +107,7 @@ bool SystemCmdSound::canPlay(void)
 }
 
 
-void SystemCmdSound::worker(void)
+void SystemCmdSound::worker()
 {
 #ifdef _DEBUG
     wxLogMessage("SystemCmdSound::worker()");

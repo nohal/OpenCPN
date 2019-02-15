@@ -53,7 +53,7 @@ VWR::~VWR()
    Empty();
 }
 
-void VWR::Empty( void )
+void VWR::Empty()
 {
 //   ASSERT_VALID( this );
 

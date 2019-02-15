@@ -39,7 +39,7 @@ int Garmin_GPS_Open( wxString &port_name );
 int Garmin_GPS_PVT_On( wxString &port_name );
 int Garmin_GPS_PVT_Off( wxString &port_name );
 int Garmin_GPS_GetPVT(void *pvt);
-void Garmin_GPS_ClosePortVerify(void);
+void Garmin_GPS_ClosePortVerify();
 
 
 wxString Garmin_GPS_GetSaveString();
@@ -47,10 +47,10 @@ wxString Garmin_GPS_GetSaveString();
 int Garmin_GPS_SendWaypoints( const wxString &port_name, RoutePointList *wplist);
 int Garmin_GPS_SendRoute( const wxString &port_name, Route *pr, wxGauge *pProgress);
 
-wxString GetLastGarminError(void);
+wxString GetLastGarminError();
 
-int Garmin_USB_On(void);
-int Garmin_USB_Off(void);
+int Garmin_USB_On();
+int Garmin_USB_Off();
 
 
 

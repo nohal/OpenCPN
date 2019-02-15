@@ -57,7 +57,7 @@ public:
       void PREvent(wxCommandEvent& event);
       void OnCloseWindow(wxCloseEvent& event);
 
-      void RePosition(void);
+      void RePosition();
       
       void RecalculateSize();
 

@@ -76,7 +76,7 @@ public:
     //    Generic Point Support
     //      e.g. Tides/Currents and AIS Targets
     SelectItem *AddSelectablePoint(float slat, float slon, const void *data, int fseltype);
-    bool DeleteAllPoints( void );
+    bool DeleteAllPoints();
     bool DeleteSelectablePoint( void *data, int SeltypeToDelete );
     bool ModifySelectablePoint( float slat, float slon, void *data, int fseltype );
 

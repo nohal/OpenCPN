@@ -67,9 +67,9 @@ class RESPONSE
       ** Methods
       */
 
-      virtual void Empty( void ) = 0;
+      virtual void Empty() = 0;
       virtual bool Parse( const SENTENCE& sentence ) = 0;
-      virtual const wxString& PlainEnglish( void );
+      virtual const wxString& PlainEnglish();
       virtual void SetErrorMessage( const wxString& );
       virtual void SetContainer( NMEA0183 *container );
       virtual bool Write( SENTENCE& sentence );

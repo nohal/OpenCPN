@@ -89,7 +89,7 @@ class DashboardInstrument_Dial: public DashboardInstrument
             DashboardInstrument_Dial( wxWindow *parent, wxWindowID id, wxString title, int cap_flag,
                         int s_angle, int r_angle, int s_value, int e_value);
 
-            ~DashboardInstrument_Dial(void){}
+            ~DashboardInstrument_Dial(){}
 
             wxSize GetSize( int orient, wxSize hint );
             void SetData(int, double, wxString);

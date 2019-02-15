@@ -48,7 +48,7 @@ class FontMgr
         wxColour GetFontColor( const wxString &TextElement ) const;
         bool SetFontColor( const wxString &TextElement, const wxColour color ) const;
     
-        int GetNumFonts(void) const;
+        int GetNumFonts() const;
         const wxString & GetConfigString(int i) const;
         const wxString & GetDialogString(int i) const;
         const wxString & GetNativeDesc(int i) const;

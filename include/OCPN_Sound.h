@@ -87,7 +87,7 @@ class OcpnSound
          * Otherwise in synchronous mode returns success/failure from
          * backend. Asynchronous mode returns true.
          */
-        virtual bool Play(void) = 0;
+        virtual bool Play() = 0;
 
         /**
          * Stop possible playback and unload buffers, allowed even if

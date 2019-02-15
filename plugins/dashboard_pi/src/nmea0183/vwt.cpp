@@ -53,7 +53,7 @@ VWT::~VWT()
    Empty();
 }
 
-void VWT::Empty( void )
+void VWT::Empty()
 {
 //   ASSERT_VALID( this );
 

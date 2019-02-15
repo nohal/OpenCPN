@@ -30,7 +30,7 @@
 #endif
 
 #include <wx/filename.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "chartsymbols.h"
 #ifdef ocpnUSE_GL
@@ -62,15 +62,15 @@ WX_DECLARE_STRING_HASH_MAP( wxRect, symbolGraphicsHashMap );
 symbolGraphicsHashMap* symbolGraphicLocations;
 //--------------------------------------------------------------------------------------
 
-ChartSymbols::ChartSymbols( void )
+ChartSymbols::ChartSymbols()
 {
 }
 
-ChartSymbols::~ChartSymbols( void )
+ChartSymbols::~ChartSymbols()
 {
 }
 
-void ChartSymbols::InitializeGlobals( void )
+void ChartSymbols::InitializeGlobals()
 {
     if( !colorTables ) colorTables = new wxArrayPtrVoid;
     if( !symbolGraphicLocations ) symbolGraphicLocations = new symbolGraphicsHashMap;
@@ -78,7 +78,7 @@ void ChartSymbols::InitializeGlobals( void )
     ColorTableIndex = 0;
 }
 
-void ChartSymbols::DeleteGlobals( void )
+void ChartSymbols::DeleteGlobals()
 {
 
     ( *symbolGraphicLocations ).clear();

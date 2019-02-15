@@ -37,7 +37,7 @@ FlexHash::FlexHash( size_t output_octets ) :
 {
 }
 
-void FlexHash::Reset( void )
+void FlexHash::Reset()
 {
     sha1_starts( &this->m_Context );
 }
@@ -47,7 +47,7 @@ void FlexHash::Update( const void* input, size_t input_octets )
     sha1_update( &this->m_Context, reinterpret_cast< const unsigned char* >( input ), input_octets );
 }
 
-void FlexHash::Finish( void )
+void FlexHash::Finish()
 {
     unsigned char output[ FLEXHASH_INTERNAL_SIZE ];
     sha1_finish( &this->m_Context, output );
@@ -89,7 +89,7 @@ void FlexHash::Compute( const void* input, size_t input_octets, void* output, si
     hasher.Compute( input, input_octets, output );
 }
 
-bool FlexHash::Test( void )
+bool FlexHash::Test()
 {
     // Input test vector for "The quick brown fox jumps over the lazy dog".
     static unsigned char input[] = {

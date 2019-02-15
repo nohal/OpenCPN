@@ -75,8 +75,8 @@ public:
     chartdldr_pi( void *ppimgr );
 
 //    The required PlugIn Methods
-    int             Init( void );
-    bool            DeInit( void );
+    int             Init();
+    bool            DeInit();
 
     int             GetAPIVersionMajor();
     int             GetAPIVersionMinor();
@@ -87,14 +87,14 @@ public:
     wxString        GetShortDescription();
     wxString        GetLongDescription();
 
-    void            OnSetupOptions( void );
+    void            OnSetupOptions();
     void            OnCloseToolboxPanel( int page_sel, int ok_apply_cancel );
 
 //    The required override PlugIn Methods
     void            ShowPreferencesDialog( wxWindow* parent );
 
 //    Other public methods
-    bool            SaveConfig(void);
+    bool            SaveConfig();
     bool            ProcessFile(const wxString& aFile, const wxString& aTargetDir, bool aStripPath = true, wxDateTime aMTime = wxDateTime::Now());
     bool            ExtractZipFiles(const wxString& aZipFile, const wxString& aTargetDir, bool aStripPath = true, wxDateTime aMTime = wxDateTime::Now(), bool aRemoveZip = false);
 #ifdef DLDR_USE_LIBARCHIVE
@@ -119,7 +119,7 @@ public:
 private:
     wxFileConfig   *m_pconfig;
     wxScrolledWindow *m_pOptionsPage;
-    bool            LoadConfig(void);
+    bool            LoadConfig();
 
     int             m_leftclick_tool_id;
 

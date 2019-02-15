@@ -96,7 +96,7 @@ extern "C" {
 #endif
 
 /* Get the library debug level. */
-int jas_getdbglevel(void);
+int jas_getdbglevel();
 
 /* Set the library debug level. */
 int jas_setdbglevel(int dbglevel);

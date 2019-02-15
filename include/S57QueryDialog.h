@@ -55,11 +55,11 @@ class S57QueryDialog: public wxDialog
                                      const wxSize& size = wxDefaultSize,
                                      long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU );
 
-            void SetColorScheme(void);
+            void SetColorScheme();
 
             void CreateControls();
             void OnSize(wxSizeEvent& event);
-            void RecalculateSize( void );
+            void RecalculateSize();
             
             void OnClose(wxCloseEvent& event);
             void OnHtmlLinkClicked(wxHtmlLinkEvent& event);
@@ -99,7 +99,7 @@ class S57ExtraQueryInfoDlg: public S57QueryDialog
             ~S57ExtraQueryInfoDlg( );
             void OnClose(wxCloseEvent& event);
             void OnSize( wxSizeEvent& event );
-            void RecalculateSize( void );
+            void RecalculateSize();
 };
 
 #endif

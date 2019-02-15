@@ -66,11 +66,11 @@ class grib_pi : public opencpn_plugin_116
 {
 public:
       grib_pi(void *ppimgr);
-      ~grib_pi(void);
+      ~grib_pi();
 
 //    The required PlugIn Methods
-      int Init(void);
-      bool DeInit(void);
+      int Init();
+      bool DeInit();
 
       int GetAPIVersionMajor();
       int GetAPIVersionMinor();
@@ -90,8 +90,8 @@ public:
       bool RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp);
       bool RenderGLOverlayMultiCanvas(wxGLContext *pcontext, PlugIn_ViewPort *vp, int canvasIndex);
       void SendTimelineMessage(wxDateTime time);
-      void SetDefaults(void);
-      int GetToolBarToolCount(void);
+      void SetDefaults();
+      int GetToolBarToolCount();
       void ShowPreferencesDialog( wxWindow* parent );
       void OnToolbarToolCallback(int id);
       bool QualifyCtrlBarPosition( wxPoint position, wxSize size );
@@ -122,8 +122,8 @@ public:
       bool  m_DialogStyleChanged;
 
 private:
-      bool LoadConfig(void);
-      bool SaveConfig(void);
+      bool LoadConfig();
+      bool SaveConfig();
 
       wxFileConfig     *m_pconfig;
       wxWindow         *m_parent_window;

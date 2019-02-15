@@ -28,21 +28,21 @@
 #ifdef HAVE_PORTAUDIO
 #include "PortAudioSound.h"
 
-OcpnSound* SoundFactory(void) { return new PortAudioSound(); }
+OcpnSound* SoundFactory() { return new PortAudioSound(); }
 
 #elif defined(__OCPN__ANDROID__)
 #include "AndroidSound.h"
 
-OcpnSound* SoundFactory(void) { return new AndroidSound(); }
+OcpnSound* SoundFactory() { return new AndroidSound(); }
 
 #elif defined(HAVE_SYSTEM_CMD_SOUND)
 #include "SystemCmdSound.h"
 
-OcpnSound* SoundFactory(void) { return new SystemCmdSound(SYSTEM_SOUND_CMD); }
+OcpnSound* SoundFactory() { return new SystemCmdSound(SYSTEM_SOUND_CMD); }
 
 #else
 #include  "OcpnWxSound.h"
 
-OcpnSound* SoundFactory(void) { return new OcpnWxSound(); }
+OcpnSound* SoundFactory() { return new OcpnWxSound(); }
 
 #endif

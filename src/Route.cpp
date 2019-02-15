@@ -690,7 +690,7 @@ void Route::RenderSegmentArrowsGL( int xa, int ya, int xb, int yb, ViewPort &vp)
 #endif
 }
 
-void Route::ClearHighlights( void )
+void Route::ClearHighlights()
 {
     RoutePoint *prp = NULL;
     wxRoutePointListNode *node = pRoutePointList->GetFirst();
@@ -746,7 +746,7 @@ RoutePoint *Route::InsertPointAfter( RoutePoint *pRP, double rlat, double rlon,
     return ( newpoint );
 }
 
-wxString Route::GetNewMarkSequenced( void )
+wxString Route::GetNewMarkSequenced()
 {
     wxString ret;
     ret.Printf( _T ( "NM%03d" ), m_nm_sequence );
@@ -863,7 +863,7 @@ void Route::FinalizeForRendering()
     RBBox.Invalidate();
 }
 
-LLBBox &Route::GetBBox( void )
+LLBBox &Route::GetBBox()
 {
     if(RBBox.GetValid())
         return RBBox;
@@ -1107,11 +1107,11 @@ void Route::SetListed( bool visible )
     m_bListed = visible;
 }
 
-void Route::AssembleRoute( void )
+void Route::AssembleRoute()
 {
 }
 
-void Route::RenameRoutePoints( void )
+void Route::RenameRoutePoints()
 {
     //    iterate on the route points.
     //    If dynamically named, rename according to current list position

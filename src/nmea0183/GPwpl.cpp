@@ -54,7 +54,7 @@ GPWPL::~GPWPL()
    Empty();
 }
 
-void GPWPL::Empty( void )
+void GPWPL::Empty()
 {
 
    Position.Empty();

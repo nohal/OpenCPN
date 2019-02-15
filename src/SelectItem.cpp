@@ -35,7 +35,7 @@ SelectItem::~SelectItem()
 {
 }
 
-int SelectItem::GetUserData(void)
+int SelectItem::GetUserData()
 {
     return m_Data4;
 }

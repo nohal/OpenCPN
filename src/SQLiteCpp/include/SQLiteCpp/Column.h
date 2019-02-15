@@ -14,7 +14,7 @@
 #include <SQLiteCpp/Exception.h>
 
 #include <string>
-#include <limits.h>
+#include <climits>
 
 
 namespace SQLite

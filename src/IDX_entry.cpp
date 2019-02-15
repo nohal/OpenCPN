@@ -24,8 +24,8 @@
 
 #include "IDX_entry.h"
 
-#include <string.h>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdlib>
 #include <wx/arrimpl.cpp>
 WX_DEFINE_OBJARRAY(ArrayOfIDXEntry);
 

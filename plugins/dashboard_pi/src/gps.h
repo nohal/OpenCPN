@@ -51,7 +51,7 @@ class DashboardInstrument_GPS: public DashboardInstrument
       public:
             DashboardInstrument_GPS( wxWindow *parent, wxWindowID id, wxString title);
 
-            ~DashboardInstrument_GPS(void){}
+            ~DashboardInstrument_GPS(){}
 
             wxSize GetSize( int orient, wxSize hint );
             void SetData(int, double, wxString) {};

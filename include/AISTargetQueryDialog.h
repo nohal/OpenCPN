@@ -79,13 +79,13 @@ public:
       void SetText(const wxString &text_string);
       void SetColorScheme(ColorScheme cs);
 
-      void RecalculateSize( void );
+      void RecalculateSize();
       void SetAutoCentre( bool bval ){ m_bautoCentre = bval;}
       void SetAutoSize( bool bval ){ m_bautosize = bval;}
       
-      void UpdateText(void);
+      void UpdateText();
       void SetMMSI(int mmsi);
-      int  GetMMSI(void){ return m_MMSI; }
+      int  GetMMSI(){ return m_MMSI; }
 
       //    Data
       int               m_MMSI;

@@ -39,8 +39,8 @@
 #include "mygdal/cpl_csv.h"
 #include "chartbase.h"
 
-#include <string.h>
-#include <stdint.h>
+#include <cstring>
+#include <cstdint>
 #include <vector>
 #include <mutex>
 
@@ -490,7 +490,7 @@ public:
     void CreateSENCVectorEdgeTableRecord200( Osenc_outstream *stream, S57Reader *poReader );
     void CreateSENCVectorConnectedTableRecord200( Osenc_outstream *stream, S57Reader *poReader );
     
-    void InitializePersistentBuffer( void );
+    void InitializePersistentBuffer();
     unsigned char *getBuffer( size_t length);
     
     int getNativeScale(){ return m_native_scale; }

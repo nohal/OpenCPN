@@ -28,7 +28,7 @@
 #include <wx/glcanvas.h>
 #include <wx/ffile.h>
 #include <wx/timer.h>
-#include <stdint.h>
+#include <cstdint>
 
 #include "ocpn_types.h"
 #include "bbox.h"
@@ -121,9 +121,9 @@ public:
     bool OnTimer();
     void AccumulateMemStatistics(int &map_size, int &comp_size, int &compcomp_size);
     void DeleteTexture(const wxRect &rect);
-    void DeleteAllTextures( void );
+    void DeleteAllTextures();
     void DeleteSomeTextures( long target );
-    void DeleteAllDescriptors( void );
+    void DeleteAllDescriptors();
     bool BackgroundCompressionAsJob() const;
     void PurgeBackgroundCompressionPool();
     void SetLRUTime(int lru) { m_LRUtime = lru; }
@@ -138,8 +138,8 @@ public:
     void GetCenter(double &lat, double &lon) { lat = m_clat, lon = m_clon; }
 
 private:
-    bool LoadCatalog(void);
-    bool LoadHeader(void);
+    bool LoadCatalog();
+    bool LoadHeader();
     bool WriteCatalogAndHeader();
 
     bool UpdateCachePrecomp(unsigned char *data, int data_size, const wxRect &rect, int level,

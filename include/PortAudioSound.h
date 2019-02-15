@@ -68,7 +68,7 @@ class PortAudioSound: public OcpnSound
         );
 
         /** Invoked when playback done and drained. */
-        void DoneCallback(void);
+        void DoneCallback();
 
 
     protected:

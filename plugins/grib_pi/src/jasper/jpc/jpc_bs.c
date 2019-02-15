@@ -85,7 +85,7 @@
 * Local function prototypes.
 \******************************************************************************/
 
-static jpc_bitstream_t *jpc_bitstream_alloc(void);
+static jpc_bitstream_t *jpc_bitstream_alloc();
 
 /******************************************************************************\
 * Code for opening and closing bit streams.

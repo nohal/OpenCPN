@@ -91,7 +91,7 @@
 
 #if defined(DEBUG)
 #define	MQDEC_CALL(n, x) \
-	((jas_getdbglevel() >= (n)) ? ((void)(x)) : ((void)0))
+	((jas_getdbglevel() >= (n)) ? (()(x)) : (()0))
 #else
 #define	MQDEC_CALL(n, x)
 #endif

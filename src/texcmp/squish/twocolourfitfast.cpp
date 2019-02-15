@@ -23,7 +23,7 @@
 	
    -------------------------------------------------------------------------- */
 
-#include <string.h>
+#include <cstring>
    
 #include "twocolourfitfast.h"
 #include "colourset.h"

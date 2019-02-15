@@ -177,7 +177,7 @@ static int GetSerialPortPath(io_iterator_t serialPortIterator, char** pNames, in
             }
         }
         // Release the io_service_t now that we are done with it.
-		(void) IOObjectRelease(modemService);
+		() IOObjectRelease(modemService);
 
     }
     return iCurrentNameIndex ;

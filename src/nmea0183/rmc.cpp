@@ -53,7 +53,7 @@ RMC::~RMC()
    Empty();
 }
 
-void RMC::Empty( void )
+void RMC::Empty()
 {
 
    UTCTime.Empty();

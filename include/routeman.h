@@ -70,8 +70,8 @@ public:
       ~Routeman();
 
       bool DeleteRoute(Route *pRoute);
-      void DeleteAllRoutes(void);
-      void DeleteAllTracks(void);
+      void DeleteAllRoutes();
+      void DeleteAllTracks();
 
       void DeleteTrack(Track *pTrack);
 
@@ -92,7 +92,7 @@ public:
       bool UpdateProgress();
       bool UpdateAutopilot();
       bool DeactivateRoute( bool b_arrival = false );
-      bool IsAnyRouteActive(void){ return (pActiveRoute != NULL); }
+      bool IsAnyRouteActive(){ return (pActiveRoute != NULL); }
       void SetColorScheme(ColorScheme cs);
 
       Route *GetpActiveRoute(){ return pActiveRoute;}
@@ -105,24 +105,24 @@ public:
       double GetCurrentSegmentCourse(){ return CurrentSegmentCourse;}
       int   GetXTEDir(){ return XTEDir;}
 
-      wxPen   * GetRoutePen(void){return m_pRoutePen;}
-      wxPen   * GetTrackPen(void){return m_pTrackPen;}
-      wxPen   * GetSelectedRoutePen(void){return m_pSelectedRoutePen;}
-      wxPen   * GetActiveRoutePen(void){return m_pActiveRoutePen;}
-      wxPen   * GetActiveRoutePointPen(void){return m_pActiveRoutePointPen;}
-      wxPen   * GetRoutePointPen(void){return m_pRoutePointPen;}
-      wxBrush * GetRouteBrush(void){return m_pRouteBrush;}
-      wxBrush * GetSelectedRouteBrush(void){return m_pSelectedRouteBrush;}
-      wxBrush * GetActiveRouteBrush(void){return m_pActiveRouteBrush;}
-      wxBrush * GetActiveRoutePointBrush(void){return m_pActiveRoutePointBrush;}
-      wxBrush * GetRoutePointBrush(void){return m_pRoutePointBrush;}
+      wxPen   * GetRoutePen(){return m_pRoutePen;}
+      wxPen   * GetTrackPen(){return m_pTrackPen;}
+      wxPen   * GetSelectedRoutePen(){return m_pSelectedRoutePen;}
+      wxPen   * GetActiveRoutePen(){return m_pActiveRoutePen;}
+      wxPen   * GetActiveRoutePointPen(){return m_pActiveRoutePointPen;}
+      wxPen   * GetRoutePointPen(){return m_pRoutePointPen;}
+      wxBrush * GetRouteBrush(){return m_pRouteBrush;}
+      wxBrush * GetSelectedRouteBrush(){return m_pSelectedRouteBrush;}
+      wxBrush * GetActiveRouteBrush(){return m_pActiveRouteBrush;}
+      wxBrush * GetActiveRoutePointBrush(){return m_pActiveRoutePointBrush;}
+      wxBrush * GetRoutePointBrush(){return m_pRoutePointBrush;}
 
-      wxString GetRouteReverseMessage(void);
+      wxString GetRouteReverseMessage();
 
       bool        m_bDataValid;
 
 private:
-      void DoAdvance(void);
+      void DoAdvance();
     
       MyApp       *m_pparent_app;
       Route       *pActiveRoute;
@@ -176,7 +176,7 @@ public:
       int GetIconIndex(const wxBitmap *pbm);
       int GetIconImageListIndex(const wxBitmap *pbm);
       int GetXIconImageListIndex(const wxBitmap *pbm);
-      int GetNumIcons(void){ return m_pIconArray->Count(); }
+      int GetNumIcons(){ return m_pIconArray->Count(); }
       wxString CreateGUID(RoutePoint *pRP);
       RoutePoint *GetNearbyWaypoint(double lat, double lon, double radius_meters);
       RoutePoint *GetOtherNearbyWaypoint(double lat, double lon, double radius_meters, const wxString &guid);
@@ -185,7 +185,7 @@ public:
       void DeleteAllWaypoints(bool b_delete_used);
       RoutePoint *FindRoutePointByGUID(const wxString &guid);
       void DestroyWaypoint(RoutePoint *pRp, bool b_update_changeset = true);
-      void ClearRoutePointFonts(void);
+      void ClearRoutePointFonts();
       void ProcessIcons( ocpnStyle::Style* style );
       void ProcessDefaultIcons();
       void ReloadAllIcons();
@@ -200,7 +200,7 @@ public:
       
       bool AddRoutePoint(RoutePoint *prp);
       bool RemoveRoutePoint(RoutePoint *prp);
-      RoutePointList *GetWaypointList(void) { return m_pWayPointList; }
+      RoutePointList *GetWaypointList() { return m_pWayPointList; }
 
       MarkIcon *ProcessIcon(wxBitmap pimage, const wxString & key, const wxString & description);
 private:

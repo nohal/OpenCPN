@@ -31,9 +31,9 @@
 
 //#include "tesos.h"
 #include <assert.h>
+#include <math.h>
 #include "mesh.h"
 #include "geom.h"
-#include <math.h>
 
 int tesvertLeq( TESSvertex *u, TESSvertex *v )
 {
@@ -180,7 +180,7 @@ int tesvertCCW( TESSvertex *u, TESSvertex *v, TESSvertex *w )
 /* Claim: the ONLY property the sweep algorithm relies on is that
 * MIN(x,y) <= r <= MAX(x,y).  This is a nasty way to test that.
 */
-#include <stdlib.h>
+#include <cstdlib>
 extern int RandomInterpolate;
 
 double Interpolate( double a, double x, double b, double y)

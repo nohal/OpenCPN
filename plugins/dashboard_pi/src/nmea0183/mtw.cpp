@@ -53,7 +53,7 @@ MTW::~MTW()
    Empty();
 }
 
-void MTW::Empty( void )
+void MTW::Empty()
 {
 //   ASSERT_VALID( this );
 

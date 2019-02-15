@@ -45,7 +45,7 @@ XDR::~XDR()
    Empty();
 }
 
-void XDR::Empty( void )
+void XDR::Empty()
 {
 //   ASSERT_VALID( this );
      TransducerCnt=0;

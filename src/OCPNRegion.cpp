@@ -395,7 +395,7 @@ OGdkRegion    * gdk_region_polygon         (const OGdkPoint     *points,
                                            int                n_points,
                                            OGdkFillRule         fill_rule);
 
-OGdkRegion    * gdk_region_new (void);
+OGdkRegion    * gdk_region_new ();
 void           gdk_region_subtract        (OGdkRegion       *source1,
                                            const OGdkRegion *source2);
 bool           gdk_region_empty           (const OGdkRegion *region);
@@ -1032,8 +1032,8 @@ wxRect OCPNRegionIterator::GetRect() const
  */
 
 //#include "config.h"
-//#include <stdlib.h>
-//#include <string.h>
+//#include <cstdlib>
+//#include <cstring>
 //#include <gdkregion.h>
 //#include "gdkregion-generic.h"
 //#include "gdkalias.h"
@@ -1068,7 +1068,7 @@ static void miRegionOp   (OGdkRegion       *newReg,
  * Returns: a new empty #GdkRegion
  */
 OGdkRegion *
-gdk_region_new (void)
+gdk_region_new ()
 {
     OGdkRegion *temp;
     

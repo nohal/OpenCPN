@@ -24,7 +24,7 @@
 #include "gpsusbint.h"
 #include "gpsusbcommon.h"
 
-static int32 success_stub(void)
+static int32 success_stub()
 {
 	return 1;
 }

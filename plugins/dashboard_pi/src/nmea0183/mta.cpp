@@ -52,7 +52,7 @@ MTA::~MTA()
    Empty();
 }
 
-void MTA::Empty( void )
+void MTA::Empty()
 {
 //   ASSERT_VALID( this );
 

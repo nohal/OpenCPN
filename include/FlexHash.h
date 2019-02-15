@@ -38,15 +38,15 @@ public:
 
     FlexHash( size_t output_octets );
 
-    void Reset( void );
+    void Reset();
     void Update( const void* input, size_t input_octets );
-    void Finish( void );
+    void Finish();
     void Receive( void* output );
 
     void Compute( const void* input, size_t input_octets, void* output );
     static void Compute( const void* input, size_t input_octets, void* output, size_t output_octets );
 
-    static bool Test( void );
+    static bool Test();
 
 protected:
 

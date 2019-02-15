@@ -68,7 +68,7 @@ void iirfilter::setType(int tp)
     type = tp;
 }
 
-double iirfilter::getFc(void)
+double iirfilter::getFc()
 {
     if (std::isnan(b1))
         return 0.0;
@@ -76,12 +76,12 @@ double iirfilter::getFc(void)
     return fc;
 }
 
-int iirfilter::getType(void)
+int iirfilter::getType()
 {
     return type;
 }
 
-double iirfilter::get(void) {
+double iirfilter::get() {
     if (std::isnan(accum))
         return accum;
     double res = accum;

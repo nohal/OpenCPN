@@ -31,10 +31,10 @@
 //#include "dychart.h"              // comment out because MSVC CRT Mem debug breaks compile???
 
 #include "s52utils.h"
-//#include <stdio.h>        // FILE
-//#include <string.h>       // strncmp()
+//#include <cstdio>        // FILE
+//#include <cstring>       // strncmp()
 
-//#include <stdlib.h>       // exit()
+//#include <cstdlib>       // exit()
 
 // configuration file
 #define CONF_NAME   "./s52test.conf"

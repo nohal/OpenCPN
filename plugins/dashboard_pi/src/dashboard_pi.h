@@ -119,11 +119,11 @@ class dashboard_pi : public wxTimer, opencpn_plugin_16
 {
 public:
       dashboard_pi(void *ppimgr);
-      ~dashboard_pi(void);
+      ~dashboard_pi();
 
 //    The required PlugIn Methods
-      int Init(void);
-      bool DeInit(void);
+      int Init();
+      bool DeInit();
 
       void Notify();
 
@@ -140,13 +140,13 @@ public:
       void SetNMEASentence(wxString &sentence);
       void SetPositionFix(PlugIn_Position_Fix &pfix);
       void SetCursorLatLon(double lat, double lon);
-      int GetToolbarToolCount(void);
+      int GetToolbarToolCount();
       void OnToolbarToolCallback(int id);
       void ShowPreferencesDialog( wxWindow* parent );
       void SetColorScheme(PI_ColorScheme cs);
       void OnPaneClose( wxAuiManagerEvent& event );
-      void UpdateAuiStatus(void);
-      bool SaveConfig(void);
+      void UpdateAuiStatus();
+      bool SaveConfig();
       void PopulateContextMenu( wxMenu* menu );
       void ShowDashboard( size_t id, bool visible );
       int GetToolbarItemId(){ return m_toolbar_item_id; }
@@ -154,8 +154,8 @@ public:
       void SetPluginMessage(wxString &message_id, wxString &message_body);
 
 private:
-      bool LoadConfig(void);
-      void ApplyConfig(void);
+      bool LoadConfig();
+      void ApplyConfig();
       void SendSentenceToAllInstruments(int st, double value, wxString unit);
       void SendSatInfoToAllInstruments(int cnt, int seq, SAT_INFO sats[4]);
       void SendUtcTimeToAllInstruments( wxDateTime value );
@@ -222,8 +222,8 @@ public:
       wxChoice                     *m_pChoiceWindSpeedUnit;
 
 private:
-      void UpdateDashboardButtonsState(void);
-      void UpdateButtonsState(void);
+      void UpdateDashboardButtonsState();
+      void UpdateButtonsState();
       int                           curSel;
       wxListCtrl                   *m_pListCtrlDashboards;
       wxBitmapButton               *m_pButtonAddDashboard;

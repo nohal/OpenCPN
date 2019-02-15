@@ -96,7 +96,7 @@ private:
         int         m_nSelected; // index of point selected in Properties dialog row
         
         bool        IsThisTrackExtendable();
-        bool        SaveChanges(void);
+        bool        SaveChanges();
         
         HyperlinkList   *m_pMyLinkList;
         void OnHyperLinkClick(wxHyperlinkEvent &event);
@@ -171,8 +171,8 @@ private:
         void OnAddLink( wxCommandEvent& event );
         void OnEditLinkToggle( wxCommandEvent& event );
         void OnShowTimeTZ( wxCommandEvent& event );
-        void CreateControls( void );
-        void CreateControlsCompact( void );
+        void CreateControls();
+        void CreateControlsCompact();
         
 public:
         static TrackPropDlg *getInstance( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Track properties"),
@@ -191,7 +191,7 @@ public:
         void InitializeList();
         Track *GetTrack() { return m_pTrack; }
         
-        void RecalculateSize( void );
+        void RecalculateSize();
         
         Track      *m_pTrack;
         

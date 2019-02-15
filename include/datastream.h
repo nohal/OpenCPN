@@ -149,7 +149,7 @@ public:
 
     ~DataStream();
 
-    void Close(void);
+    void Close();
 
     bool IsOk(){ return m_bok; }
     wxString GetPort(){ return m_portstring; }
@@ -164,8 +164,8 @@ public:
  //    Secondary thread life toggle
  //    Used to inform launching object (this) to determine if the thread can
  //    be safely called or polled, e.g. wxThread->Destroy();
-    void SetSecThreadActive(void){m_bsec_thread_active = true;}
-    void SetSecThreadInActive(void){m_bsec_thread_active = false;}
+    void SetSecThreadActive(){m_bsec_thread_active = true;}
+    void SetSecThreadInActive(){m_bsec_thread_active = false;}
     bool IsSecThreadActive(){ return m_bsec_thread_active; }
 
     void SetChecksumCheck(bool check) { m_bchecksumCheck = check; }
@@ -189,8 +189,8 @@ public:
 
     int                 m_Thread_run_flag;
 private:
-    void Init(void);
-    void Open(void);
+    void Init();
+    void Open();
 
     void OnSocketEvent(wxSocketEvent& event);
     void OnTimerSocket(wxTimerEvent& event);
@@ -393,13 +393,13 @@ public:
     GarminProtocolHandler(DataStream *parent, wxEvtHandler *MessageTarget,  bool bsel_usb);
     ~GarminProtocolHandler();
 
-    void Close(void);
+    void Close();
 
 
     void StopIOThread(bool b_pause);
-    void RestartIOThread(void);
+    void RestartIOThread();
 
-    void StopSerialThread(void);
+    void StopSerialThread();
 
     void OnTimerGarmin1(wxTimerEvent& event);
 
@@ -430,7 +430,7 @@ public:
     HANDLE garmin_usb_start();
     bool ResetGarminUSBDriver();
     static bool IsGarminPlugged();
-    bool gusb_syncup(void);
+    bool gusb_syncup();
 
     int gusb_win_get(garmin_usb_packet *ibuf, size_t sz);
     int gusb_win_get_bulk(garmin_usb_packet *ibuf, size_t sz);
@@ -464,7 +464,7 @@ public:
                          DataStream *GParentStream,
                          wxEvtHandler *MessageTarget,
                          wxString port);
-    ~GARMIN_Serial_Thread(void);
+    ~GARMIN_Serial_Thread();
     void *Entry();
     void string(wxCharBuffer mb_str);
 
@@ -500,7 +500,7 @@ public:
                       wxEvtHandler *MessageTarget,
                       unsigned int device_handle,
                       size_t max_tx_size);
-    ~GARMIN_USB_Thread(void);
+    ~GARMIN_USB_Thread();
     void *Entry();
 
 

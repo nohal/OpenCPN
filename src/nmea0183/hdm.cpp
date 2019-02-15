@@ -53,7 +53,7 @@ HDM::~HDM()
    Empty();
 }
 
-void HDM::Empty( void )
+void HDM::Empty()
 {
    DegreesMagnetic = 0.0;
 }

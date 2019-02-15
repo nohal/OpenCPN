@@ -24,11 +24,11 @@
  ***************************************************************************
  *
  */
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
-#include <math.h>
-#include <ctype.h>
+#include <cstdio>
+#include <cstdarg>
+#include <cstring>
+#include <cmath>
+#include <cctype>
 
 #include "cutil.h"
 #include "vector2D.h"
@@ -365,7 +365,7 @@ double      round_msvc (double x)
 
 #ifdef __MSVC__
 #include <windows.h>
-#include <float.h>            // for _clear87()
+#include <cfloat>            // for _clear87()
 
 extern long __stdcall MyUnhandledExceptionFilter( struct _EXCEPTION_POINTERS *ExceptionInfo )
 {

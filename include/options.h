@@ -225,8 +225,8 @@ WX_DEFINE_ARRAY_PTR(wxGenericDirCtrl *, ArrayOfDirCtrls);
 
 class Uncopyable {
  protected:
-  Uncopyable(void) {}
-  ~Uncopyable(void) {}
+  Uncopyable() {}
+  ~Uncopyable() {}
 
  private:
   Uncopyable(const Uncopyable &);
@@ -248,35 +248,35 @@ class options : private Uncopyable,
                    const wxSize &size = SYMBOL_OPTIONS_SIZE,
                    long style = SYMBOL_OPTIONS_STYLE);
 
-  ~options(void);
+  ~options();
 #if wxCHECK_VERSION(3,0,0)
   bool SendIdleEvents(wxIdleEvent &event );
 #endif  
   void SetInitialPage(int page_sel, int sub_page = -1);
-  void Finish(void);
+  void Finish();
 
   void OnClose(wxCloseEvent &event);
 
   void CreateListbookIcons();
-  void CreateControls(void);
+  void CreateControls();
   size_t CreatePanel(const wxString &title);
   wxScrolledWindow *AddPage(size_t parent, const wxString &title);
   bool DeletePluginPage(wxScrolledWindow *page);
   void SetColorScheme(ColorScheme cs);
-  void RecalculateSize(void);
+  void RecalculateSize();
 
   void SetInitChartDir(const wxString &dir) { m_init_chart_dir = dir; }
-  void SetInitialSettings(void);
-  void SetInitialVectorSettings(void);
+  void SetInitialSettings();
+  void SetInitialVectorSettings();
   
   void SetCurrentDirList(ArrayOfCDI p) { m_CurrentDirList = p; }
   void SetWorkDirListPtr(ArrayOfCDI *p) { m_pWorkDirList = p; }
-  ArrayOfCDI *GetWorkDirListPtr(void) { return m_pWorkDirList; }
+  ArrayOfCDI *GetWorkDirListPtr() { return m_pWorkDirList; }
 
   void AddChartDir(const wxString &dir);
 
   void UpdateDisplayedChartDirList(ArrayOfCDI p);
-  void UpdateOptionsUnits(void);
+  void UpdateOptionsUnits();
 
   void SetConfigPtr(MyConfig *p) { m_pConfig = p; }
   void OnDebugcheckbox1Click(wxCommandEvent &event);
@@ -325,9 +325,9 @@ class options : private Uncopyable,
   void OnUnitsChoice(wxCommandEvent &event);
   void OnScanBTClick(wxCommandEvent &event);
   void onBTScanTimer(wxTimerEvent &event);
-  void StopBTScan(void);
+  void StopBTScan();
 
-  void UpdateWorkArrayFromTextCtl(void);
+  void UpdateWorkArrayFromTextCtl();
 
   void OnCreateConfig( wxCommandEvent &event);
   void OnEditConfig( wxCommandEvent &event);
@@ -341,7 +341,7 @@ class options : private Uncopyable,
   void SetSelectedConnectionPanel( ConnectionParamsPanel *panel );
   
   // Should we show tooltips?
-  static bool ShowToolTips(void);
+  static bool ShowToolTips();
 
 #ifdef __OCPN__OPTIONS_USE_LISTBOOK__
   wxListbook *m_pListbook;
@@ -584,7 +584,7 @@ class options : private Uncopyable,
   int k_plugins;
 
  private:
-  void Init(void);
+  void Init();
   void CreatePanel_MMSI(size_t parent, int border_size, int group_item_spacing);
   void CreatePanel_AIS(size_t parent, int border_size, int group_item_spacing);
   void CreatePanel_Ownship(size_t parent, int border_size, int group_item_spacing);
@@ -617,22 +617,22 @@ class options : private Uncopyable,
   void ShowNMEAGPS(bool visible);
   void ShowNMEABT(bool visible);
 
-  void SetNMEAFormToSerial(void);
-  void SetNMEAFormToNet(void);
-  void SetNMEAFormToGPS(void);
-  void SetNMEAFormToBT(void);
+  void SetNMEAFormToSerial();
+  void SetNMEAFormToNet();
+  void SetNMEAFormToGPS();
+  void SetNMEAFormToBT();
 
-  void ClearNMEAForm(void);
+  void ClearNMEAForm();
   bool m_bNMEAParams_shown;
   
   void resetMarStdList(bool bsetConfig, bool bsetStd);
   
   void SetConnectionParams(ConnectionParams *cp);
-  void SetDefaultConnectionParams(void);
+  void SetDefaultConnectionParams();
   void SetDSFormRWStates();
   void FillSourceList();
   void UpdateSourceList( bool bResort );
-  bool SortSourceList(void);
+  bool SortSourceList();
 
   ConnectionParams *CreateConnectionParamsFromSelectedItem();
   ConnectionParams *UpdateConnectionParamsFromSelectedItem(ConnectionParams *pConnectionParams);
@@ -685,17 +685,17 @@ private:
 class ChartGroupsUI : private Uncopyable, public wxScrolledWindow {
  public:
   explicit ChartGroupsUI(wxWindow *parent);
-  ~ChartGroupsUI(void);
+  ~ChartGroupsUI();
 
   void CreatePanel(size_t parent, int border_size, int group_item_spacing);
-  void CompletePanel(void);
+  void CompletePanel();
   void SetDBDirs(ArrayOfCDI &array) { m_db_dirs = array; }
   void SetGroupArray(ChartGroupArray *pGroupArray) {
     m_pGroupArray = pGroupArray;
   }
-  void SetInitialSettings(void);
-  void CompleteInitialSettings(void);
-  void PopulateTrees(void);
+  void SetInitialSettings();
+  void CompleteInitialSettings();
+  void PopulateTrees();
   void PopulateTreeCtrl(wxTreeCtrl *ptc, const wxArrayString &dir_array,
                         const wxColour &col, wxFont *pFont = NULL);
   void BuildNotebookPages(ChartGroupArray *pGroupArray);
@@ -837,7 +837,7 @@ class SentenceListDlg : private Uncopyable, public wxDialog {
  public:
   explicit SentenceListDlg(wxWindow *parent, FilterDirection dir, ListType type,
                            const wxArrayString &list);
-  wxString GetSentences(void);
+  wxString GetSentences();
 
  private:
   void OnAddClick(wxCommandEvent &event);
@@ -847,7 +847,7 @@ class SentenceListDlg : private Uncopyable, public wxDialog {
   void OnClearAllClick(wxCommandEvent &event);
 
   void Populate(const wxArrayString &list);
-  wxString GetBoxLabel(void) const;
+  wxString GetBoxLabel() const;
 
   wxCheckListBox *m_clbSentences;
   wxButton *m_btnDel;
@@ -861,21 +861,21 @@ class SentenceListDlg : private Uncopyable, public wxDialog {
 class OpenGLOptionsDlg : private Uncopyable, public wxDialog {
  public:
   explicit OpenGLOptionsDlg(wxWindow *parent);
-  bool GetAcceleratedPanning(void) const;
-  bool GetTextureCompression(void) const;
-  bool GetPolygonSmoothing(void) const;
-  bool GetLineSmoothing(void) const;
-  bool GetShowFPS(void) const;
-  bool GetSoftwareGL(void) const;
-  bool GetTextureCompressionCaching(void) const;
-  bool GetRebuildCache(void) const;
-  int GetTextureMemorySize(void) const;
+  bool GetAcceleratedPanning() const;
+  bool GetTextureCompression() const;
+  bool GetPolygonSmoothing() const;
+  bool GetLineSmoothing() const;
+  bool GetShowFPS() const;
+  bool GetSoftwareGL() const;
+  bool GetTextureCompressionCaching() const;
+  bool GetRebuildCache() const;
+  int GetTextureMemorySize() const;
 
  private:
-  void Populate(void);
+  void Populate();
   void OnButtonRebuild(wxCommandEvent &event);
   void OnButtonClear(wxCommandEvent &event);
-  wxString GetTextureCacheSize(void);
+  wxString GetTextureCacheSize();
 
   wxCheckBox *m_cbUseAcceleratedPanning, *m_cbTextureCompression;
   wxCheckBox *m_cbTextureCompressionCaching, *m_cbShowFPS, *m_cbSoftwareGL,
@@ -905,7 +905,7 @@ class MMSIListCtrl : private Uncopyable, public wxListCtrl {
  public:
   explicit MMSIListCtrl(wxWindow *parent, wxWindowID id, const wxPoint &pos,
                         const wxSize &size, long style);
-  ~MMSIListCtrl(void);
+  ~MMSIListCtrl();
 
   wxString OnGetItemText(long item, long column) const;
   void OnListItemClick(wxListEvent &event);
@@ -932,10 +932,10 @@ class MMSIEditDialog : private Uncopyable, public wxDialog {
                           const wxString &caption = wxEmptyString,
                           const wxPoint &pos = wxDefaultPosition,
                           const wxSize &size = wxDefaultSize, long style = 0);
-  ~MMSIEditDialog(void);
+  ~MMSIEditDialog();
 
   void SetColorScheme(ColorScheme cs);
-  void CreateControls(void);
+  void CreateControls();
   void OnMMSIEditCancelClick(wxCommandEvent &event);
   void OnMMSIEditOKClick(wxCommandEvent &event);
   void OnCtlUpdated(wxCommandEvent &event);
@@ -957,7 +957,7 @@ class MMSI_Props_Panel : private Uncopyable, public wxPanel {
 
   void OnNewButton(wxCommandEvent &event);
   void SetColorScheme(ColorScheme cs);
-  void UpdateMMSIList(void);
+  void UpdateMMSIList();
 
   MMSIListCtrl *m_pListCtrlMMSI;
   wxButton *m_pButtonNew;
@@ -973,10 +973,10 @@ public:
                             const wxString &caption = wxEmptyString,
                             const wxPoint &pos = wxDefaultPosition,
                             const wxSize &size = wxDefaultSize, long style = 0);
-    ~ConfigCreateDialog(void);
+    ~ConfigCreateDialog();
     
     void SetColorScheme(ColorScheme cs);
-    void CreateControls(void);
+    void CreateControls();
     void OnConfigEditCancelClick(wxCommandEvent& event);
     void OnConfigEditOKClick(wxCommandEvent& event);
     wxString GetCreatedTemplateGUID(){ return m_createdTemplateGUID; }

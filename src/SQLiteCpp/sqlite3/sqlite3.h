@@ -156,9 +156,9 @@ extern "C" {
 ** See also: [sqlite_version()] and [sqlite_source_id()].
 */
 SQLITE_API SQLITE_EXTERN const char sqlite3_version[];
-SQLITE_API const char *sqlite3_libversion(void);
-SQLITE_API const char *sqlite3_sourceid(void);
-SQLITE_API int sqlite3_libversion_number(void);
+SQLITE_API const char *sqlite3_libversion();
+SQLITE_API const char *sqlite3_sourceid();
+SQLITE_API int sqlite3_libversion_number();
 
 /*
 ** CAPI3REF: Run-Time Library Compilation Options Diagnostics
@@ -223,7 +223,7 @@ SQLITE_API const char *sqlite3_compileoption_get(int N);
 **
 ** See the [threading mode] documentation for additional information.
 */
-SQLITE_API int sqlite3_threadsafe(void);
+SQLITE_API int sqlite3_threadsafe();
 
 /*
 ** CAPI3REF: Database Connection Handle
@@ -1230,7 +1230,7 @@ typedef struct sqlite3_api_routines sqlite3_api_routines;
 ** any of these methods if the iVersion of the VFS is less than 3.
 */
 typedef struct sqlite3_vfs sqlite3_vfs;
-typedef void (*sqlite3_syscall_ptr)(void);
+typedef void (*sqlite3_syscall_ptr)();
 struct sqlite3_vfs {
   int iVersion;            /* Structure version number (currently 3) */
   int szOsFile;            /* Size of subclassed sqlite3_file */
@@ -1245,7 +1245,7 @@ struct sqlite3_vfs {
   int (*xFullPathname)(sqlite3_vfs*, const char *zName, int nOut, char *zOut);
   void *(*xDlOpen)(sqlite3_vfs*, const char *zFilename);
   void (*xDlError)(sqlite3_vfs*, int nByte, char *zErrMsg);
-  void (*(*xDlSym)(sqlite3_vfs*,void*, const char *zSymbol))(void);
+  void (*(*xDlSym)(sqlite3_vfs*,void*, const char *zSymbol))();
   void (*xDlClose)(sqlite3_vfs*, void*);
   int (*xRandomness)(sqlite3_vfs*, int nByte, char *zOut);
   int (*xSleep)(sqlite3_vfs*, int microseconds);
@@ -1407,10 +1407,10 @@ struct sqlite3_vfs {
 ** must return [SQLITE_OK] on success and some other [error code] upon
 ** failure.
 */
-SQLITE_API int sqlite3_initialize(void);
-SQLITE_API int sqlite3_shutdown(void);
-SQLITE_API int sqlite3_os_init(void);
-SQLITE_API int sqlite3_os_end(void);
+SQLITE_API int sqlite3_initialize();
+SQLITE_API int sqlite3_shutdown();
+SQLITE_API int sqlite3_os_init();
+SQLITE_API int sqlite3_os_end();
 
 /*
 ** CAPI3REF: Configuring The SQLite Library
@@ -2656,7 +2656,7 @@ SQLITE_API sqlite3_uint64 sqlite3_msize(void*);
 ** by [sqlite3_memory_highwater(1)] is the high-water mark
 ** prior to the reset.
 */
-SQLITE_API sqlite3_int64 sqlite3_memory_used(void);
+SQLITE_API sqlite3_int64 sqlite3_memory_used();
 SQLITE_API sqlite3_int64 sqlite3_memory_highwater(int resetFlag);
 
 /*
@@ -4703,8 +4703,8 @@ SQLITE_API int sqlite3_create_function_v2(
 SQLITE_API SQLITE_DEPRECATED int sqlite3_aggregate_count(sqlite3_context*);
 SQLITE_API SQLITE_DEPRECATED int sqlite3_expired(sqlite3_stmt*);
 SQLITE_API SQLITE_DEPRECATED int sqlite3_transfer_bindings(sqlite3_stmt*, sqlite3_stmt*);
-SQLITE_API SQLITE_DEPRECATED int sqlite3_global_recover(void);
-SQLITE_API SQLITE_DEPRECATED void sqlite3_thread_cleanup(void);
+SQLITE_API SQLITE_DEPRECATED int sqlite3_global_recover();
+SQLITE_API SQLITE_DEPRECATED void sqlite3_thread_cleanup();
 SQLITE_API SQLITE_DEPRECATED int sqlite3_memory_alarm(void(*)(void*,sqlite3_int64,int),
                       void*,sqlite3_int64);
 #endif
@@ -5972,7 +5972,7 @@ SQLITE_API int sqlite3_enable_load_extension(sqlite3 *db, int onoff);
 ** See also: [sqlite3_reset_auto_extension()]
 ** and [sqlite3_cancel_auto_extension()]
 */
-SQLITE_API int sqlite3_auto_extension(void(*xEntryPoint)(void));
+SQLITE_API int sqlite3_auto_extension(void(*xEntryPoint)());
 
 /*
 ** CAPI3REF: Cancel Automatic Extension Loading
@@ -5984,7 +5984,7 @@ SQLITE_API int sqlite3_auto_extension(void(*xEntryPoint)(void));
 ** unregistered and it returns 0 if X was not on the list of initialization
 ** routines.
 */
-SQLITE_API int sqlite3_cancel_auto_extension(void(*xEntryPoint)(void));
+SQLITE_API int sqlite3_cancel_auto_extension(void(*xEntryPoint)());
 
 /*
 ** CAPI3REF: Reset Automatic Extension Loading
@@ -5992,7 +5992,7 @@ SQLITE_API int sqlite3_cancel_auto_extension(void(*xEntryPoint)(void));
 ** ^This interface disables all automatic extensions previously
 ** registered using [sqlite3_auto_extension()].
 */
-SQLITE_API void sqlite3_reset_auto_extension(void);
+SQLITE_API void sqlite3_reset_auto_extension();
 
 /*
 ** The interface to the virtual-table mechanism is currently considered
@@ -6801,8 +6801,8 @@ SQLITE_API void sqlite3_mutex_leave(sqlite3_mutex*);
 */
 typedef struct sqlite3_mutex_methods sqlite3_mutex_methods;
 struct sqlite3_mutex_methods {
-  int (*xMutexInit)(void);
-  int (*xMutexEnd)(void);
+  int (*xMutexInit)();
+  int (*xMutexEnd)();
   sqlite3_mutex *(*xMutexAlloc)(int);
   void (*xMutexFree)(sqlite3_mutex *);
   void (*xMutexEnter)(sqlite3_mutex *);

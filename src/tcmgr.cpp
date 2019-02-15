@@ -29,9 +29,9 @@
 #endif //precompiled headers
 #include <wx/datetime.h>
 
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
+#include <cstdlib>
+#include <cmath>
+#include <ctime>
 
 #include "chart1.h"
 #include "dychart.h"
@@ -1509,14 +1509,14 @@ const NV_CHAR *inferred_semi_diurnal[INFERRED_SEMI_DIURNAL_COUNT] = {
 }
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <time.h>
-#include <math.h>
-#include <ctype.h>
-#include <assert.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cerrno>
+#include <ctime>
+#include <cmath>
+#include <cctype>
+#include <cassert>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -7039,9 +7039,9 @@ NV_BOOL infer_constituents (TIDE_RECORD *rec)
 
 /* $Id: bit_pack.c 1805 2007-01-22 15:36:20Z flaterco $ */
 
-#include <math.h>
-#include <stdio.h>
-#include <assert.h>
+#include <cmath>
+#include <cstdio>
+#include <cassert>
 
 
 

@@ -25,7 +25,7 @@
 #ifndef __S52UTILS_H__
 #define __S52UTILS_H__
 
-//#include <stdio.h>  // printf()
+//#include <cstdio>  // printf()
 
 #ifdef SOLARIS
 // well should be cc

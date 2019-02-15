@@ -159,7 +159,7 @@ public:
       virtual void AddNewTrackPoint( TrackPoint *pWP, const wxString& parent_GUID );
 
       virtual void CreateConfigGroups ( ChartGroupArray *pGroupArray );
-      virtual void DestroyConfigGroups ( void );
+      virtual void DestroyConfigGroups ();
       virtual void LoadConfigGroups ( ChartGroupArray *pGroupArray );
 
       virtual void LoadCanvasConfigs( bool bApplyAsTemplate = false );
@@ -241,7 +241,7 @@ class WXDLLEXPORT X11FontPicker : public wxFontDialogBase
             virtual bool DoCreate(wxWindow *parent);
             void InitializeAllAvailableFonts();
             void SetChoiceOptionsFromFacename(const wxString &facename);
-            void DoFontChange(void);
+            void DoFontChange();
 
             wxFont dialogFont;
 
@@ -268,7 +268,7 @@ class WXDLLEXPORT X11FontPicker : public wxFontDialogBase
 class GpxDocument
 {
 public:
-    static wxString GetUUID(void);
+    static wxString GetUUID();
     static void SeedRandom();
 private:
     static int GetRandomNumber(int min, int max);

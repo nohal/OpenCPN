@@ -50,10 +50,10 @@
 
 #include "dychart.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
 
 #include "tesselator.h"
 #include "Striper.h"
@@ -320,7 +320,7 @@ PolyTessGeo::~PolyTessGeo()
     delete  m_pxgeom;
 }
 
-int PolyTessGeo::BuildDeferredTess(void)
+int PolyTessGeo::BuildDeferredTess()
 {
     if(m_pxgeom){
         
@@ -815,7 +815,7 @@ int PolyTessGeo::BuildTessGLU()
 
 
 
-int PolyTessGeo::BuildTess(void)
+int PolyTessGeo::BuildTess()
 {
     //  Setup the tesselator
     

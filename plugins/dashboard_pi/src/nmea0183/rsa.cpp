@@ -54,7 +54,7 @@ RSA::~RSA()
    Empty();
 }
 
-void RSA::Empty( void )
+void RSA::Empty()
 {
 //   ASSERT_VALID( this );
 

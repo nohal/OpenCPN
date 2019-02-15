@@ -32,7 +32,7 @@
 
 #include <wx/tokenzr.h>
 
-#include <stdint.h>
+#include <cstdint>
 
 #if defined( __UNIX__ ) && !defined(__WXOSX__)  // high resolution stopwatch for profiling
 class OCPNStopWatch
@@ -270,7 +270,7 @@ GLboolean QueryExtension( const char *extName )
     return GL_FALSE;
 }
 
-typedef void (*GenericFunction)(void);
+typedef void (*GenericFunction)();
 
 #if defined(__WXMSW__)
 #define systemGetProcAddress(ADDR) wglGetProcAddress(ADDR)
@@ -407,7 +407,7 @@ void GetglEntryPoints( OCPN_GLCaps *pcaps )
 
 
 
-static void GetglEntryPoints( void )
+static void GetglEntryPoints()
 {
     b_glEntryPointsSet = true;
     
@@ -578,7 +578,7 @@ glChartCanvas::~glChartCanvas()
 {
 }
 
-void glChartCanvas::FlushFBO( void ) 
+void glChartCanvas::FlushFBO() 
 {
     if(m_bsetup)
         BuildFBO();

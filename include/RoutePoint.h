@@ -47,9 +47,9 @@ public:
       RoutePoint(double lat, double lon, const wxString& icon_ident, const wxString& name, const wxString &pGUID = wxEmptyString, bool bAddToList = true);
       RoutePoint( RoutePoint* orig );
       RoutePoint();
-      virtual ~RoutePoint(void);
+      virtual ~RoutePoint();
       void Draw(ocpnDC& dc, ChartCanvas *canvas, wxPoint *rpn = NULL);
-      void ReLoadIcon(void);
+      void ReLoadIcon();
       
       void SetPosition(double lat, double lon);
       double GetLatitude()  { return m_lat; };
@@ -65,24 +65,24 @@ public:
       void SetVisible(bool viz = true){ m_bIsVisible = viz; }
       void SetListed(bool viz = true){ m_bIsListed = viz; }
       void SetNameShown(bool viz = true) { m_bShowName = viz; }
-      virtual wxString GetName(void){ return m_MarkName; }
-      wxString GetDescription(void) { return m_MarkDescription; }
+      virtual wxString GetName(){ return m_MarkName; }
+      wxString GetDescription() { return m_MarkDescription; }
 
-      wxDateTime GetCreateTime(void);
+      wxDateTime GetCreateTime();
       void SetCreateTime( wxDateTime dt );
 
-      wxString GetIconName(void){ return m_IconName; }
+      wxString GetIconName(){ return m_IconName; }
       wxBitmap *GetIconBitmap(){ return m_pbmIcon; }
       void SetIconName( wxString name ){ m_IconName = name; }
       
-      void *GetSelectNode(void) { return m_SelectNode; }
+      void *GetSelectNode() { return m_SelectNode; }
       void SetSelectNode(void* node) { m_SelectNode = node; }
 
-      void *GetManagerListNode(void) { return m_ManagerNode; }
+      void *GetManagerListNode() { return m_ManagerNode; }
       void SetManagerListNode(void* node) { m_ManagerNode = node; }
       
       void SetName(const wxString & name);
-      void CalculateNameExtents(void);
+      void CalculateNameExtents();
 
       void SetCourse( double course) { m_routeprop_course = course; };
       double GetCourse() { return m_routeprop_course; };
@@ -92,11 +92,11 @@ public:
       void SetWaypointArrivalRadius(double dArrivalDistance) { m_WaypointArrivalRadius = dArrivalDistance; };
       void SetWaypointArrivalRadius( wxString wxArrivalDistance ) { wxArrivalDistance.ToDouble( &m_WaypointArrivalRadius ); };
       double GetWaypointArrivalRadius();
-      bool  GetShowWaypointRangeRings(void) { return m_bShowWaypointRangeRings; };
-      int   GetWaypointRangeRingsNumber(void);
-      float GetWaypointRangeRingsStep(void);
-      int   GetWaypointRangeRingsStepUnits(void);
-      wxColour GetWaypointRangeRingsColour(void);
+      bool  GetShowWaypointRangeRings() { return m_bShowWaypointRangeRings; };
+      int   GetWaypointRangeRingsNumber();
+      float GetWaypointRangeRingsStep();
+      int   GetWaypointRangeRingsStepUnits();
+      wxColour GetWaypointRangeRingsColour();
       void  SetShowWaypointRangeRings(bool b_showWaypointRangeRings) { m_bShowWaypointRangeRings = b_showWaypointRangeRings; };
       void  SetWaypointRangeRingsNumber(int i_WaypointRangeRingsNumber) { m_iWaypointRangeRingsNumber = i_WaypointRangeRingsNumber; };
       void  SetWaypointRangeRingsStep(float f_WaypointRangeRingsStep) { m_fWaypointRangeRingsStep = f_WaypointRangeRingsStep; };

@@ -276,7 +276,7 @@ class CPL_DLL GDALDataset : public GDALMajorObject
     int         nRefCount;
     int         bShared;
 
-                GDALDataset(void);
+                GDALDataset();
     void        RasterInitialize( int, int );
     void        SetBand( int, GDALRasterBand * );
 
@@ -299,14 +299,14 @@ class CPL_DLL GDALDataset : public GDALMajorObject
   public:
     virtual     ~GDALDataset();
 
-    int         GetRasterXSize( void );
-    int         GetRasterYSize( void );
-    int         GetRasterCount( void );
+    int         GetRasterXSize();
+    int         GetRasterYSize();
+    int         GetRasterCount();
     GDALRasterBand *GetRasterBand( int );
 
-    virtual void FlushCache(void);
+    virtual void FlushCache();
 
-    virtual const char *GetProjectionRef(void);
+    virtual const char *GetProjectionRef();
     virtual CPLErr SetProjection( const char * );
 
     virtual CPLErr GetGeoTransform( double * );
@@ -316,7 +316,7 @@ class CPL_DLL GDALDataset : public GDALMajorObject
                                    char **papszOptions=NULL );
 
     virtual void *GetInternalHandle( const char * );
-    virtual GDALDriver *GetDriver(void);
+    virtual GDALDriver *GetDriver();
 
     virtual int    GetGCPCount();
     virtual const char *GetGCPProjection();
@@ -372,12 +372,12 @@ class CPL_DLL GDALRasterBlock
                 GDALRasterBlock( GDALRasterBand *, int, int );
     virtual     ~GDALRasterBlock();
 
-    CPLErr      Internalize( void );    /* make copy of data */
-    void        Touch( void );          /* update age */
-    void        MarkDirty( void );      /* data has been modified since read */
-    void        MarkClean( void );
-    void        AddLock( void ) { nLockCount++; }
-    void        DropLock( void ) { nLockCount--; }
+    CPLErr      Internalize();    /* make copy of data */
+    void        Touch();          /* update age */
+    void        MarkDirty();      /* data has been modified since read */
+    void        MarkClean();
+    void        AddLock() { nLockCount++; }
+    void        DropLock() { nLockCount--; }
 
     CPLErr      Write();
 
@@ -390,7 +390,7 @@ class CPL_DLL GDALRasterBlock
     int         GetDirty() { return bDirty; }
     int         GetLockCount() { return nLockCount; }
 
-    void        *GetDataRef( void ) { return pData; }
+    void        *GetDataRef() { return pData; }
 
     GDALRasterBand *GetBand() { return poBand; }
 
@@ -479,7 +479,7 @@ class CPL_DLL GDALRasterBand : public GDALMajorObject
     int         GetBand();
     GDALDataset*GetDataset();
 
-    GDALDataType GetRasterDataType( void );
+    GDALDataType GetRasterDataType();
     void        GetBlockSize( int *, int * );
     GDALAccess  GetAccess();
 
@@ -536,7 +536,7 @@ class CPL_DLL GDALOpenInfo
   public:
 
                 GDALOpenInfo( const char * pszFile, GDALAccess eAccessIn );
-                ~GDALOpenInfo( void );
+                ~GDALOpenInfo();
 
     char        *pszFilename;
 
@@ -631,7 +631,7 @@ class CPL_DLL GDALDriverManager : public GDALMajorObject
                 GDALDriverManager();
                 ~GDALDriverManager();
 
-    int         GetDriverCount( void );
+    int         GetDriverCount();
     GDALDriver  *GetDriver( int );
     GDALDriver  *GetDriverByName( const char * );
 
@@ -647,7 +647,7 @@ class CPL_DLL GDALDriverManager : public GDALMajorObject
 };
 
 CPL_C_START
-GDALDriverManager CPL_DLL * GetGDALDriverManager( void );
+GDALDriverManager CPL_DLL * GetGDALDriverManager();
 CPL_C_END
 
 /* ==================================================================== */

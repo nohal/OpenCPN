@@ -142,7 +142,7 @@ public:
 /************************************************************************/
 /*                              S57Reader                               */
 /************************************************************************/
-typedef bool (*CallBackFunction)(void);
+typedef bool (*CallBackFunction)();
 
 class S57Reader
 {

@@ -69,7 +69,7 @@ public:
     
     // accessors
     void SetTicket( JobTicket *ticket ){m_ticket = ticket;}
-    JobTicket *GetTicket(void){ return m_ticket; }
+    JobTicket *GetTicket(){ return m_ticket; }
     
     // required for sending with wxPostEvent()
     wxEvent *Clone() const;
@@ -131,7 +131,7 @@ public:
     bool AsJob( wxString const &chart_path ) const;
     void PurgeJobList( wxString chart_path = wxEmptyString );
     void ClearJobList();
-    void ClearAllRasterTextures(void);
+    void ClearAllRasterTextures();
     bool PurgeChartTextures(ChartBase *pc, bool b_purge_factory = false);
     bool TextureCrunch(double factor);
     bool FactoryCrunch(double factor);

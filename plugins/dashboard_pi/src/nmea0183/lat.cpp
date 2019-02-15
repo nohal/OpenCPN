@@ -51,14 +51,14 @@ LATITUDE::~LATITUDE()
    Empty();
 }
 
-void LATITUDE::Empty( void )
+void LATITUDE::Empty()
 {
 
    Latitude = 0.0;
    Northing = NS_Unknown;
 }
 
-bool LATITUDE::IsDataValid( void )
+bool LATITUDE::IsDataValid()
 {
    if ( Northing != North && Northing != South )
    {

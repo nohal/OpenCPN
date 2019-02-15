@@ -53,7 +53,7 @@ RMB::~RMB()
    Empty();
 }
 
-void RMB::Empty( void )
+void RMB::Empty()
 {
 
    IsDataValid                     = Unknown0183;

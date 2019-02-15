@@ -113,7 +113,7 @@ bool S57QueryDialog::Create( wxWindow* parent, wxWindowID id, const wxString& ca
 
 }
 
-void S57QueryDialog::RecalculateSize( void )
+void S57QueryDialog::RecalculateSize()
 {
     //  Make an estimate of the dialog size, without scrollbars showing
     
@@ -159,7 +159,7 @@ void S57QueryDialog::CreateControls()
     topSizer->Add( ok, 0, wxALIGN_CENTER_HORIZONTAL | wxBOTTOM, 5 );
 }
 
-void S57QueryDialog::SetColorScheme( void )
+void S57QueryDialog::SetColorScheme()
 {
     DimeControl( this );
     wxColor bg = GetBackgroundColour();

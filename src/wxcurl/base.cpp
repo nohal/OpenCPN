@@ -23,8 +23,8 @@
     #include <wx/msw/msvcrt.h>      // useful to catch memory leaks when compiling under MSVC 
 #endif
 
-#include <stdio.h>
-#include <stdarg.h>
+#include <cstdio>
+#include <cstdarg>
 
 #include <wx/curl/base.h>
 #include <wx/filename.h>
@@ -439,7 +439,7 @@ wxCurlBase::~wxCurlBase()
 // LibCURL Abstraction Methods
 //////////////////////////////////////////////////////////////////////
 
-typedef int (*func_T)(void);
+typedef int (*func_T)();
 bool wxCurlBase::SetOpt(CURLoption option, ...)
 {
     va_list arg;

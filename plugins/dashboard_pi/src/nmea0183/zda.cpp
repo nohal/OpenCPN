@@ -53,7 +53,7 @@ ZDA::~ZDA()
    Empty();
 }
 
-void ZDA::Empty( void )
+void ZDA::Empty()
 {
 //   ASSERT_VALID( this );
 

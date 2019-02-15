@@ -201,23 +201,23 @@ public:
     GRIBFile( const wxArrayString & file_names, bool CumRec, bool WaveRec, bool newestFile = false );
     ~GRIBFile();
 
-    bool IsOK( void )
+    bool IsOK()
     {
         return m_bOK;
     }
-    wxArrayString &GetFileNames( void )
+    wxArrayString &GetFileNames()
     {
         return m_FileNames;
     }
-    wxString GetLastMessage( void )
+    wxString GetLastMessage()
     {
         return m_last_message;
     }
-    ArrayOfGribRecordSets *GetRecordSetArrayPtr( void )
+    ArrayOfGribRecordSets *GetRecordSetArrayPtr()
     {
         return &m_GribRecordSetArray;
     }
-    time_t GetRefDateTime( void )
+    time_t GetRefDateTime()
     {
         return m_pRefDateTime;
     }

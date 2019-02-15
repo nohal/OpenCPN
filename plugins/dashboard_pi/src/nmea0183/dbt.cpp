@@ -53,7 +53,7 @@ DBT::~DBT()
    Empty();
 }
 
-void DBT::Empty( void )
+void DBT::Empty()
 {
 //   ASSERT_VALID( this );
 

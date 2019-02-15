@@ -225,7 +225,7 @@ extern bool             g_bUIexpert;
 //    Some constants
 #define ID_CHOICE_NMEA  wxID_HIGHEST + 1
 
-extern wxArrayString *EnumerateSerialPorts(void);           // in chart1.cpp
+extern wxArrayString *EnumerateSerialPorts();           // in chart1.cpp
 
 extern wxArrayString    TideCurrentDataSet;
 extern wxString         g_TCData_Dir;

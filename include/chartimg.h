@@ -203,13 +203,13 @@ protected:
       bool IsRenderCacheable( wxRect& source, wxRect& dest );
 
       void CreatePaletteEntry(char *buffer, int palette_index);
-      PaletteDir GetPaletteDir(void);
+      PaletteDir GetPaletteDir();
       int  *GetPalettePtr(BSB_Color_Capability);
 
       double GetClosestValidNaturalScalePPM(double target_scale, double scale_factor_min, double scale_factor_max);
 
       virtual void InvalidateLineCache();
-      virtual bool CreateLineIndex(void);
+      virtual bool CreateLineIndex();
 
 
       virtual wxBitmap *CreateThumbnail(int tnx, int tny, ColorScheme cs);
@@ -223,12 +223,12 @@ protected:
       virtual int BSBScanScanline(wxInputStream *pinStream);
       virtual int ReadBSBHdrLine( wxInputStream*, char *, int );
       virtual int AnalyzeRefpoints(bool b_testSolution = true);
-      virtual bool AnalyzeSkew(void);
+      virtual bool AnalyzeSkew();
       
-      virtual bool SetMinMax(void);
+      virtual bool SetMinMax();
 
       InitReturn PreInit( const wxString& name, ChartInitFlag init_flags, ColorScheme cs );
-      InitReturn PostInit(void);
+      InitReturn PostInit();
 
       double AdjustLongitude(double lon);
 
@@ -379,7 +379,7 @@ class ChartPlugInWrapper : public ChartBaseBSB
             ChartPlugInWrapper(const wxString &chart_class);
             virtual ~ChartPlugInWrapper();
 
-            virtual wxString GetFileSearchMask(void);
+            virtual wxString GetFileSearchMask();
 
             virtual InitReturn Init( const wxString& name, ChartInitFlag init_flags );
 
@@ -407,7 +407,7 @@ class ChartPlugInWrapper : public ChartBaseBSB
 
             virtual double GetNearestPreferredScalePPM(double target_scale_ppm);
             
-            virtual PlugInChartBase *GetPlugInChart(void){ return m_ppicb; }
+            virtual PlugInChartBase *GetPlugInChart(){ return m_ppicb; }
 
             virtual int GetCOVREntries();
             virtual int GetCOVRTablePoints(int iTable);

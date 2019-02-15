@@ -81,7 +81,7 @@
 #define	jas_iccputuint32(out, val)	jas_iccputuint(out, 4, val)
 #define	jas_iccputuint64(out, val)	jas_iccputuint(out, 8, val)
 
-static jas_iccattrval_t *jas_iccattrval_create0(void);
+static jas_iccattrval_t *jas_iccattrval_create0();
 
 static int jas_iccgetuint(jas_stream_t *in, int n, ulonglong *val);
 static int jas_iccgetuint8(jas_stream_t *in, jas_iccuint8_t *val);
@@ -91,7 +91,7 @@ static int jas_iccgetuint32(jas_stream_t *in, jas_iccuint32_t *val);
 static int jas_iccgetuint64(jas_stream_t *in, jas_iccuint64_t *val);
 static int jas_iccputuint(jas_stream_t *out, int n, ulonglong val);
 static int jas_iccputsint(jas_stream_t *out, int n, longlong val);
-static jas_iccprof_t *jas_iccprof_create(void);
+static jas_iccprof_t *jas_iccprof_create();
 static int jas_iccprof_readhdr(jas_stream_t *in, jas_icchdr_t *hdr);
 static int jas_iccprof_writehdr(jas_stream_t *out, jas_icchdr_t *hdr);
 static int jas_iccprof_gettagtab(jas_stream_t *in, jas_icctagtab_t *tagtab);
@@ -136,7 +136,7 @@ static int jas_iccxyz_getsize(jas_iccattrval_t *attrval);
 static int jas_iccxyz_output(jas_iccattrval_t *attrval, jas_stream_t *out);
 static void jas_iccxyz_dump(jas_iccattrval_t *attrval, FILE *out);
 
-static jas_iccattrtab_t *jas_iccattrtab_create(void);
+static jas_iccattrtab_t *jas_iccattrtab_create();
 static void jas_iccattrtab_destroy(jas_iccattrtab_t *tab);
 static int jas_iccattrtab_resize(jas_iccattrtab_t *tab, int maxents);
 static int jas_iccattrtab_add(jas_iccattrtab_t *attrtab, int i,

@@ -60,7 +60,7 @@ class DPT : public RESPONSE
       ** Methods
       */
 
-      virtual void Empty( void );
+      virtual void Empty();
       virtual bool Parse( const SENTENCE& sentence );
       virtual bool Write( SENTENCE& sentence );
 

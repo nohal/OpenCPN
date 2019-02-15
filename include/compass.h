@@ -41,13 +41,13 @@ public:
 
       bool MouseEvent( wxMouseEvent& event );
       void SetColorScheme( ColorScheme cs );
-      int GetXOffset(void) const { return m_xoffset; }
-      int GetYOffset(void) const { return m_yoffset; }
+      int GetXOffset() const { return m_xoffset; }
+      int GetYOffset() const { return m_yoffset; }
       float GetScaleFactor(){ return m_scale; }
       void SetScaleFactor( float factor);
       
       void Move(const wxPoint &pt) { m_rect.SetPosition(pt); }
-      wxRect GetRect(void) const { return m_rect; }
+      wxRect GetRect() const { return m_rect; }
 private:
       void CreateBmp( bool bnew = false );
 

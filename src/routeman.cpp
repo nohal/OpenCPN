@@ -35,9 +35,9 @@
 
 #include "dychart.h"
 
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
+#include <cstdlib>
+#include <cmath>
+#include <ctime>
 
 #include <wx/listimpl.cpp>
 
@@ -561,7 +561,7 @@ bool Routeman::UpdateProgress()
     return bret_val;
 }
 
-void Routeman::DoAdvance(void)
+void Routeman::DoAdvance()
 {
     if( !ActivateNextPoint( pActiveRoute, false ) )            // at the end?
     {
@@ -915,7 +915,7 @@ bool Routeman::DeleteRoute( Route *pRoute )
     return true;
 }
 
-void Routeman::DeleteAllRoutes( void )
+void Routeman::DeleteAllRoutes()
 {
     ::wxBeginBusyCursor();
 
@@ -948,7 +948,7 @@ void Routeman::DeleteAllRoutes( void )
 
 }
 
-void Routeman::DeleteAllTracks( void )
+void Routeman::DeleteAllTracks()
 {
     ::wxBeginBusyCursor();
 
@@ -1071,7 +1071,7 @@ void Routeman::SetColorScheme( ColorScheme cs )
 
 }
 
-wxString Routeman::GetRouteReverseMessage( void )
+wxString Routeman::GetRouteReverseMessage()
 {
     return wxString(
             _("Waypoints can be renamed to reflect the new order, the names will be '001', '002' etc.\n\nDo you want to rename the waypoints?") );
@@ -2083,7 +2083,7 @@ RoutePoint *WayPointman::GetOtherNearbyWaypoint( double lat, double lon, double 
 
 }
 
-void WayPointman::ClearRoutePointFonts( void )
+void WayPointman::ClearRoutePointFonts()
 {
     //    Iterate on the RoutePoint list, clearing Font pointers
     //    This is typically done globally after a font switch

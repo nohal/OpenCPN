@@ -44,13 +44,13 @@
 
 class GribOverlay {
 public:
-    GribOverlay( void )
+    GribOverlay()
     {
         m_iTexture = 0;
         m_pDCBitmap = NULL;
     }
 
-    ~GribOverlay( void )
+    ~GribOverlay()
     {
 #ifdef ocpnUSE_GL
         if(m_iTexture) 
@@ -158,8 +158,8 @@ public:
     bool RenderGLGribOverlay( wxGLContext *pcontext, PlugIn_ViewPort *vp );
 
     void Reset();
-    void ClearCachedData( void );
-    void ClearCachedLabel( void ) { m_labelCache.clear(); }
+    void ClearCachedData();
+    void ClearCachedLabel() { m_labelCache.clear(); }
     void ClearParticles() { delete m_ParticleMap; m_ParticleMap = NULL; }
 
     GribTimelineRecordSet *m_pGribTimelineRecordSet;

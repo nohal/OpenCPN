@@ -55,7 +55,7 @@ XTE::~XTE()
    Empty();
 }
 
-void XTE::Empty( void )
+void XTE::Empty()
 {
 //   ASSERT_VALID( this );
 

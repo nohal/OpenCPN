@@ -38,7 +38,7 @@ int32 gps_errno = 0;
 char last_error[256];
 
 
-char * GetDeviceLastError(void)
+char * GetDeviceLastError()
 {
       return last_error;
 }
@@ -51,7 +51,7 @@ char * GetDeviceLastError(void)
 ** @return [int32] true if little-endian
 ************************************************************************/
 
-int32 GPS_Util_Little(void)
+int32 GPS_Util_Little()
 {
     static union lb
     {
@@ -536,7 +536,7 @@ void GPS_Error(char *fmt, ...)
 ** @@
 ****************************************************************************/
 
-void GPS_Enable_Error(void)
+void GPS_Enable_Error()
 {
     gps_error = 1;
     return;
@@ -552,7 +552,7 @@ void GPS_Enable_Error(void)
 ** @@
 ****************************************************************************/
 
-void GPS_Enable_Warning(void)
+void GPS_Enable_Warning()
 {
     gps_warning = 1;
     return;
@@ -568,7 +568,7 @@ void GPS_Enable_Warning(void)
 ** @@
 ****************************************************************************/
 
-void GPS_Disable_Error(void)
+void GPS_Disable_Error()
 {
     gps_error = 0;
     return;
@@ -584,7 +584,7 @@ void GPS_Disable_Error(void)
 ** @@
 ****************************************************************************/
 
-void GPS_Disable_Warning(void)
+void GPS_Disable_Warning()
 {
     gps_warning = 0;
     return;
@@ -623,7 +623,7 @@ void GPS_User(const char *fmt, ...)
 ** @@
 ****************************************************************************/
 
-void GPS_Disable_User(void)
+void GPS_Disable_User()
 {
     gps_user = 0;
     return;
@@ -638,7 +638,7 @@ void GPS_Disable_User(void)
 ** @@
 ****************************************************************************/
 
-void GPS_Enable_User(void)
+void GPS_Enable_User()
 {
     gps_user = 1;
     return;
@@ -687,7 +687,7 @@ void GPS_Diag(const char *fmt, ...)
 ** @@
 ****************************************************************************/
 
-void GPS_Enable_Diagnose(void)
+void GPS_Enable_Diagnose()
 {
     gps_show_bytes = 1;
     return;
@@ -703,7 +703,7 @@ void GPS_Enable_Diagnose(void)
 ** @@
 ****************************************************************************/
 
-void GPS_Disable_Diagnose(void)
+void GPS_Disable_Diagnose()
 {
     gps_show_bytes = 0;
     return;

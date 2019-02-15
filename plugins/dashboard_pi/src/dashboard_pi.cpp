@@ -267,7 +267,7 @@ int GetRandomNumber(int range_min, int range_max)
 }
 
 // RFC4122 version 4 compliant random UUIDs generator.
-wxString GetUUID(void)
+wxString GetUUID()
 {
       wxString str;
       struct {
@@ -326,7 +326,7 @@ dashboard_pi::dashboard_pi( void *ppimgr ) :
     initialize_images();
 }
 
-dashboard_pi::~dashboard_pi( void )
+dashboard_pi::~dashboard_pi()
 {
     delete _img_dashboard_pi;
     delete _img_dashboard;
@@ -336,7 +336,7 @@ dashboard_pi::~dashboard_pi( void )
     delete _img_plus;
 }
 
-int dashboard_pi::Init( void )
+int dashboard_pi::Init()
 {
     AddLocaleCatalog( _T("opencpn-dashboard_pi") );
 
@@ -409,7 +409,7 @@ int dashboard_pi::Init( void )
             | USES_AUI_MANAGER | WANTS_PLUGIN_MESSAGING );
 }
 
-bool dashboard_pi::DeInit( void )
+bool dashboard_pi::DeInit()
 {
     SaveConfig();
     if( IsRunning() ) // Timer started?
@@ -1258,7 +1258,7 @@ void dashboard_pi::SetPluginMessage(wxString &message_id, wxString &message_body
     }
 }
 
-int dashboard_pi::GetToolbarToolCount( void )
+int dashboard_pi::GetToolbarToolCount()
 {
     return 1;
 }
@@ -1414,7 +1414,7 @@ void dashboard_pi::OnToolbarToolCallback( int id )
     m_pauimgr->Update();
 }
 
-void dashboard_pi::UpdateAuiStatus( void )
+void dashboard_pi::UpdateAuiStatus()
 {
     //    This method is called after the PlugIn is initialized
     //    and the frame has done its initial layout, possibly from a saved wxAuiManager "Perspective"
@@ -1435,7 +1435,7 @@ void dashboard_pi::UpdateAuiStatus( void )
     SetToolbarItemState( m_toolbar_item_id, GetDashboardWindowShownCount() != 0 );
 }
 
-bool dashboard_pi::LoadConfig( void )
+bool dashboard_pi::LoadConfig()
 {
     wxFileConfig *pConf = (wxFileConfig *) m_pconfig;
 
@@ -1544,7 +1544,7 @@ bool dashboard_pi::LoadConfig( void )
         return false;
 }
 
-bool dashboard_pi::SaveConfig( void )
+bool dashboard_pi::SaveConfig()
 {
     wxFileConfig *pConf = (wxFileConfig *) m_pconfig;
 
@@ -1586,7 +1586,7 @@ bool dashboard_pi::SaveConfig( void )
         return false;
 }
 
-void dashboard_pi::ApplyConfig( void )
+void dashboard_pi::ApplyConfig()
 {
     // Reverse order to handle deletes
     for( size_t i = m_ArrayOfDashboardWindow.GetCount(); i > 0; i-- ) {

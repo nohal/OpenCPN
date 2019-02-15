@@ -38,7 +38,7 @@
 #include "sha1.h"
 
 #if defined(POLARSSL_FS_IO) || defined(POLARSSL_SELF_TEST)
-#include <stdio.h>
+#include <cstdio>
 #endif
 
 #if defined(POLARSSL_PLATFORM_C)

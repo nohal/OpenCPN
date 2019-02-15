@@ -42,7 +42,7 @@ public:
 
     TC_Error_Code LoadData(const wxString &data_file_path);
 
-    int GetMaxIndex(void);
+    int GetMaxIndex();
     IDX_entry *GetIndexEntry(int n_index);
     TC_Error_Code LoadHarmonicData(IDX_entry *pIDX);
 

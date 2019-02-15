@@ -53,7 +53,7 @@ GSV::~GSV()
    Empty();
 }
 
-void GSV::Empty( void )
+void GSV::Empty()
 {
    SatsInView = 0;
 }

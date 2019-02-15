@@ -92,9 +92,9 @@ public:
     NavObjectCollection1();
     ~NavObjectCollection1();
     
-    bool CreateNavObjGPXPoints(void);
-    bool CreateNavObjGPXRoutes(void);
-    bool CreateNavObjGPXTracks(void);
+    bool CreateNavObjGPXPoints();
+    bool CreateNavObjGPXRoutes();
+    bool CreateNavObjGPXTracks();
  
     void AddGPXRoutesList( RouteList *pRoutes );
     void AddGPXTracksList( TrackList *pTracks );
@@ -109,7 +109,7 @@ public:
     
     bool SaveFile( const wxString filename );
 
-    void SetRootGPXNode(void);
+    void SetRootGPXNode();
     bool IsOpenCPN();
     
     pugi::xml_node      m_gpx_root;
@@ -128,7 +128,7 @@ public:
     void AddWP( RoutePoint *pr, const char *action );
     void AddTrackPoint( TrackPoint *pWP, const char *action, const wxString& parent_GUID );
     
-    bool ApplyChanges(void);
+    bool ApplyChanges();
     
     wxString    m_filename;
     FILE *      m_changes_file;

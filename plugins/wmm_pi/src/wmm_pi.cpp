@@ -122,7 +122,7 @@ wmm_pi::wmm_pi(void *ppimgr)
     initialize_images();
 }
 
-int wmm_pi::Init(void)
+int wmm_pi::Init()
 {
     AddLocaleCatalog( PLUGIN_CATALOG_NAME );
 
@@ -217,7 +217,7 @@ int wmm_pi::Init(void)
     return ret_flag;
 }
 
-bool wmm_pi::DeInit(void)
+bool wmm_pi::DeInit()
 {
     //    Record the dialog position
      if (NULL != m_pWmmDialog)
@@ -298,7 +298,7 @@ location you can find in the OpenCPN logfile.");
 }
 
 
-int wmm_pi::GetToolbarToolCount(void)
+int wmm_pi::GetToolbarToolCount()
 {
     return 1;
 }
@@ -753,7 +753,7 @@ wxString wmm_pi::AngleToText(double angle)
         return wxString::Format(_T("%u\u00B0%u' E"), deg, min);
 }
 
-bool wmm_pi::LoadConfig(void)
+bool wmm_pi::LoadConfig()
 {
     wxFileConfig *pConf = (wxFileConfig *)m_pconfig;
 
@@ -805,7 +805,7 @@ bool wmm_pi::LoadConfig(void)
         return false;
 }
 
-bool wmm_pi::SaveConfig(void)
+bool wmm_pi::SaveConfig()
 {
     wxFileConfig *pConf = (wxFileConfig *)m_pconfig;
 

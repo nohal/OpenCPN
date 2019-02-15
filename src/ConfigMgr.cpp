@@ -33,9 +33,9 @@
 
 #include "dychart.h"
 
-#include <stdlib.h>
-//#include <math.h>
-#include <time.h>
+#include <cstdlib>
+//#include <cmath>
+#include <ctime>
 #include <locale>
 #include <list>
 
@@ -511,7 +511,7 @@ public:
     bool RemoveConfig( wxString GUID);
     
     
-    void SetRootConfigNode(void);
+    void SetRootConfigNode();
     bool IsOpenCPN();
     bool SaveFile( const wxString filename );
     bool LoadFile( const wxString filename );
@@ -528,7 +528,7 @@ OCPNConfigCatalog::~OCPNConfigCatalog()
 {
 }
 
-void OCPNConfigCatalog::SetRootConfigNode(void)
+void OCPNConfigCatalog::SetRootConfigNode()
 {
     if(!strlen(m_config_root.name())) {
         m_config_root = append_child("configs");
@@ -957,7 +957,7 @@ bool ConfigMgr::ApplyConfigGUID( wxString GUID)
 
 
 // RFC4122 version 4 compliant random UUIDs generator.
-wxString ConfigMgr::GetUUID(void)
+wxString ConfigMgr::GetUUID()
 {
     wxString str;
     struct {

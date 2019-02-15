@@ -10,7 +10,7 @@
 
 #include "SVGLocatable.h"
 #include "svg.h"
-#include <math.h>
+#include <cmath>
 #include <wx/log.h>
 
 wxSVGRect wxSVGLocatable::GetElementBBox(const wxSVGElement* element, wxSVG_COORDINATES coordinates) {

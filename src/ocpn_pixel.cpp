@@ -63,7 +63,7 @@
 #include "ocpn_pixel.h"
 
 #ifndef WX_PRECOMP
-    #include <stdio.h>
+    #include <cstdio>
 
     #include "wx/list.h"
     #include "wx/utils.h"
@@ -405,7 +405,7 @@ PixelCache::~PixelCache()
 
 }
 
-size_t PixelCache::GetLength(void)
+size_t PixelCache::GetLength()
 {
 #ifdef __PIX_CACHE_WXIMAGE__
     return m_width * m_height * 3;
@@ -415,7 +415,7 @@ size_t PixelCache::GetLength(void)
 }
     
 
-void PixelCache::Update(void)
+void PixelCache::Update()
 {
 #ifdef __PIX_CACHE_WXIMAGE__
     delete m_pbm;                       // kill the old one
@@ -470,7 +470,7 @@ void PixelCache::SelectIntoDC(wxMemoryDC &dc)
 }
 
 
-unsigned char *PixelCache::GetpData(void) const
+unsigned char *PixelCache::GetpData() const
 {
     return pData;
 }

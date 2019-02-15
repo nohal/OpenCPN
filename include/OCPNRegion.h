@@ -160,7 +160,7 @@ public:
     void Reset(const OCPNRegion& region);
 
     bool HaveRects() const;
-    void NextRect(void);
+    void NextRect();
     wxRect GetRect() const;
 
 private:

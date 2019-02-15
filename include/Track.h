@@ -55,7 +55,7 @@ public:
       TrackPoint( TrackPoint* orig );
       ~TrackPoint();
 
-      wxDateTime GetCreateTime(void);
+      wxDateTime GetCreateTime();
       void SetCreateTime( wxDateTime dt );
       void Draw(ChartCanvas *cc, ocpnDC& dc );
       const char *GetTimeString() { return m_timestring; }
@@ -78,7 +78,7 @@ public:
     virtual ~Track();
 
     void Draw( ChartCanvas *cc, ocpnDC& dc, ViewPort &VP, const LLBBox &box);
-    int GetnPoints(void){ return TrackPoints.size(); }
+    int GetnPoints(){ return TrackPoints.size(); }
     
     
     void SetVisible(bool visible = true) { m_bVisible = visible; }
@@ -181,7 +181,7 @@ class ActiveTrack : public wxEvtHandler, public Track
 
             void SetPrecision(int precision);
 
-            void Start(void);
+            void Start();
             void Stop(bool do_add_point = false);
             Track *DoExtendDaily();
             bool IsRunning(){ return m_bRunning; }

@@ -110,13 +110,13 @@ protected:
 //    Methods
       bool RenderViewOnDC(wxMemoryDC& dc, const ViewPort& VPoint);
       InitReturn PreInit( const wxString& name, ChartInitFlag init_flags, ColorScheme cs );
-      InitReturn PostInit(void);
+      InitReturn PostInit();
 
       void PrepareTiles();
       void PrepareTilesForZoom(int zoomFactor, bool bset_geom);
       bool getTileTexture(SQLite::Database &db, mbTileDescriptor *tile);
       bool tileIsPopulated(mbTileDescriptor *tile);
-      void FlushTiles( void );
+      void FlushTiles();
       
 
 //    Protected Data

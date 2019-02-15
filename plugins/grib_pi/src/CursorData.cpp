@@ -264,7 +264,7 @@ void CursorData::PopulateTrackingControls( bool vertical )
     dummy->Show( false );
 }
 
-void CursorData::UpdateTrackingControls( void )
+void CursorData::UpdateTrackingControls()
 {
     if( !m_gparent.m_pTimelineSet )
         return;

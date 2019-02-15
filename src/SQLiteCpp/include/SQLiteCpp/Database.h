@@ -13,7 +13,7 @@
 #include <SQLiteCpp/Column.h>
 #include <SQLiteCpp/Utils.h>    // definition of nullptr for C++98/C++03 compilers
 
-#include <string.h>
+#include <cstring>
 
 // Forward declarations to avoid inclusion of <sqlite3.h> in a header
 struct sqlite3;

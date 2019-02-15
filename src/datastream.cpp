@@ -38,9 +38,9 @@
 #include "wx/tokenzr.h"
 #include <wx/datetime.h>
 
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
+#include <cstdlib>
+#include <cmath>
+#include <ctime>
 
 #ifndef __WXMSW__
 #include <arpa/inet.h>
@@ -148,7 +148,7 @@ DataStream::DataStream(wxEvtHandler *input_consumer,
     Open();
 }
 
-void DataStream::Init(void)
+void DataStream::Init()
 {
     m_pSecondary_Thread = NULL;
     m_GarminHandler = NULL;
@@ -167,7 +167,7 @@ void DataStream::Init(void)
     
 }
 
-void DataStream::Open(void)
+void DataStream::Open()
 {
     //  Open a port
     wxLogMessage( wxString::Format(_T("Opening NMEA Datastream %s"), m_portstring.c_str()) );
@@ -843,7 +843,7 @@ bool DataStream::SendSentence( const wxString &sentence )
 //----------------------------------------------------------------------------
 
 #ifdef __WXMSW__
-BOOL IsUserAdmin(VOID)
+BOOL IsUserAdmin()
 /*++
  *            Routine Description: This routine returns TRUE if the caller's
  *            process is a member of the Administrators local group. Caller is NOT
@@ -978,7 +978,7 @@ GarminProtocolHandler::~GarminProtocolHandler()
 {
 }
 
-void GarminProtocolHandler::Close( void )
+void GarminProtocolHandler::Close()
 {
     TimerGarmin1.Stop();
     
@@ -987,7 +987,7 @@ void GarminProtocolHandler::Close( void )
     
 }
 
-void GarminProtocolHandler::StopSerialThread(void)
+void GarminProtocolHandler::StopSerialThread()
 {
     if(m_garmin_serial_thread)
     {
@@ -1050,7 +1050,7 @@ void GarminProtocolHandler::StopIOThread(bool b_pause)
     
 }
 
-void GarminProtocolHandler::RestartIOThread(void)
+void GarminProtocolHandler::RestartIOThread()
 {
     wxLogMessage(_T("Restarting Garmin I/O thread"));
     TimerGarmin1.Start(1000);
@@ -1320,7 +1320,7 @@ HANDLE GarminProtocolHandler::garmin_usb_start()
 }
 
 
-bool GarminProtocolHandler::gusb_syncup(void)
+bool GarminProtocolHandler::gusb_syncup()
 {
     static int unit_number;
     static const char  oinit[12] =
@@ -1559,7 +1559,7 @@ GARMIN_Serial_Thread::GARMIN_Serial_Thread(GarminProtocolHandler *parent,
     Create();
 }
 
-GARMIN_Serial_Thread::~GARMIN_Serial_Thread(void)
+GARMIN_Serial_Thread::~GARMIN_Serial_Thread()
 {
 }
 

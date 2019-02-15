@@ -53,7 +53,7 @@ DPT::~DPT()
    Empty();
 }
 
-void DPT::Empty( void )
+void DPT::Empty()
 {
 //   ASSERT_VALID( this );
 

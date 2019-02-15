@@ -52,7 +52,7 @@ VLW::~VLW()
    Empty();
 }
 
-void VLW::Empty( void )
+void VLW::Empty()
 {
    TotalMileage = 0.0;
    TripMileage  = 0.0;

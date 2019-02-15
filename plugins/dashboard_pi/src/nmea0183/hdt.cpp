@@ -53,7 +53,7 @@ HDT::~HDT()
    Empty();
 }
 
-void HDT::Empty( void )
+void HDT::Empty()
 {
    DegreesTrue = 0.0;
 }

@@ -55,7 +55,7 @@ GLL::~GLL()
    Empty();
 }
 
-void GLL::Empty( void )
+void GLL::Empty()
 {
 //   ASSERT_VALID( this );
 
@@ -140,7 +140,7 @@ bool GLL::Parse( const SENTENCE& sentence )
 }
 
 
-const wxString& GLL::PlainEnglish( void )
+const wxString& GLL::PlainEnglish()
 {
 //   ASSERT_VALID( this );
 

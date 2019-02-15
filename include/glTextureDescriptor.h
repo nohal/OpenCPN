@@ -53,9 +53,9 @@ public:
     void FreeComp();
     void FreeCompComp();
 
-    size_t GetMapArrayAlloc(void);
-    size_t GetCompArrayAlloc(void);
-    size_t GetCompCompArrayAlloc(void);
+    size_t GetMapArrayAlloc();
+    size_t GetCompArrayAlloc();
+    size_t GetCompCompArrayAlloc();
 
     bool IsCompCompArrayComplete( int base_level );
 

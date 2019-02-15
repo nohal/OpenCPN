@@ -102,7 +102,7 @@ class TriPrim
 public:
         TriPrim();
         ~TriPrim();
-        void FreeMem(void);
+        void FreeMem();
 
         unsigned int type;                  // Type of triangle primitive
                                             //  May be PTG_TRIANGLES
@@ -123,7 +123,7 @@ class LegacyTriPrim
 public:
     LegacyTriPrim();
     ~LegacyTriPrim();
-    void FreeMem(void);
+    void FreeMem();
     
     unsigned int type;                  // Type of triangle primitive
     //  May be PTG_TRIANGLES
@@ -197,7 +197,7 @@ class PolyTessGeo
 
         bool IsOk(){ return m_bOK;}
 
-        int BuildDeferredTess(void);
+        int BuildDeferredTess();
 
         double Get_xmin(){ return xmin;}
         double Get_xmax(){ return xmax;}
@@ -241,10 +241,10 @@ class PolyTessGeo
         bool           m_bcm93;
         
 private:
-        int BuildTess(void);
-        //int BuildTessGL2(void);
+        int BuildTess();
+        //int BuildTessGL2();
         //int PolyTessGeoGL(OGRPolygon *poly, bool bSENC_SM, double ref_lat, double ref_lon);
-        int BuildTessGLU( void );
+        int BuildTessGLU();
 
     //  Data
 

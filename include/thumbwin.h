@@ -62,9 +62,9 @@ public:
       ThumbWin(wxWindow *parent);
       virtual ~ThumbWin();
 
-      void Resize(void);
+      void Resize();
       void SetMaxSize(wxSize const &max_size);
-      const wxBitmap &GetBitmap(void);
+      const wxBitmap &GetBitmap();
 
 
       wxBitmap     m_bitmap;

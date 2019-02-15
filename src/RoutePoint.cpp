@@ -273,7 +273,7 @@ RoutePoint::RoutePoint( double lat, double lon, const wxString& icon_ident, cons
 
 }
 
-RoutePoint::~RoutePoint( void )
+RoutePoint::~RoutePoint()
 {
 //  Remove this point from the global waypoint list
     if( NULL != pWayPointMan )
@@ -446,7 +446,7 @@ void RoutePoint::SetName(const wxString & name)
     CalculateNameExtents();
 }
 
-void RoutePoint::CalculateNameExtents( void )
+void RoutePoint::CalculateNameExtents()
 {
     if( m_pMarkFont ) {
         wxScreenDC dc;
@@ -464,7 +464,7 @@ void RoutePoint::CalculateNameExtents( void )
 
 }
 
-void RoutePoint::ReLoadIcon( void )
+void RoutePoint::ReLoadIcon()
 {
     if(!pWayPointMan)
         return;
@@ -1112,7 +1112,7 @@ int   RoutePoint::GetWaypointRangeRingsStepUnits() {
         return m_iWaypointRangeRingsStepUnits ; 
 }
 
-wxColour RoutePoint::GetWaypointRangeRingsColour(void) { 
+wxColour RoutePoint::GetWaypointRangeRingsColour() { 
     if ( m_wxcWaypointRangeRingsColour.GetAsString(wxC2S_HTML_SYNTAX) == _T("#FFFFFF") )
         return g_colourWaypointRangeRingsColour;
     else

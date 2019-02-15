@@ -269,7 +269,7 @@ AIS_Target_Data::~AIS_Target_Data()
     delete m_ptrack;
 }
 
-wxString AIS_Target_Data::GetFullName( void )
+wxString AIS_Target_Data::GetFullName()
 {
     wxString retName;
     if( b_nameValid ) {
@@ -289,7 +289,7 @@ wxString AIS_Target_Data::GetFullName( void )
 }
     
     
-wxString AIS_Target_Data::BuildQueryResult( void )
+wxString AIS_Target_Data::BuildQueryResult()
 {
     wxString html;
     wxDateTime now = wxDateTime::Now();
@@ -684,7 +684,7 @@ wxString AIS_Target_Data::BuildQueryResult( void )
     return html;
 }
 
-wxString AIS_Target_Data::GetRolloverString( void )
+wxString AIS_Target_Data::GetRolloverString()
 {
     wxString result;
     wxString t;
@@ -910,12 +910,12 @@ wxString AIS_Target_Data::Get_class_string( bool b_short )
     }
 }
 
-void AIS_Target_Data::Toggle_AIS_CPA(void)
+void AIS_Target_Data::Toggle_AIS_CPA()
 {
     b_show_AIS_CPA = !b_show_AIS_CPA ? true : false;
 }
 
-void AIS_Target_Data::ToggleShowTrack(void)
+void AIS_Target_Data::ToggleShowTrack()
 {
     b_show_track = !b_show_track ? true : false;
 }

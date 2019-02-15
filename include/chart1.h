@@ -56,10 +56,10 @@ extern "C" void MyCPLErrorHandler( CPLErr eErrClass, int nError,
 wxFont *GetOCPNScaledFont( wxString item, int default_size = 0 );
 wxFont GetOCPNGUIScaledFont( wxString item );
 
-wxArrayString *EnumerateSerialPorts(void);
+wxArrayString *EnumerateSerialPorts();
 wxColour GetGlobalColor(wxString colorName);
 
-int GetApplicationMemoryUse(void);
+int GetApplicationMemoryUse();
 
 // Helper to create menu label + hotkey string when registering menus
 wxString _menuText(wxString name, wxString shortcut);
@@ -69,7 +69,7 @@ double AnchorDistFix( double const d, double const AnchorPointMinDist, double co
 
 bool TestGLCanvas(wxString prog_dir);
 bool ReloadLocale();
-void ApplyLocale( void );
+void ApplyLocale();
 
 void LoadS57();
 
@@ -309,7 +309,7 @@ class MyApp: public wxApp
     bool OnExceptionInMainLoop();
 #endif    
     
-    void TrackOff(void);
+    void TrackOff();
     
     wxSingleInstanceChecker *m_checker;
 
@@ -324,7 +324,7 @@ class MyFrame: public wxFrame
 
     ~MyFrame();
 
-    int GetApplicationMemoryUse(void);
+    int GetApplicationMemoryUse();
 
     void OnEraseBackground(wxEraseEvent& event);
     void OnActivate(wxActivateEvent& event);
@@ -335,7 +335,7 @@ class MyFrame: public wxFrame
     void OnMove(wxMoveEvent& event);
     void OnInitTimer(wxTimerEvent& event);
     void OnFrameTimer1(wxTimerEvent& event);
-    bool DoChartUpdate(void);
+    bool DoChartUpdate();
     void OnEvtTHREADMSG(OCPN_ThreadMessageEvent& event);
     void OnEvtOCPN_NMEA(OCPN_DataStreamEvent & event);
     void OnEvtPlugInMessage( OCPN_MsgEvent & event );
@@ -352,8 +352,8 @@ class MyFrame: public wxFrame
 #endif // wxHAS_POWER_EVENTS
     
     void RefreshCanvasOther( ChartCanvas *ccThis );
-    void UpdateAllFonts(void);
-    void PositionConsole(void);
+    void UpdateAllFonts();
+    void PositionConsole();
     void OnToolLeftClick(wxCommandEvent& event);
     void ClearRouteTool();
     void DoStackUp(ChartCanvas *cc);
@@ -371,7 +371,7 @@ class MyFrame: public wxFrame
     ChartCanvas *GetFocusCanvas();
 
     void DoStackDelta( ChartCanvas *cc, int direction );
-    void DoSettings( void );
+    void DoSettings();
     void SwitchKBFocus( ChartCanvas *pCanvas );
     ChartCanvas *GetCanvasUnderMouse();
     int GetCanvasIndexUnderMouse();
@@ -392,9 +392,9 @@ class MyFrame: public wxFrame
 
     void JumpToPosition( ChartCanvas *cc, double lat, double lon, double scale );
     
-    void ProcessCanvasResize(void);
+    void ProcessCanvasResize();
 
-    void BuildMenuBar( void );
+    void BuildMenuBar();
     void ApplyGlobalSettings(bool bnewtoolbar);
     void RegisterGlobalMenuItems();
     void UpdateGlobalMenuItems();
@@ -402,9 +402,9 @@ class MyFrame: public wxFrame
     void SetChartThumbnail(int index);
     int  DoOptionsDialog();
     bool  ProcessOptionsDialog(int resultFlags, ArrayOfCDI *pNewDirArray );
-    void DoPrint(void);
-    void StopSockets(void);
-    void ResumeSockets(void);
+    void DoPrint();
+    void StopSockets();
+    void ResumeSockets();
     void ToggleDataQuality( ChartCanvas *cc );
     void TogglebFollow(ChartCanvas *cc);
     void ToggleFullScreen();
@@ -414,19 +414,19 @@ class MyFrame: public wxFrame
     void ToggleChartOutlines(ChartCanvas *cc);
     void ToggleENCText(ChartCanvas *cc);
     void ToggleSoundings(ChartCanvas *cc);
-    void ToggleRocks(void);
+    void ToggleRocks();
     bool ToggleLights( ChartCanvas *cc );
     void ToggleAnchor( ChartCanvas *cc );
     void ToggleAISDisplay( ChartCanvas *cc );
     void ToggleAISMinimizeTargets( ChartCanvas *cc );
 
-    void ToggleTestPause(void);
-    void TrackOn(void);
+    void ToggleTestPause();
+    void TrackOn();
     void SetENCDisplayCategory( ChartCanvas *cc, enum _DisCat nset );
     void ToggleNavobjects( ChartCanvas *cc );
         
     Track *TrackOff(bool do_add_point = false);
-    void TrackDailyRestart(void);
+    void TrackDailyRestart();
     bool ShouldRestartTrack();
     void ToggleColorScheme();
     void SetMenubarItemState ( int item_id, bool state );
@@ -443,14 +443,14 @@ class MyFrame: public wxFrame
     void ShowTides(bool bShow);
     void ShowCurrents(bool bShow);
 
-    void SubmergeAllCanvasToolbars(void);
-    void SurfaceAllCanvasToolbars(void);
+    void SubmergeAllCanvasToolbars();
+    void SurfaceAllCanvasToolbars();
     void ToggleAllToolbars( bool b_smooth = false );
-    void SetAllToolbarScale(void);
-    void SetGPSCompassScale(void);
+    void SetAllToolbarScale();
+    void SetGPSCompassScale();
     void InvalidateAllCanvasUndo();
     
-    void RefreshGroupIndices(void);
+    void RefreshGroupIndices();
 
     double GetBestVPScale(ChartBase *pchart);
 
@@ -468,8 +468,8 @@ class MyFrame: public wxFrame
     bool SendJSON_WMM_Var_Request(double lat, double lon, wxDateTime date);
     
     void DestroyPersistentDialogs();
-    void TouchAISActive(void);
-    void UpdateAISTool(void);
+    void TouchAISActive();
+    void UpdateAISTool();
 
     void ActivateAISMOBRoute( AIS_Target_Data *ptarget );
     void UpdateAISMOBRoute( AIS_Target_Data *ptarget );
@@ -497,7 +497,7 @@ class MyFrame: public wxFrame
     void RequestNewToolbarArgEvent( wxCommandEvent & WXUNUSED( event ) ){ return RequestNewMasterToolbar(); }
     void RequestNewToolbars( bool bforcenew = false);
 
-    void ActivateMOB(void);
+    void ActivateMOB();
     void UpdateGPSCompassStatusBoxes(bool b_force_new = false);
     void UpdateRotationState( double rotation );
     
@@ -522,19 +522,19 @@ class MyFrame: public wxFrame
     bool CheckAndAddPlugInTool( );
     bool AddDefaultPositionPlugInTools( );
 
-    void NotifyChildrenResize( void );
+    void NotifyChildrenResize();
     void UpdateCanvasConfigDescriptors();
     void ScheduleSettingsDialog();
 
   private:
-    void ODoSetSize(void);
-    void DoCOGSet(void);
+    void ODoSetSize();
+    void DoCOGSet();
     
     void UpdateAllToolbars( ColorScheme cs );
     
-    void FilterCogSog(void);
+    void FilterCogSog();
 
-    void ApplyGlobalColorSchemetoStatusBar(void);
+    void ApplyGlobalColorSchemetoStatusBar();
     void PostProcessNNEA(bool pos_valid, bool cog_sog_valid, const wxString &sfixtime);
 
     bool ScrubGroupArray();
@@ -613,7 +613,7 @@ class MyPrintout: public wxPrintout
 
   void DrawPageOne(wxDC *dc);
   
-  void GenerateGLbmp(void);
+  void GenerateGLbmp();
   
 private:
   wxBitmap m_GLbmp;
@@ -712,7 +712,7 @@ public:
     void OnCancel(wxCommandEvent& event);
     void OnClose( wxCloseEvent& event );
     void OnTimer(wxTimerEvent &evt);
-    void RecalculateSize( void );
+    void RecalculateSize();
     
     
 private:

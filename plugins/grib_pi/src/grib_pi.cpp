@@ -82,14 +82,14 @@ grib_pi::grib_pi(void *ppimgr)
       m_GUIScaleFactor = -1.;
 }
 
-grib_pi::~grib_pi(void)
+grib_pi::~grib_pi()
 {
       delete _img_grib_pi;
       delete _img_grib;
       delete m_pLastTimelineSet;
 }
 
-int grib_pi::Init(void)
+int grib_pi::Init()
 {
       AddLocaleCatalog( _T("opencpn-grib_pi") );
 
@@ -155,7 +155,7 @@ int grib_pi::Init(void)
             );
 }
 
-bool grib_pi::DeInit(void)
+bool grib_pi::DeInit()
 {
     if(m_pGribCtrlBar) {
         m_pGribCtrlBar->Close();
@@ -226,12 +226,12 @@ Supported GRIB data include:\n\
 }
 
 \
-void grib_pi::SetDefaults(void)
+void grib_pi::SetDefaults()
 {
 }
 
 
-int grib_pi::GetToolBarToolCount(void)
+int grib_pi::GetToolBarToolCount()
 {
       return 1;
 }
@@ -703,7 +703,7 @@ void grib_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
     }
 }
 
-bool grib_pi::LoadConfig(void)
+bool grib_pi::LoadConfig()
 {
     wxFileConfig *pConf = (wxFileConfig *)m_pconfig;
 
@@ -735,7 +735,7 @@ bool grib_pi::LoadConfig(void)
     return true;
 }
 
-bool grib_pi::SaveConfig(void)
+bool grib_pi::SaveConfig()
 {
     wxFileConfig *pConf = (wxFileConfig *)m_pconfig;
 

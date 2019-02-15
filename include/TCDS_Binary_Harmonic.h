@@ -38,7 +38,7 @@ public:
 
     TC_Error_Code LoadData(const wxString &data_file_path);
 
-    int GetMaxIndex(void) {
+    int GetMaxIndex() {
         return num_IDX;
     };
     IDX_entry *GetIndexEntry(int n_index);

@@ -151,7 +151,7 @@ public:
     wxCoord OnMeasureItemWidth(size_t item) const;
     
     int Append(const wxString& item, wxBitmap bmp);
-    void Clear( void );
+    void Clear();
     
 private:
     int         itemHeight;
@@ -294,7 +294,7 @@ class MarkInfoDlg : public wxFrame
         wxTimePickerCtrl*       m_EtaTimePickerCtrl;
         wxBitmap*               _img_MUI_settings_svg;
         
-        void initialize_images(void);
+        void initialize_images();
         void OnBitmapCombClick(wxCommandEvent& event);
         void OnPositionCtlUpdated( wxCommandEvent& event );
         void OnExtDescriptionClick( wxCommandEvent& event );
@@ -324,15 +324,15 @@ class MarkInfoDlg : public wxFrame
         MarkInfoDlg( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Waypoint Properties"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1, -1 ), long style = wxDEFAULT_FRAME_STYLE|wxFRAME_FLOAT_ON_PARENT|wxMAXIMIZE_BOX|wxRESIZE_BORDER );
         ~MarkInfoDlg();
         void Create();
-        void InitialFocus(void);
-        void RecalculateSize( void );
-        RoutePoint *GetRoutePoint(void) { return m_pRoutePoint; }
+        void InitialFocus();
+        void RecalculateSize();
+        RoutePoint *GetRoutePoint() { return m_pRoutePoint; }
         void SetColorScheme( ColorScheme cs );
         void SetRoutePoint( RoutePoint *pRP );
         void UpdateHtmlList();
         void SetDialogTitle(const wxString & title) { SetTitle(title); }
         bool UpdateProperties( bool positionOnly = false );
-        void ValidateMark(void);
+        void ValidateMark();
         bool SaveChanges();
         wxSimpleHtmlListBox *GetSimpleBox()
             { return wxDynamicCast(m_htmlList, wxSimpleHtmlListBox); }

@@ -23,8 +23,8 @@
 	
    -------------------------------------------------------------------------- */
 
-#include <string.h>
-#include <stdint.h>
+#include <cstring>
+#include <cstdint>
    
 #include "colourset.h"
 

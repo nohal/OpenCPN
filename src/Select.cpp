@@ -288,7 +288,7 @@ SelectItem *Select::AddSelectablePoint( float slat, float slon, const void *pdat
 }
 
 /*
-bool Select::DeleteAllPoints( void )
+bool Select::DeleteAllPoints()
 {
     pSelectList->DeleteContents( true );
     pSelectList->Clear();

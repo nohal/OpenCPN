@@ -29,7 +29,7 @@
 #include <wx/filename.h>
 #include <wx/wx.h>
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "dychart.h"
 
@@ -317,7 +317,7 @@ void glTexFactory::DeleteTexture(const wxRect &rect)
     }
 }
 
-void glTexFactory::DeleteAllTextures( void )
+void glTexFactory::DeleteAllTextures()
 {
     // iterate over all the textures presently loaded
     // and delete the OpenGL texture from the GPU
@@ -370,7 +370,7 @@ void glTexFactory::FreeSome( long target )
 }
 
 
-void glTexFactory::DeleteAllDescriptors( void )
+void glTexFactory::DeleteAllDescriptors()
 {
     // iterate over all the texture descriptors
 
@@ -955,7 +955,7 @@ int glTexFactory::GetTextureLevel( glTextureDescriptor *ptd, const wxRect &rect,
 // return not used
 // false? never
 // true 
-bool glTexFactory::LoadHeader(void)
+bool glTexFactory::LoadHeader()
 {
     if(m_hdrOK)
         return true;
@@ -1046,7 +1046,7 @@ bool glTexFactory::AddCacheEntryValue(const CatalogEntry &p)
     return true;
 }
 
-bool glTexFactory::LoadCatalog(void)
+bool glTexFactory::LoadCatalog()
 {
     m_newCatalog = false;
     if(m_catalogOK)

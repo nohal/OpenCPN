@@ -31,7 +31,7 @@
 
 
 #include "nmea0183.h"
-#include <math.h>
+#include <cmath>
 
 #if !defined(NAN)
 
@@ -141,7 +141,7 @@ COMMUNICATIONS_MODE SENTENCE::CommunicationsMode( int field_number ) const
    }
 }
 
-unsigned char SENTENCE::ComputeChecksum( void ) const
+unsigned char SENTENCE::ComputeChecksum() const
 {
    unsigned char checksum_value = 0;
 
@@ -238,7 +238,7 @@ const wxString& SENTENCE::Field( int desired_field_number ) const
    return( return_string );
 }
 
-int SENTENCE::GetNumberOfDataFields( void ) const
+int SENTENCE::GetNumberOfDataFields() const
 {
 //   ASSERT_VALID( this );
 
@@ -266,7 +266,7 @@ int SENTENCE::GetNumberOfDataFields( void ) const
    return( (int) current_field_number );
 }
 
-void SENTENCE::Finish( void )
+void SENTENCE::Finish()
 {
 //   ASSERT_VALID( this );
 

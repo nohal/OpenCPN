@@ -146,14 +146,14 @@ NMEA0183::~NMEA0183()
    initialize();
 }
 
-void NMEA0183::initialize( void )
+void NMEA0183::initialize()
 {
 //   ASSERT_VALID( this );
 
    ErrorMessage.Empty();
 }
 
-void NMEA0183::set_container_pointers( void )
+void NMEA0183::set_container_pointers()
 {
 //   ASSERT_VALID( this );
 
@@ -174,7 +174,7 @@ void NMEA0183::set_container_pointers( void )
    }
 }
 
-void NMEA0183::sort_response_table( void )
+void NMEA0183::sort_response_table()
 {
 //   ASSERT_VALID( this );
 
@@ -216,7 +216,7 @@ void NMEA0183::sort_response_table( void )
 ** Public Interface
 */
 
-bool NMEA0183::IsGood( void ) const
+bool NMEA0183::IsGood() const
 {
 //   ASSERT_VALID( this );
 
@@ -249,7 +249,7 @@ bool NMEA0183::IsGood( void ) const
 }
 
 
-bool NMEA0183::PreParse( void )
+bool NMEA0183::PreParse()
 {
     wxCharBuffer buf = sentence.Sentence.ToUTF8();
     if( !buf.data() )                            // badly formed sentence?
@@ -279,7 +279,7 @@ bool NMEA0183::PreParse( void )
 }
 
 
-bool NMEA0183::Parse( void )
+bool NMEA0183::Parse()
 {
    bool return_value = FALSE;
 

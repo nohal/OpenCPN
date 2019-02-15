@@ -269,7 +269,7 @@ void CanvasOptions::OnOptionChange( wxCommandEvent &event)
 
 
 
-void CanvasOptions::RefreshControlValues( void )
+void CanvasOptions::RefreshControlValues()
 {
     ChartCanvas *parentCanvas = wxDynamicCast(m_parent, ChartCanvas);
     if(!parentCanvas)
@@ -358,7 +358,7 @@ void CanvasOptions::SetENCAvailable( bool avail )
     RefreshControlValues();
 }
 
-void CanvasOptions::UpdateCanvasOptions( void )
+void CanvasOptions::UpdateCanvasOptions()
 {
     ChartCanvas *parentCanvas = wxDynamicCast(m_parent, ChartCanvas);
     if(!parentCanvas)

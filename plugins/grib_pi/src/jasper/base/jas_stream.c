@@ -97,7 +97,7 @@
 
 static int jas_strtoopenmode(const char *s);
 static void jas_stream_destroy(jas_stream_t *stream);
-static jas_stream_t *jas_stream_create(void);
+static jas_stream_t *jas_stream_create();
 static void jas_stream_initbuf(jas_stream_t *stream, int bufmode, char *buf,
   int bufsize);
 

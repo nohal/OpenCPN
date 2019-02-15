@@ -53,7 +53,7 @@ MWV::~MWV()
    Empty();
 }
 
-void MWV::Empty( void )
+void MWV::Empty()
 {
 //   ASSERT_VALID( this );
 

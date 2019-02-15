@@ -100,8 +100,8 @@ class DDFModule
 
     void        Dump( FILE * fp );
 
-    DDFRecord   *ReadRecord( void );
-    DDFRecord   *ReadRecord1( void );
+    DDFRecord   *ReadRecord();
+    DDFRecord   *ReadRecord1();
     void        Rewind( long nOffset = -1 );
 
     DDFFieldDefn *FindFieldDefn( const char * );
@@ -337,7 +337,7 @@ typedef enum {
     FloatComplex=5
 } DDFBinaryFormat;
 
-    DDFBinaryFormat GetBinaryFormat(void) const { return eBinaryFormat; }
+    DDFBinaryFormat GetBinaryFormat() const { return eBinaryFormat; }
 
 
 private:

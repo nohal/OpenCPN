@@ -89,15 +89,15 @@
 
 #ifdef __MSVC__
 #define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
+#include <cstdlib>
 #include <crtdbg.h>
 #define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__ )
 #define new DEBUG_NEW
 #endif
 
 #ifndef __WXMSW__
-#include <signal.h>
-#include <setjmp.h>
+#include <csignal>
+#include <csetjmp>
 
 
 extern struct sigaction sa_all;
@@ -795,7 +795,7 @@ wxRect ViewPort::GetVPRectIntersect( size_t n, float *llpoints )
 
 }
 
-void ViewPort::SetBoxes( void )
+void ViewPort::SetBoxes()
 {
 
     //  In the case where canvas rotation is applied, we need to define a larger "virtual" pixel window size to ensure that

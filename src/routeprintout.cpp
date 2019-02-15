@@ -53,15 +53,15 @@ using namespace std;
 #include "dychart.h"
 
 #ifdef __WXMSW__
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
+#include <cstdlib>
+#include <cmath>
+#include <ctime>
 #include <psapi.h>
 #endif
 
 #ifndef __WXMSW__
-#include <signal.h>
-#include <setjmp.h>
+#include <csignal>
+#include <csetjmp>
 #endif
 
 #include "routeprintout.h"

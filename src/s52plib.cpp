@@ -31,8 +31,8 @@
 #include "wx/wx.h"
 #endif //precompiled headers
 
-#include <math.h>
-#include <stdlib.h>
+#include <cmath>
+#include <cstdlib>
 
 #include "georef.h"
 #include "viewport.h"
@@ -614,7 +614,7 @@ void s52plib::SetGLRendererString(const wxString &renderer)
  current state of the library member options.
  */
 
-void s52plib::UpdateMarinerParams( void )
+void s52plib::UpdateMarinerParams()
 {
 
     //      Symbol Style
@@ -1254,7 +1254,7 @@ void s52plib::DestroyRules( RuleHash *rh )
     delete rh;
 }
 
-void s52plib::FlushSymbolCaches( void )
+void s52plib::FlushSymbolCaches()
 {
     if( !useLegacyRaster ) ChartSymbols::LoadRasterFileForColorTable( m_colortable_index, true );
 
@@ -1329,7 +1329,7 @@ void s52plib::DestroyLUPArray( wxArrayOfLUPrec *pLUPArray )
     }
 }
 
-void s52plib::ClearCNSYLUPArray( void )
+void s52plib::ClearCNSYLUPArray()
 {
     if( condSymbolLUPArray ) {
         for( unsigned int i = 0; i < condSymbolLUPArray->GetCount(); i++ )
@@ -8733,7 +8733,7 @@ void s52plib::RemoveObjNoshow( const char *objcl )
     }
 }
 
-void s52plib::ClearNoshow(void)
+void s52plib::ClearNoshow()
 {
     m_noshow_array.Clear();
 }
@@ -8857,7 +8857,7 @@ void s52plib::PLIB_LoadS57Config()
 }
 
 //    Do all those things necessary to prepare for a new rendering
-void s52plib::PrepareForRender( void )
+void s52plib::PrepareForRender()
 {
     PrepareForRender(NULL);
 }
@@ -9014,7 +9014,7 @@ void s52plib::SetQualityOfData(bool val)
     
 }
 
-void s52plib::ClearTextList( void )
+void s52plib::ClearTextList()
 {
     //      Clear the current text rectangle list
     m_textObjList.Clear();

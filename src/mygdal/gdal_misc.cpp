@@ -127,7 +127,7 @@
 
 #include "gdal_priv.h"
 #include "cpl_string.h"
-#include <ctype.h>
+#include <cctype>
 
 /************************************************************************/
 /*                           __pure_virtual()                           */

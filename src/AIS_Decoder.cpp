@@ -193,7 +193,7 @@ AIS_Decoder::AIS_Decoder( wxFrame *parent )
     Connect(wxEVT_OCPN_DATASTREAM, (wxObjectEventFunction)(wxEventFunction)&AIS_Decoder::OnEvtAIS);
 }
 
-AIS_Decoder::~AIS_Decoder( void )
+AIS_Decoder::~AIS_Decoder()
 {
     AIS_Target_Hash::iterator it;
     AIS_Target_Hash *current_targets = GetTargetList();
@@ -250,7 +250,7 @@ AIS_Decoder::~AIS_Decoder( void )
 #endif
 }
 
-void AIS_Decoder::BuildERIShipTypeHash(void)
+void AIS_Decoder::BuildERIShipTypeHash()
 {
       make_hash_ERI(8000, _("Vessel, type unknown"));
       make_hash_ERI(8150, _("Freightbarge"));
@@ -1975,7 +1975,7 @@ bool AIS_Decoder::NMEACheckSumOK( const wxString& str_in )
     return false;
 }
 
-void AIS_Decoder::UpdateAllCPA( void )
+void AIS_Decoder::UpdateAllCPA()
 {
     //    Iterate thru all the targets
     AIS_Target_Hash::iterator it;
@@ -1988,7 +1988,7 @@ void AIS_Decoder::UpdateAllCPA( void )
     }
 }
 
-void AIS_Decoder::UpdateAllTracks( void )
+void AIS_Decoder::UpdateAllTracks()
 {
     //    Iterate thru all the targets
     AIS_Target_Hash::iterator it;
@@ -2084,7 +2084,7 @@ void AIS_Decoder::DeletePersistentTrack( Track *track )
     }
 }
 
-void AIS_Decoder::UpdateAllAlarms( void )
+void AIS_Decoder::UpdateAllAlarms()
 {
     m_bGeneralAlert = false;                // no alerts yet
 
@@ -2740,7 +2740,7 @@ void MMSIProperties::Init(void )
     m_ShipName = wxEmptyString;
 }
 
-wxString MMSIProperties::Serialize( void )
+wxString MMSIProperties::Serialize()
 {
     wxString sMMSI;
     wxString s;

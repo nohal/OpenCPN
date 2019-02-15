@@ -53,7 +53,7 @@ RTE::~RTE()
    Empty();
 }
 
-void RTE::Empty( void )
+void RTE::Empty()
 {
    total_number_of_messages     = 0;
    last_message_number_received = 0;
@@ -181,7 +181,7 @@ bool RTE::AddWaypoint(const wxString& name)
       return( TRUE );
 }
 
-void RTE::delete_all_entries( void )
+void RTE::delete_all_entries()
 {
    Waypoints.Clear();
 }

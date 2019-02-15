@@ -66,7 +66,7 @@ public:
       bool toggledLoaded;
       wxSize customSize;
 
-      void Unload(void) {
+      void Unload() {
             iconLoaded= false;
             rolloverLoaded = false;
             rolloverToggledLoaded = false;
@@ -76,7 +76,7 @@ public:
             customSize = wxSize( 32, 32 );
       }
 
-      Tool(void) {
+      Tool() {
           Unload();
       }
 };
@@ -89,18 +89,18 @@ public:
       wxBitmap icon;
       bool loaded;
 
-      void Unload(void) {
+      void Unload() {
             loaded = false;
       }
 
-      Icon(void) { Unload(); }
+      Icon() { Unload(); }
 };
 
 class Style {
 
 public:
-      Style( void );
-      ~Style( void );
+      Style();
+      ~Style();
 
       wxBitmap GetNormalBG();
       wxBitmap GetActiveBG();
@@ -206,8 +206,8 @@ private:
 
 class StyleManager {
 public:
-      StyleManager(void);
-      ~StyleManager(void);
+      StyleManager();
+      ~StyleManager();
       StyleManager(const wxString & configDir);
 
       bool IsOK() const { return isOK; }

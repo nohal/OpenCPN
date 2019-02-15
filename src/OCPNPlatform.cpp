@@ -69,8 +69,8 @@
 #endif
 
 #ifndef __WXMSW__
-#include <signal.h>
-#include <setjmp.h>
+#include <csignal>
+#include <csetjmp>
 #endif
 
 #ifdef __WXMSW__
@@ -354,7 +354,7 @@ int CALLBACK CrashCallback(CR_CRASH_CALLBACK_INFO* pInfo)
 
 
 //  Called from MyApp() immediately upon entry to MyApp::OnInit()
-void OCPNPlatform::Initialize_1( void )
+void OCPNPlatform::Initialize_1()
 {
     
 #ifdef OCPN_USE_CRASHRPT
@@ -568,7 +568,7 @@ void OCPNPlatform::Initialize_1( void )
 //  Called from MyApp() immediately before creation of MyFrame()
 //  Config is known to be loaded and stable
 //  Log is available
-void OCPNPlatform::Initialize_2( void )
+void OCPNPlatform::Initialize_2()
 {
 #ifdef __OCPN__ANDROID__
     wxLogMessage(androidGetDeviceInfo());
@@ -580,7 +580,7 @@ void OCPNPlatform::Initialize_2( void )
 }
 
 //  Called from MyApp()::OnInit() just after gFrame is created, so gFrame is available
-void OCPNPlatform::Initialize_3( void )
+void OCPNPlatform::Initialize_3()
 {
     bool bcapable = IsGLCapable();
     
@@ -605,7 +605,7 @@ void OCPNPlatform::Initialize_3( void )
 }
 
 //  Called from MyApp() just before end of MyApp::OnInit()
-void OCPNPlatform::Initialize_4( void )
+void OCPNPlatform::Initialize_4()
 {
 #ifdef __OCPN__ANDROID__
     if(pSelect) pSelect->SetSelectPixelRadius(wxMax( 25, 6.0 * getAndroidDPmm()) );
@@ -614,10 +614,10 @@ void OCPNPlatform::Initialize_4( void )
 #endif    
 }
 
-void OCPNPlatform::OnExit_1( void ){
+void OCPNPlatform::OnExit_1(){
 }
     
-void OCPNPlatform::OnExit_2( void ){
+void OCPNPlatform::OnExit_2(){
     
 #ifdef OCPN_USE_CRASHRPT
 #ifndef _DEBUG
@@ -731,7 +731,7 @@ bool OCPNPlatform::IsGLCapable()
 }
 
 
-void OCPNPlatform::SetLocaleSearchPrefixes( void )
+void OCPNPlatform::SetLocaleSearchPrefixes()
 {
 #if wxUSE_XLOCALE
     // Add a new prefixes for search order.
@@ -941,7 +941,7 @@ wxString OCPNPlatform::ChangeLocale(wxString &newLocaleID, wxLocale *presentLoca
 //      as on initial startup after new install
 //      The global config object (pConfig) is available, so direct updates are also allowed
 
-void OCPNPlatform::SetDefaultOptions( void )
+void OCPNPlatform::SetDefaultOptions()
 {
     //  General options, applied to all platforms
     g_bShowOutlines = true;
@@ -1492,7 +1492,7 @@ int OCPNPlatform::DoDirSelectorDialog( wxWindow *parent, wxString *file_spec, wx
 }
 
 
-bool OCPNPlatform::InitializeLogFile( void )
+bool OCPNPlatform::InitializeLogFile()
 {
     //      Establish Log File location
     mlog_file = GetPrivateDataDir();
@@ -1621,7 +1621,7 @@ bool OCPNPlatform::hasInternalGPS(wxString profile)
 //      Platform Display Support
 //--------------------------------------------------------------------------
 
-void OCPNPlatform::ShowBusySpinner( void )
+void OCPNPlatform::ShowBusySpinner()
 {
 #ifdef __OCPN__ANDROID__
     androidShowBusyIcon();
@@ -1635,7 +1635,7 @@ void OCPNPlatform::ShowBusySpinner( void )
 #endif    
 }
 
-void OCPNPlatform::HideBusySpinner( void )
+void OCPNPlatform::HideBusySpinner()
 {
 #ifdef __OCPN__ANDROID__
     androidHideBusyIcon();
@@ -1690,7 +1690,7 @@ int OCPNPlatform::GetStatusBarFieldCount()
 }
 
 
-double OCPNPlatform::getFontPointsperPixel( void )
+double OCPNPlatform::getFontPointsperPixel()
 {
     double pt_per_pixel = 1.0;
     
@@ -2304,7 +2304,7 @@ bool LoadQtStyleSheet(wxString &sheet_file)
         return false;
 }
 
-QString getQtStyleSheet( void )
+QString getQtStyleSheet()
 {
     return g_qtStyleSheet;
 }
@@ -2341,7 +2341,7 @@ bool OCPNPlatform::isPlatformCapable( int flag){
 }    
     
     
-void OCPNPlatform::LaunchLocalHelp( void ) {
+void OCPNPlatform::LaunchLocalHelp() {
  
 #ifdef __OCPN__ANDROID__
     androidLaunchHelpView();

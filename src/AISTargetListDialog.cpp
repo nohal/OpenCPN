@@ -757,7 +757,7 @@ void AISTargetListDialog::OnCloseButton( wxCommandEvent& event )
     Shutdown();
 }
 
-void AISTargetListDialog::Shutdown( void )
+void AISTargetListDialog::Shutdown()
 {
     if(m_pAuiManager) {
         wxAuiPaneInfo pane =m_pAuiManager->GetPane(this);
@@ -991,7 +991,7 @@ AIS_Target_Data *AISTargetListDialog::GetpTarget( unsigned int list_item )
         return NULL;
 }
 
-void AISTargetListDialog::UpdateAISTargetList( void )
+void AISTargetListDialog::UpdateAISTargetList()
 {
     if(m_pListCtrlAISTargets && !m_pListCtrlAISTargets->IsVirtual())
         return UpdateNVAISTargetList();
@@ -1069,7 +1069,7 @@ void AISTargetListDialog::UpdateAISTargetList( void )
     }
 }
 
-void AISTargetListDialog::UpdateNVAISTargetList( void )
+void AISTargetListDialog::UpdateNVAISTargetList()
 {
     if( m_pdecoder ) {
 

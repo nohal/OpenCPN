@@ -23,8 +23,8 @@
 	
    -------------------------------------------------------------------------- */
 
-#include <stdio.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdint>
    
 #include "squish.h"
 #include "colourset.h"

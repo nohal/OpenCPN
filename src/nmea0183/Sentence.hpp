@@ -63,13 +63,13 @@ class SENTENCE
       */
 
       virtual NMEA0183_BOOLEAN Boolean( int field_number ) const;
-      virtual unsigned char ComputeChecksum( void ) const;
+      virtual unsigned char ComputeChecksum() const;
       virtual COMMUNICATIONS_MODE CommunicationsMode( int field_number ) const;
       virtual double Double( int field_number ) const;
       virtual EASTWEST EastOrWest( int field_number ) const;
       virtual const wxString& Field( int field_number ) const;
-      virtual void Finish( void );
-      virtual int GetNumberOfDataFields( void ) const;
+      virtual void Finish();
+      virtual int GetNumberOfDataFields() const;
       virtual int Integer( int field_number ) const;
       virtual NMEA0183_BOOLEAN IsChecksumBad( int checksum_field_number ) const;
       virtual LEFTRIGHT LeftOrRight( int field_number ) const;

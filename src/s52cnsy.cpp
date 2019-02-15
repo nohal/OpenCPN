@@ -4006,9 +4006,9 @@ Cond condTable[] = {
 
 #include "S52utils.h"   // PRINTF()
 
-#include <stdlib.h>     // atof()
-#include <math.h>       // fabsf(), HUGE_VAL
-#include <ctype.h>      // isdigit()
+#include <cstdlib>     // atof()
+#include <cmath>       // fabsf(), HUGE_VAL
+#include <cctype>      // isdigit()
 
 #define UNKNOWN 1e6     //HUGE_VAL   // INFINITY/NAN
 

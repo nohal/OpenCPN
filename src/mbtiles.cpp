@@ -593,7 +593,7 @@ InitReturn ChartMBTiles::PreInit( const wxString& name, ChartInitFlag init_flags
 }
 
 
-InitReturn ChartMBTiles::PostInit(void)
+InitReturn ChartMBTiles::PostInit()
 {
     
       bReadyToRender = true;
@@ -647,7 +647,7 @@ void ChartMBTiles::PrepareTiles()
     
 }
 
-void ChartMBTiles::FlushTiles( void )
+void ChartMBTiles::FlushTiles()
 {
     if(!bReadyToRender)
         return;

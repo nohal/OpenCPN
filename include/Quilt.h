@@ -111,7 +111,7 @@ public:
     ChartBase *GetLargestScaleChart();
     ChartBase *GetNextSmallerScaleChart();
     
-    std::vector<int> GetQuiltIndexArray( void );
+    std::vector<int> GetQuiltIndexArray();
     bool IsQuiltDelta( ViewPort &vp );
     bool IsChartQuiltableRef( int db_index );
     ViewPort &GetQuiltVP() {
@@ -123,11 +123,11 @@ public:
     void SetRenderedVP( ViewPort &vp ) {
         m_vp_rendered = vp;
     }
-    bool HasOverlays( void ) {
+    bool HasOverlays() {
         return m_bquilt_has_overlays;
     }
 
-    int GetExtendedStackCount(void) {
+    int GetExtendedStackCount() {
         return m_extended_stack_array.size();
     }
 
@@ -145,8 +145,8 @@ public:
     ChartBase *GetChartAtPix( ViewPort &VPoint, wxPoint p );
     ChartBase *GetOverlayChartAtPix( ViewPort &VPoint, wxPoint p );
     int GetChartdbIndexAtPix( ViewPort &VPoint, wxPoint p );
-    void InvalidateAllQuiltPatchs( void );
-    void Invalidate( void )
+    void InvalidateAllQuiltPatchs();
+    void Invalidate()
     {
         m_bcomposed = false;
         m_vp_quilt.Invalidate();
@@ -159,10 +159,10 @@ public:
     }
     void AdjustQuiltVP( ViewPort &vp_last, ViewPort &vp_proposed );
 
-    LLRegion &GetFullQuiltRegion( void ) {
+    LLRegion &GetFullQuiltRegion() {
         return m_covered_region;
     }
-    OCPNRegion &GetFullQuiltRenderedRegion( void ) {
+    OCPNRegion &GetFullQuiltRenderedRegion() {
         return m_rendered_region;
     }
     bool IsChartSmallestScale( int dbIndex );
@@ -180,13 +180,13 @@ public:
             m_zout_family = -1;
         }
     }
-    int GetRefChartdbIndex( void ) {
+    int GetRefChartdbIndex() {
         return m_refchart_dbIndex;
     }
     
     ChartBase *GetRefChart();
     
-    int GetQuiltProj( void )
+    int GetQuiltProj()
     {
         return m_quilt_proj;
     }
@@ -222,8 +222,8 @@ public:
     bool IsChartInQuilt( ChartBase *pc );
     bool IsChartInQuilt( wxString &full_path);
     
-    bool IsQuiltVector( void );
-    bool DoesQuiltContainPlugins( void );
+    bool IsQuiltVector();
+    bool DoesQuiltContainPlugins();
     
     LLRegion GetHiliteRegion( );
     static LLRegion GetChartQuiltRegion( const ChartTableEntry &cte, ViewPort &vp );
@@ -235,9 +235,9 @@ private:
     bool DoRenderQuiltRegionViewOnDC( wxMemoryDC &dc, ViewPort &vp, OCPNRegion &chart_region );
     bool DoRenderQuiltRegionViewOnDCTextOnly( wxMemoryDC& dc, ViewPort &vp, OCPNRegion &chart_region );
     
-    void EmptyCandidateArray( void );
+    void EmptyCandidateArray();
     void SubstituteClearDC( wxMemoryDC &dc, ViewPort &vp );
-    int GetNewRefChart( void );
+    int GetNewRefChart();
 
     
     bool IsChartS57Overlay( int db_index );

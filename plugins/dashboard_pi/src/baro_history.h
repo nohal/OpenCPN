@@ -54,7 +54,7 @@ class DashboardInstrument_BaroHistory: public DashboardInstrument
       public:
             DashboardInstrument_BaroHistory( wxWindow *parent, wxWindowID id, wxString title);
 
-            ~DashboardInstrument_BaroHistory(void){}
+            ~DashboardInstrument_BaroHistory(){}
 
             void SetData(int, double, wxString);
    wxSize GetSize( int orient, wxSize hint );

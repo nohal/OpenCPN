@@ -55,7 +55,7 @@ APB::~APB()
    Empty();
 }
 
-void APB::Empty( void )
+void APB::Empty()
 {
 //   ASSERT_VALID( this );
 

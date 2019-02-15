@@ -239,7 +239,7 @@ gusb_id_unit(struct garmin_unit_info *gu)
 }
 
 void
-gusb_syncup(void)
+gusb_syncup()
 {
 	static int unit_number;
 	static const char  oinit[12] =

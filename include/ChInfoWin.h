@@ -36,7 +36,7 @@ public:
     ~ChInfoWin();
 
     void SetString(const wxString &s){ m_string = s; }
-    const wxString& GetString(void) { return m_string; }
+    const wxString& GetString() { return m_string; }
     void MouseEvent( wxMouseEvent& event );
     
     void SetPosition( wxPoint pt )
@@ -47,9 +47,9 @@ public:
     {
         m_size = sz;
     }
-    void SetBitmap( void );
+    void SetBitmap();
     void FitToChars( int char_width, int char_height );
-    wxSize GetWinSize( void )
+    wxSize GetWinSize()
     {
         return m_size;
     }

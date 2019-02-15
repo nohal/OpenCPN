@@ -1210,7 +1210,7 @@ void glTextureManager::ClearJobList()
 }
 
 
-void glTextureManager::ClearAllRasterTextures( void )
+void glTextureManager::ClearAllRasterTextures()
 {
     
     //     Delete all the TexFactory instances

@@ -43,7 +43,7 @@ public:
     
     wxString Serialize();
     
-    void Init( void );
+    void Init();
     int         MMSI;
     int         TrackType;
     bool        m_bignore;
@@ -62,20 +62,20 @@ class AIS_Decoder : public wxEvtHandler
 public:
     AIS_Decoder(wxFrame *parent);
 
-    ~AIS_Decoder(void);
+    ~AIS_Decoder();
 
     void OnEvtAIS(OCPN_DataStreamEvent& event);
     AIS_Error Decode(const wxString& str);
-    AIS_Target_Hash *GetTargetList(void) {return AISTargetList;}
-    AIS_Target_Hash *GetAreaNoticeSourcesList(void) {return AIS_AreaNotice_Sources;}
+    AIS_Target_Hash *GetTargetList() {return AISTargetList;}
+    AIS_Target_Hash *GetAreaNoticeSourcesList() {return AIS_AreaNotice_Sources;}
     AIS_Target_Data *Get_Target_Data_From_MMSI(int mmsi);
-    int GetNumTargets(void){ return m_n_targets;}
-    bool IsAISSuppressed(void){ return m_bSuppressed; }
-    bool IsAISAlertGeneral(void) { return m_bGeneralAlert; }
+    int GetNumTargets(){ return m_n_targets;}
+    bool IsAISSuppressed(){ return m_bSuppressed; }
+    bool IsAISAlertGeneral() { return m_bGeneralAlert; }
     AIS_Error DecodeSingleVDO( const wxString& str, GenericPosDatEx *pos, wxString *acc );
     void DeletePersistentTrack( Track *track );
     std::map<int, Track*> m_persistent_tracks;
-    bool AIS_AlertPlaying(void) { return m_bAIS_AlertPlaying; };
+    bool AIS_AlertPlaying() { return m_bAIS_AlertPlaying; };
 
 private:
     wxString GetShipNameFromFile(int nmmsi);
@@ -87,12 +87,12 @@ private:
     
     bool NMEACheckSumOK(const wxString& str);
     bool Parse_VDXBitstring(AIS_Bitstring *bstr, AIS_Target_Data *ptd);
-    void UpdateAllCPA(void);
+    void UpdateAllCPA();
     void UpdateOneCPA(AIS_Target_Data *ptarget);
-    void UpdateAllAlarms(void);
-    void UpdateAllTracks(void);
+    void UpdateAllAlarms();
+    void UpdateAllTracks();
     void UpdateOneTrack(AIS_Target_Data *ptarget);
-    void BuildERIShipTypeHash(void);
+    void BuildERIShipTypeHash();
     AIS_Target_Data *ProcessDSx( const wxString& str, bool b_take_dsc = false );
     void SendJSONMsg( AIS_Target_Data *pTarget );
     

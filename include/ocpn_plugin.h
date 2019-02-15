@@ -268,7 +268,7 @@ class DECL_EXP PlugInChartBase : public wxObject
             PlugInChartBase();
             virtual ~PlugInChartBase();
 
-            virtual wxString GetFileSearchMask(void);
+            virtual wxString GetFileSearchMask();
 
             virtual int Init( const wxString& full_path, int init_flags );
             virtual void SetColorScheme(int cs, bool bApplyImmediate);
@@ -311,7 +311,7 @@ class DECL_EXP PlugInChartBase : public wxObject
             virtual bool IsReadyToRender()                  { return m_bReadyToRender;}
             virtual int GetNativeScale()                    { return m_Chart_Scale; };
             virtual double GetChartSkew()                   { return m_Chart_Skew; }
-            virtual wxDateTime GetEditionDate(void)         { return m_EdDate;}
+            virtual wxDateTime GetEditionDate()         { return m_EdDate;}
 
 //    Methods pertaining to CHART_FAMILY_RASTER type PlugIn charts only
             virtual void ComputeSourceRectangle(const PlugIn_ViewPort &vp, wxRect *pSourceRect);
@@ -383,8 +383,8 @@ public:
 
       //    This group of methods is required, and will be called by the opencpn host
       //    opencpn PlugIns must implement this group
-      virtual int Init(void);               // Return the PlugIn Capabilites flag
-      virtual bool DeInit(void);
+      virtual int Init();               // Return the PlugIn Capabilites flag
+      virtual bool DeInit();
 
       virtual int GetAPIVersionMajor();
       virtual int GetAPIVersionMinor();
@@ -402,12 +402,12 @@ public:
       //    This group is optional.
       //    PlugIns may override any of these methods as required
 
-      virtual void SetDefaults(void);     //This will be called upon enabling a PlugIn via the user Dialog
+      virtual void SetDefaults();     //This will be called upon enabling a PlugIn via the user Dialog
                                           //It gives a chance to setup any default options and behavior
 
-      virtual int GetToolbarToolCount(void);
+      virtual int GetToolbarToolCount();
 
-      virtual int GetToolboxPanelCount(void);
+      virtual int GetToolboxPanelCount();
       virtual void SetupToolboxPanel(int page_sel, wxNotebook* pnotebook);
       virtual void OnCloseToolboxPanel(int page_sel, int ok_apply_cancel);
 
@@ -427,9 +427,9 @@ public:
       virtual void OnToolbarToolCallback(int id);
       virtual void OnContextMenuItemCallback(int id);
 
-      virtual void UpdateAuiStatus(void);
+      virtual void UpdateAuiStatus();
 
-      virtual wxArrayString GetDynamicChartClassNameArray(void);
+      virtual wxArrayString GetDynamicChartClassNameArray();
  };
 
 
@@ -481,7 +481,7 @@ class DECL_EXP opencpn_plugin_19 : public opencpn_plugin_18
             opencpn_plugin_19(void *pmgr);
             virtual ~opencpn_plugin_19();
 
-            virtual void OnSetupOptions(void);
+            virtual void OnSetupOptions();
 };
 
 class DECL_EXP opencpn_plugin_110 : public opencpn_plugin_19
@@ -490,7 +490,7 @@ class DECL_EXP opencpn_plugin_110 : public opencpn_plugin_19
             opencpn_plugin_110(void *pmgr);
             virtual ~opencpn_plugin_110();
 
-            virtual void LateInit(void); // If WANTS_LATE_INIT is returned by Init()
+            virtual void LateInit(); // If WANTS_LATE_INIT is returned by Init()
 };
 
 class DECL_EXP opencpn_plugin_111 : public opencpn_plugin_110
@@ -597,8 +597,8 @@ WX_DECLARE_LIST(PlugIn_Waypoint, Plugin_WaypointList);
 class DECL_EXP PlugIn_Route
 {
 public:
-    PlugIn_Route(void);
-    ~PlugIn_Route(void);
+    PlugIn_Route();
+    ~PlugIn_Route();
 
     wxString    m_NameString;
     wxString    m_StartString;
@@ -611,8 +611,8 @@ public:
 class DECL_EXP PlugIn_Track
 {
 public:
-    PlugIn_Track(void);
-    ~PlugIn_Track(void);
+    PlugIn_Track();
+    ~PlugIn_Track();
 
     wxString    m_NameString;
     wxString    m_StartString;
@@ -654,7 +654,7 @@ extern "C"  DECL_EXP void SetCanvasContextMenuItemViz(int item, bool viz);      
 extern "C"  DECL_EXP void SetCanvasContextMenuItemGrey(int item, bool grey);
 
 
-extern "C"  DECL_EXP wxFileConfig *GetOCPNConfigObject(void);
+extern "C"  DECL_EXP wxFileConfig *GetOCPNConfigObject();
 
 extern "C"  DECL_EXP void RequestRefresh(wxWindow *);
 extern "C"  DECL_EXP bool GetGlobalColor(wxString colorName, wxColour *pcolour);
@@ -668,9 +668,9 @@ extern "C"  DECL_EXP wxFont *OCPNGetFont(wxString TextElement, int default_size)
 
 extern "C"  DECL_EXP wxString *GetpSharedDataLocation();
 
-extern "C"  DECL_EXP ArrayOfPlugIn_AIS_Targets *GetAISTargetArray(void);
+extern "C"  DECL_EXP ArrayOfPlugIn_AIS_Targets *GetAISTargetArray();
 
-extern "C"  DECL_EXP wxAuiManager *GetFrameAuiManager(void);
+extern "C"  DECL_EXP wxAuiManager *GetFrameAuiManager();
 
 extern "C"  DECL_EXP bool AddLocaleCatalog( wxString catalog );
 
@@ -704,7 +704,7 @@ extern "C" DECL_EXP void toSM_ECC_Plugin(double lat, double lon, double lat0, do
 extern "C" DECL_EXP void fromSM_ECC_Plugin(double x, double y, double lat0, double lon0, double *lat, double *lon);
 
 extern "C" DECL_EXP bool DecodeSingleVDOMessage( const wxString& str, PlugIn_Position_Fix_Ex *pos, wxString *acc );
-extern "C" DECL_EXP int GetChartbarHeight( void );
+extern "C" DECL_EXP int GetChartbarHeight();
 extern "C" DECL_EXP bool GetActiveRoutepointGPX( char *buffer, unsigned int buffer_length );
 
 
@@ -772,7 +772,7 @@ int DECL_EXP OCPNMessageBox_PlugIn(wxWindow *parent,
 extern DECL_EXP wxString toSDMM_PlugIn(int NEflag, double a, bool hi_precision = true);
 
 extern "C"  DECL_EXP wxString *GetpPrivateApplicationDataLocation();
-extern  DECL_EXP wxString GetOCPN_ExePath( void );
+extern  DECL_EXP wxString GetOCPN_ExePath();
 extern "C"  DECL_EXP wxString *GetpPlugInLocation();
 extern  DECL_EXP wxString GetPlugInPath(opencpn_plugin *pplugin);
 
@@ -1019,7 +1019,7 @@ PI_LUPname DECL_EXP PI_GetObjectLUPName( PI_S57Obj *pObj );
 PI_DisPrio DECL_EXP PI_GetObjectDisplayPriority( PI_S57Obj *pObj );
 PI_DisCat DECL_EXP PI_GetObjectDisplayCategory( PI_S57Obj *pObj );
 void DECL_EXP PI_PLIBSetLineFeaturePriority( PI_S57Obj *pObj, int prio );
-void DECL_EXP PI_PLIBPrepareForNewRender(void);
+void DECL_EXP PI_PLIBPrepareForNewRender();
 void DECL_EXP PI_PLIBFreeContext( void *pContext );
 void DECL_EXP PI_PLIBSetRenderCaps( unsigned int flags );
 
@@ -1098,16 +1098,16 @@ extern DECL_EXP bool PlugInPlaySoundEx( wxString &sound_file, int deviceIndex=-1
 extern DECL_EXP void AddChartDirectory( wxString &path );
 extern DECL_EXP void ForceChartDBUpdate();
 
-extern  DECL_EXP wxString GetWritableDocumentsDir( void );
+extern  DECL_EXP wxString GetWritableDocumentsDir();
 extern  DECL_EXP wxDialog *GetActiveOptionsDialog();
-extern  DECL_EXP wxArrayString GetWaypointGUIDArray( void );
-extern  DECL_EXP wxArrayString GetIconNameArray(void);
+extern  DECL_EXP wxArrayString GetWaypointGUIDArray();
+extern  DECL_EXP wxArrayString GetIconNameArray();
 
 extern  DECL_EXP bool AddPersistentFontKey(wxString TextElement);
 extern  DECL_EXP wxString GetActiveStyleName();
 
 extern  DECL_EXP wxBitmap GetBitmapFromSVGFile(wxString filename, unsigned int width, unsigned int height);
-extern  DECL_EXP bool IsTouchInterface_PlugIn(void);
+extern  DECL_EXP bool IsTouchInterface_PlugIn();
 
 /*  Platform optimized File/Dir selector dialogs */
 extern  DECL_EXP int PlatformDirSelectorDialog( wxWindow *parent, wxString *file_spec, wxString Title, wxString initDir);
@@ -1289,7 +1289,7 @@ extern DECL_EXP void PlugInHandleAutopilotRoute(bool enable);
  */
 extern DECL_EXP wxString GetPluginDataDir(const char* plugin_name);
 
-extern DECL_EXP bool ShuttingDown( void );
+extern DECL_EXP bool ShuttingDown();
 
 //  Support for MUI MultiCanvas model
 
@@ -1327,6 +1327,6 @@ enum SDDMFORMAT
     END_SDDMFORMATS
 };
 
-extern DECL_EXP int GetLatLonFormat(void);
+extern DECL_EXP int GetLatLonFormat();
 
 #endif //_PLUGIN_H_

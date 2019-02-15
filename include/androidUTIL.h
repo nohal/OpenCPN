@@ -54,7 +54,7 @@
 #define GPS_PROVIDER_AVAILABLE          2
 #define GPS_SHOWPREFERENCES             3
 
-extern bool androidUtilInit( void );
+extern bool androidUtilInit();
 
 extern wxString androidGetDeviceInfo();
 
@@ -62,20 +62,20 @@ extern bool androidGetMemoryStatus( int *mem_total, int *mem_used );
 
 extern double GetAndroidDisplaySize();
 extern double getAndroidDPmm();
-extern wxSize getAndroidDisplayDimensions( void );
+extern wxSize getAndroidDisplayDimensions();
 extern double getAndroidDisplayDensity();
 extern int getAndroidActionBarHeight();
 extern void androidConfirmSizeCorrection();
 extern void androidForceFullRepaint();
 
 extern bool LoadQtStyleSheet(wxString &sheet_file);
-extern QString getQtStyleSheet( void );
+extern QString getQtStyleSheet();
 
 extern void androidShowBusyIcon();
 extern void androidHideBusyIcon();
 extern void androidEnableBackButton(bool benable);
 
-extern wxString androidGetSupplementalLicense( void );
+extern wxString androidGetSupplementalLicense();
 
 extern bool androidStartNMEA(wxEvtHandler *consumer);
 extern bool androidStopNMEA();
@@ -89,7 +89,7 @@ extern wxArrayString androidGetBluetoothScanResults();
 extern bool androidStartBT(wxEvtHandler *consumer, wxString mac_address );
 extern bool androidStopBT();
 
-extern bool DoAndroidPreferences( void );
+extern bool DoAndroidPreferences();
 extern int androidFileChooser( wxString *result, const wxString &initDir, const wxString &title,
                         const wxString &suggestion, const wxString &wildcard, bool dirOnly = false);
 

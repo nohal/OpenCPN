@@ -130,7 +130,7 @@ void CPL_DLL CPLDebug( const char *, const char *, ... );
 void CPL_DLL _CPLAssert( const char *, const char *, int );
 
 #ifdef DEBUG
-#  define CPLAssert(expr)  ((expr) ? (void)(0) : _CPLAssert(#expr,__FILE__,__LINE__))
+#  define CPLAssert(expr)  ((expr) ? ()(0) : _CPLAssert(#expr,__FILE__,__LINE__))
 #else
 #  define CPLAssert(expr)
 #endif

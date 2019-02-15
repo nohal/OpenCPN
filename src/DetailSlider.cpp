@@ -70,7 +70,7 @@ PopUpDSlide::~PopUpDSlide()
     delete m_p_DetailSlider;
 }
 
-void PopUpDSlide::Init( void )
+void PopUpDSlide::Init()
 {
     m_p_DetailSlider = NULL;
 }

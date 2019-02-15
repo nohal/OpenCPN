@@ -373,7 +373,7 @@ QuiltPatch *Quilt::GetCurrentPatch()
         return NULL;
 }
 
-void Quilt::EmptyCandidateArray( void )
+void Quilt::EmptyCandidateArray()
 {
     for( unsigned int i = 0; i < m_pcandidate_array->GetCount(); i++ ) {
         delete m_pcandidate_array->Item( i );
@@ -586,7 +586,7 @@ LLRegion Quilt::GetChartQuiltRegion( const ChartTableEntry &cte, ViewPort &vp )
 
 
 
-bool Quilt::IsQuiltVector( void )
+bool Quilt::IsQuiltVector()
 {
     if( m_bbusy )
         return false;
@@ -617,7 +617,7 @@ bool Quilt::IsQuiltVector( void )
     return ret;
 }
 
-bool Quilt::DoesQuiltContainPlugins( void )
+bool Quilt::DoesQuiltContainPlugins()
 {
     if( m_bbusy )
         return false;
@@ -728,7 +728,7 @@ ChartBase *Quilt::GetOverlayChartAtPix( ViewPort &VPoint, wxPoint p )
 }
 
 
-void Quilt::InvalidateAllQuiltPatchs( void )
+void Quilt::InvalidateAllQuiltPatchs()
 {
 /*
     if( m_bbusy )
@@ -740,7 +740,7 @@ void Quilt::InvalidateAllQuiltPatchs( void )
     return;
 }
 
-std::vector<int> Quilt::GetQuiltIndexArray( void )
+std::vector<int> Quilt::GetQuiltIndexArray()
 {
     return m_index_array;
 
@@ -801,7 +801,7 @@ double Quilt::GetRefNativeScale()
     return ret_val;
 }
 
-int Quilt::GetNewRefChart( void )
+int Quilt::GetNewRefChart()
 {
     //    Using the current quilt, select a useable reference chart
     //    Said chart will be in the extended (possibly full-screen) stack,

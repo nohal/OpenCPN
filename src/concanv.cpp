@@ -36,9 +36,9 @@
 
 #include "dychart.h"
 
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
+#include <cstdlib>
+#include <cmath>
+#include <ctime>
 #include "wx/datetime.h"
 
 #include "chart1.h"
@@ -423,7 +423,7 @@ void ConsoleCanvas::UpdateRouteData()
     }
 }
 
-void ConsoleCanvas::RefreshConsoleData( void )
+void ConsoleCanvas::RefreshConsoleData()
 {
     UpdateRouteData();
 
@@ -435,7 +435,7 @@ void ConsoleCanvas::RefreshConsoleData( void )
     pCDI->Refresh();
 }
 
-void ConsoleCanvas::ShowWithFreshFonts( void )
+void ConsoleCanvas::ShowWithFreshFonts()
 {
     Hide();
     Move( 0, 0 );
@@ -446,7 +446,7 @@ void ConsoleCanvas::ShowWithFreshFonts( void )
 
 }
 
-void ConsoleCanvas::UpdateFonts( void )
+void ConsoleCanvas::UpdateFonts()
 {
     pBRG->RefreshFonts();
     pXTE->RefreshFonts();
@@ -510,7 +510,7 @@ void AnnunText::MouseEvent( wxMouseEvent& event )
     
 }
 
-void AnnunText::CalculateMinSize( void )
+void AnnunText::CalculateMinSize()
 {
     //    Calculate the minimum required size of the window based on text size
 

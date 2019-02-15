@@ -41,7 +41,7 @@ bool OcpnWxSound::Load(const char* path, int deviceIndex)
 }
 
 
-bool OcpnWxSound::Stop(void)
+bool OcpnWxSound::Stop()
 {
     m_sound.Stop();
     m_OK = false;
@@ -50,7 +50,7 @@ bool OcpnWxSound::Stop(void)
 }
 
 
-void OcpnWxSound::worker(void)
+void OcpnWxSound::worker()
 {
     wxLogInfo("wxSound::worker()");
     m_isPlaying = true;

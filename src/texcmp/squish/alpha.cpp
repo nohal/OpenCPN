@@ -23,7 +23,7 @@
 	
    -------------------------------------------------------------------------- */
    
-#include <limits.h>
+#include <climits>
 #include "alpha.h"
 #include <algorithm>
 

@@ -96,7 +96,7 @@ class ViewPort
             wxRect GetVPRectIntersect( size_t n, float *llpoints );
             ViewPort BuildExpandedVP(int width, int height);
             
-            void SetBoxes(void);
+            void SetBoxes();
 
 //  Accessors
             void Invalidate() { bValid = false; }

@@ -308,7 +308,7 @@ gluTessCallback( GLUtesselator *tess, GLenum which, _GLUfuncptr fn)
 	&__gl_noVertexData : (void (/*GLAPIENTRY*/ *)(void *, void *)) fn;
     return;
   case GLU_TESS_END:
-    tess->callEnd = (fn == NULL) ? &noEnd : (void (/*GLAPIENTRY*/ *)(void)) fn;
+    tess->callEnd = (fn == NULL) ? &noEnd : (void (/*GLAPIENTRY*/ *)()) fn;
     return;
   case GLU_TESS_END_DATA:
     tess->callEndData = (fn == NULL) ? &__gl_noEndData :

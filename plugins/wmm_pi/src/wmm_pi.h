@@ -88,8 +88,8 @@ public:
     wmm_pi(void *ppimgr);
 
 //    The required PlugIn Methods
-    int Init(void);
-    bool DeInit(void);
+    int Init();
+    bool DeInit();
 
     int GetAPIVersionMajor();
     int GetAPIVersionMinor();
@@ -109,7 +109,7 @@ public:
     bool RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp);
     void RecomputePlot();
 
-    int GetToolbarToolCount(void);
+    int GetToolbarToolCount();
     void ShowPreferencesDialog( wxWindow* parent );
     void ShowPlotSettingsDialog( wxCommandEvent& event );
 
@@ -143,8 +143,8 @@ public:
 
 private:
     wxFileConfig     *m_pconfig;
-    bool          LoadConfig(void);
-    bool          SaveConfig(void);
+    bool          LoadConfig();
+    bool          SaveConfig();
 
     WmmUIDialog    *m_pWmmDialog;
 

@@ -10,7 +10,7 @@
 
 #include "SVGTextElement.h"
 #include "SVGCanvas.h"
-#include <math.h>
+#include <cmath>
 
 wxSVGRect wxSVGTextElement::GetBBox(wxSVG_COORDINATES coordinates) {
 	wxSVGMatrix matrix = wxSVGLocatable::GetCTM(this);

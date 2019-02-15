@@ -39,7 +39,7 @@ public:
                              bool underline = false,
                              const wxString& face = wxEmptyString,
                              wxFontEncoding encoding = wxFONTENCODING_DEFAULT);
-    void FreeAll( void );
+    void FreeAll();
     
 private:
     bool isSame(wxFont *font, int pointSize, wxFontFamily family,
@@ -260,7 +260,7 @@ bool FontMgr::SetFont(const wxString &TextElement, wxFont *pFont, wxColour color
     return false;
 }
 
-int FontMgr::GetNumFonts( void ) const
+int FontMgr::GetNumFonts() const
 {
     return m_fontlist->GetCount();
 }
@@ -473,7 +473,7 @@ wxFont *OCPNwxFontList::FindOrCreateFont(int pointSize,
     return font;
 }
 
-void OCPNwxFontList::FreeAll( void )
+void OCPNwxFontList::FreeAll()
 {
     wxFont *font;
     wxList::compatibility_iterator node;

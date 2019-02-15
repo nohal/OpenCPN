@@ -32,14 +32,14 @@
 #include <stddef.h>
 #include <assert.h>
 #include <setjmp.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "bucketalloc.h"
 #include "tess.h"
 #include "mesh.h"
 #include "sweep.h"
 #include "geom.h"
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -181,7 +181,7 @@ static void CheckOrientation( TESStesselator *tess )
 }
 
 #ifdef FOR_TRITE_TEST_PROGRAM
-#include <stdlib.h>
+#include <cstdlib>
 extern int RandomSweep;
 #define S_UNIT_X	(RandomSweep ? (2*drand48()-1) : 1.0)
 #define S_UNIT_Y	(RandomSweep ? (2*drand48()-1) : 0.0)

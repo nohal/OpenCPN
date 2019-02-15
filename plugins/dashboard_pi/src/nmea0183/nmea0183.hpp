@@ -147,14 +147,14 @@ class NMEA0183
 
       SENTENCE sentence;
 
-      void initialize( void );
+      void initialize();
 
    protected:
 
       MRL response_table;
 
-      void set_container_pointers( void );
-      void sort_response_table( void );
+      void set_container_pointers();
+      void sort_response_table();
 
    public:
 
@@ -263,9 +263,9 @@ class NMEA0183
 
 //      MANUFACTURER_LIST Manufacturers;
 
-      bool IsGood( void ) const;
-      bool Parse( void );
-      bool PreParse( void );
+      bool IsGood() const;
+      bool Parse();
+      bool PreParse();
 
       NMEA0183& operator << ( wxString& source );
       NMEA0183& operator >> ( wxString& destination );

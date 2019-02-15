@@ -5,14 +5,14 @@
 
 #if !defined(_WIN32)
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 #include <sstream>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/signal.h>
-#include <errno.h>
+#include <cerrno>
 #include <paths.h>
 #include <sysexits.h>
 #include <termios.h>
@@ -25,7 +25,7 @@
 
 #include <sys/select.h>
 #include <sys/time.h>
-#include <time.h>
+#include <ctime>
 #ifdef __MACH__
 #include <AvailabilityMacros.h>
 #include <mach/clock.h>

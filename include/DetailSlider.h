@@ -36,9 +36,9 @@ public:
             const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
             long style = 0, const wxString& title = _T("") );
 
-    ~PopUpDSlide( void );
+    ~PopUpDSlide();
 
-    void Init( void );
+    void Init();
     bool Create( wxWindow *parent, wxWindowID id, ChartTypeEnum ChartType, ChartFamilyEnum ChartF,
             const wxPoint& pos, const wxSize& size, long style, const wxString& title );
 
