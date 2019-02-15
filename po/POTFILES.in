@@ -113,7 +113,6 @@ include/tzdata.h
 include/undo.h
 include/vector2D.h
 include/viewport.h
-include/wificlient.h
 include/WindowDestroyListener.h
 include/wx28compat.h
 src/AboutFrame.cpp
@@ -219,7 +218,6 @@ src/TTYScroll.cpp
 src/TTYWindow.cpp
 src/undo.cpp
 src/viewport.cpp
-src/wificlient.cpp
 src/wxcurl/dialog.cpp
 src/wxcurl/panel.cpp
 src/ConfigMgr.cpp
