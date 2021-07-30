@@ -200,7 +200,6 @@ enum {
   // LIVE ETA OPTION
   ID_CHECK_LIVEETA,
   ID_DEFAULT_BOAT_SPEED,
-  ID_DARKDECORATIONSBOX,
   ID_SCREENCONFIG1,
   ID_SCREENCONFIG2,
   ID_CONFIGEDIT_OK,
@@ -417,8 +416,7 @@ class options : private Uncopyable,
   wxCheckBox *pAutoAnchorMark, *pCDOQuilting, *pCBRaster, *pCBVector;
   wxCheckBox *pCBCM93, *pCBLookAhead, *pSkewComp, *pOpenGL, *pSmoothPanZoom;
   wxCheckBox *pFullScreenQuilt, *pMobile, *pResponsive, *pOverzoomEmphasis;
-//  wxCheckBox *pOZScaleVector, *pToolbarAutoHideCB, *pInlandEcdis, *pRollover;
-  wxCheckBox *pOZScaleVector, *pToolbarAutoHideCB, *pInlandEcdis, *pRollover, *pDarkDecorations;
+  wxCheckBox *pOZScaleVector, *pToolbarAutoHideCB, *pInlandEcdis, *pRollover;
   wxCheckBox *pZoomButtons;
   wxTextCtrl *pCOGUPUpdateSecs, *m_pText_OSCOG_Predictor, *pScreenMM;
   wxTextCtrl *pToolbarHideSecs, *m_pText_OSHDT_Predictor;

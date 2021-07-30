@@ -177,10 +177,6 @@
 #include "crashprint.h"
 #endif
 
-#ifdef __WXOSX__
-#include "DarkMode.h"
-#endif
-
 #ifdef OCPN_USE_NEWSERIAL
 #include "serial/serial.h"
 #endif
@@ -751,8 +747,6 @@ double                    g_UserVar;
 bool                      g_bMagneticAPB;
 
 bool                      g_bInlandEcdis;
-
-bool                      g_bDarkDecorations;
 
 //                        OpenGL Globals
 int                       g_GPU_MemSize;
@@ -3111,17 +3105,6 @@ void MyFrame::SetAndApplyColorScheme( ColorScheme cs )
             SchemeName = _T("DAY");
             break;
     }
-
-#if defined(__WXOSX__) && defined(OCPN_USE_DARKMODE)
-    bool darkMode = (cs == GLOBAL_COLOR_SCHEME_DUSK || cs == GLOBAL_COLOR_SCHEME_NIGHT || g_bDarkDecorations);
-
-    if (wxPlatformInfo::Get().CheckOSVersion(10, 14)) {
-        setAppLevelDarkMode(darkMode);
-    }
-    else if (wxPlatformInfo::Get().CheckOSVersion(10, 12)) {
-        setWindowLevelDarkMode(MacGetTopLevelWindowRef(), darkMode);
-    }
-#endif
 
     g_pauidockart->SetMetric(wxAUI_DOCKART_GRADIENT_TYPE, wxAUI_GRADIENT_NONE);
         

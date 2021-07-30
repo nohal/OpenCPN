@@ -377,7 +377,6 @@ extern bool             g_useMUI;
 extern wxString         g_gpx_path;
 
 
-extern bool             g_bDarkDecorations;
 extern unsigned int     g_canvasConfig;
 
 #ifdef ocpnUSE_GL
@@ -967,7 +966,6 @@ bool ConfigMgr::SaveTemplate( wxString fileName)
     conf->SetPath( _T ( "/Settings" ) );
     
     conf->Write( _T ( "InlandEcdis" ), g_bInlandEcdis );
-    conf->Write( _T ( "DarkDecorations"), g_bDarkDecorations );
     conf->Write( _T ( "UIexpert" ), g_bUIexpert );
     conf->Write( _T ( "SpaceDropMark" ), g_bSpaceDropMark );
     
@@ -1346,8 +1344,6 @@ bool ConfigMgr::CheckTemplate( wxString fileName)
      
     CHECK_INT( _T ( "InlandEcdis" ), &g_bInlandEcdis );
     
-    CHECK_INT( _T ("DarkDecorations" ), &g_bDarkDecorations );
-
     CHECK_INT( _T( "SpaceDropMark" ), &g_bSpaceDropMark );
 
     ///CHECK_INT( _T ( "UseModernUI5" ), &g_useMUI );

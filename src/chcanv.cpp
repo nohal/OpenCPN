@@ -40,10 +40,6 @@
 #include "dychart.h"
 #include "OCPNPlatform.h"
 
-#ifdef __WXOSX__
-#include "DarkMode.h"
-#endif
-
 #include <wx/listimpl.cpp>
 
 #include "chcanv.h"

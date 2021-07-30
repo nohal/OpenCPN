@@ -492,7 +492,7 @@ if (APPLE)
 
   set(
     CMAKE_EXE_LINKER_FLAGS
-    "-O2 ${OCPN_LIBCPP} -arch ${ARCH} ${CMAKE_EXE_LINKER_FLAGS}"
+    "-O2 ${OCPN_LIBCPP} -arch ${ARCH} ${CMAKE_EXE_LINKER_FLAGS} -framework CoreGraphics"
   )
   set(CMAKE_SHARED_LINKER_FLAGS "-O2 ${OCPN_LIBCPP} -arch ${ARCH}")
   set(CMAKE_MODULE_LINKER_FLAGS "-O2 ${OCPN_LIBCPP} -arch ${ARCH}")
@@ -1146,17 +1146,6 @@ if (OCPN_USE_GARMINHOST)
   set(SRCS ${SRCS} src/garmin_wrapper.cpp)
 endif ()
 
-if (APPLE)
-  if (DARWIN_VERSION LESS 16)
-    message(
-      STATUS "DarkMode not included, requires Mac build host Darwin >= 16"
-    )
-  else ()
-    list(APPEND SRCS src/DarkMode.mm src/DarkMode.h)
-    add_definitions(-DOCPN_USE_DARKMODE)
-  endif ()
-endif (APPLE)
-
 if (NOT WIN32 AND NOT APPLE AND NOT QT_ANDROID AND OCPN_USE_CRASHREPORT)
   list(APPEND HDRS include/crashprint.h)
   list(APPEND SRCS src/crashprint.cpp)
@@ -1589,7 +1578,7 @@ if (QT_ANDROID)
     PRIVATE ${CMAKE_SOURCE_DIR}/buildandroid/libarchive/${ARCH}/libarchive.a)
 elseif ( APPLE )
     if (OCPN_USE_SYSTEM_LIBARCHIVE)
-        list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/libarchive")
+        #list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/libarchive")
         find_package(LibArchive REQUIRED)
         target_include_directories(${PACKAGE_NAME} PRIVATE ${LibArchive_INCLUDE_DIRS})
         target_link_libraries(${PACKAGE_NAME} PRIVATE ${LibArchive_LIBRARIES})

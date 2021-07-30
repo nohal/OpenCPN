@@ -83,7 +83,12 @@ IF ( NOT MSVC)
   IF (HAVE_MSSE2 AND NOT QT_ANDROID)
     # Using sse which makes the compression run about 50% faster
     message (STATUS "Compiling texture compression library with sse support")
-    set_property(TARGET TEXCMP PROPERTY COMPILE_FLAGS "-fvisibility=hidden -O3 -msse2 -DSQUISH_USE_SSE=2 -fPIC")
+    IF (APPLE AND CMAKE_OSX_ARCHITECTURES MATCHES "x86_64;arm64")
+      # We can't use SSE2 in macOS universal binaries (at least not this easily)
+      set_property(TARGET TEXCMP PROPERTY COMPILE_FLAGS "-fvisibility=hidden -O3 -fPIC")
+    ELSE ()
+      set_property(TARGET TEXCMP PROPERTY COMPILE_FLAGS "-fvisibility=hidden -O3 -msse2 -DSQUISH_USE_SSE=2 -fPIC")
+    ENDIF ()
   ELSE ()
     # use standard optimizations for other architectures
     set_property(TARGET TEXCMP PROPERTY COMPILE_FLAGS "-O3 -fPIC")

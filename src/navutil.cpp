@@ -93,10 +93,6 @@
 #include "androidUTIL.h"
 #endif
 
-#ifdef __WXOSX__
-#include "DarkMode.h"
-#endif
-
 //    Statics
 
 extern OCPNPlatform     *g_Platform;
@@ -449,7 +445,6 @@ extern bool             g_useMUI;
 
 int                     g_nCPUCount;
 
-extern bool             g_bDarkDecorations;
 extern unsigned int     g_canvasConfig;
 extern arrayofCanvasConfigPtr g_canvasConfigArray;
 extern wxString         g_lastAppliedTemplateGUID;
@@ -797,8 +792,6 @@ int MyConfig::LoadMyConfigRaw( bool bAsTemplate )
      
     Read( _T ( "InlandEcdis" ), &g_bInlandEcdis );// First read if in iENC mode as this will override some config settings
     
-    Read( _T ("DarkDecorations" ), &g_bDarkDecorations );
-
     Read( _T( "SpaceDropMark" ), &g_bSpaceDropMark );
 
     int mem_limit = 0;
@@ -2321,8 +2314,6 @@ void MyConfig::UpdateSettings()
 #endif /* SYSTEM_SOUND_CMD */
     Write( _T ( "NavMessageShown" ), n_NavMessageShown );
     Write( _T ( "InlandEcdis" ), g_bInlandEcdis );
-    
-    Write( _T ( "DarkDecorations"), g_bDarkDecorations );
     
     Write( _T ( "AndroidVersionCode" ), g_AndroidVersionCode );
 
@@ -4897,12 +4888,7 @@ void DimeControl( wxWindow* ctrl, wxColour col, wxColour window_back_color, wxCo
         if(darkMode)
             ctrl->SetForegroundColour( text_color );
 
-#if defined(__WXOSX__) && defined(OCPN_USE_DARKMODE)
-        // On macOS 10.12, enable dark mode at the window level if appropriate.
-        // This will enable dark window decorations but will not darken the rest of the UI.
-        if ( wxPlatformInfo::Get().CheckOSVersion(10, 12) ) {
-            setWindowLevelDarkMode(ctrl->MacGetTopLevelWindowRef(), darkMode);
-        }
+#if defined(__WXOSX__)
         // Force consistent coloured UI text; dark in light mode and light in dark mode.
         uitext = darkMode ? wxColor(228,228,228) : wxColor(0,0,0);
 #endif
