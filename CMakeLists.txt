@@ -494,10 +494,17 @@ if (APPLE)
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 ${OCPN_LIBCPP} -arch ${ARCH}")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -O3 ${OCPN_LIBCPP} -arch ${ARCH}")
 
-  set(
-    CMAKE_EXE_LINKER_FLAGS
-    "-O2 ${OCPN_LIBCPP} -arch ${ARCH} ${CMAKE_EXE_LINKER_FLAGS}"
-  )
+  if (MACOSX_DEPLOYMENT_TARGET LESS "11.0")
+      set(
+        CMAKE_EXE_LINKER_FLAGS
+        "-O2 ${OCPN_LIBCPP} -arch ${ARCH} ${CMAKE_EXE_LINKER_FLAGS}"
+      )
+  else()
+      set(
+        CMAKE_EXE_LINKER_FLAGS
+        "-O2 ${OCPN_LIBCPP} -arch ${ARCH} ${CMAKE_EXE_LINKER_FLAGS} -framework CoreGraphics"
+      )
+  endif()
   set(CMAKE_SHARED_LINKER_FLAGS "-O2 ${OCPN_LIBCPP} -arch ${ARCH}")
   set(CMAKE_MODULE_LINKER_FLAGS "-O2 ${OCPN_LIBCPP} -arch ${ARCH}")
 endif (APPLE)
@@ -1612,11 +1619,14 @@ if (QT_ANDROID)
     PRIVATE ${CMAKE_SOURCE_DIR}/buildandroid/libarchive/${ARCH}/libarchive.a)
 elseif ( APPLE )
     if (OCPN_USE_SYSTEM_LIBARCHIVE)
-        list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/libarchive")
-        find_package(LibArchive REQUIRED)
+        find_package(LibArchive)
+        if (NOT LibArchive_FOUND)
+            list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/libarchive")
+            find_package(LibArchive REQUIRED)
+        endif()
         target_include_directories(${PACKAGE_NAME} PRIVATE ${LibArchive_INCLUDE_DIRS})
         target_link_libraries(${PACKAGE_NAME} PRIVATE ${LibArchive_LIBRARIES})
-        # If we use system libarchive, we do not bundel the dylib and need to comment it out from the pkg project file
+        # If we use system libarchive, we do not bundle the dylib and need to comment it out from the pkg project file
         set(LIBARCHIVE_COMMENT_START "<!--")
         set(LIBARCHIVE_COMMENT_END "-->")
     else()
