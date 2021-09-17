@@ -185,10 +185,6 @@
 #include "crashprint.h"
 #endif
 
-#ifdef __WXOSX__
-#include "DarkMode.h"
-#endif
-
 #ifdef OCPN_USE_NEWSERIAL
 #include "serial/serial.h"
 #endif
@@ -757,8 +753,6 @@ double g_UserVar;
 bool g_bMagneticAPB;
 
 bool g_bInlandEcdis;
-
-bool g_bDarkDecorations;
 
 //                        OpenGL Globals
 int g_GPU_MemSize;
@@ -2757,12 +2751,14 @@ void MyApp::TrackOff(void) {
 wxDEFINE_EVENT(BELLS_PLAYED_EVTYPE, wxCommandEvent);
 
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)
-EVT_CLOSE(MyFrame::OnCloseWindow) EVT_MENU(wxID_EXIT, MyFrame::OnExit) EVT_SIZE(
-    MyFrame::OnSize) EVT_MOVE(MyFrame::OnMove) EVT_ICONIZE(MyFrame::OnIconize)
-    EVT_MENU(-1, MyFrame::OnToolLeftClick) EVT_TIMER(INIT_TIMER,
-                                                     MyFrame::OnInitTimer)
-        EVT_TIMER(FRAME_TIMER_1, MyFrame::OnFrameTimer1)
-            EVT_TIMER(FRAME_TC_TIMER, MyFrame::OnFrameTCTimer)
+EVT_CLOSE(MyFrame::OnCloseWindow)
+EVT_MENU(wxID_EXIT, MyFrame::OnExit) EVT_SIZE(MyFrame::OnSize)
+    EVT_MOVE(MyFrame::OnMove) EVT_ICONIZE(MyFrame::OnIconize)
+        EVT_MENU(-1, MyFrame::OnToolLeftClick) EVT_TIMER(INIT_TIMER,
+                                                         MyFrame::OnInitTimer)
+            EVT_TIMER(FRAME_TIMER_1,
+                      MyFrame::OnFrameTimer1) EVT_TIMER(FRAME_TC_TIMER,
+                                                        MyFrame::OnFrameTCTimer)
                 EVT_TIMER(FRAME_COG_TIMER, MyFrame::OnFrameCOGTimer)
                     EVT_TIMER(MEMORY_FOOTPRINT_TIMER, MyFrame::OnMemFootTimer)
                         EVT_MAXIMIZE(MyFrame::OnMaximize)
@@ -3092,17 +3088,6 @@ void MyFrame::SetAndApplyColorScheme(ColorScheme cs) {
       SchemeName = _T("DAY");
       break;
   }
-
-#if defined(__WXOSX__) && defined(OCPN_USE_DARKMODE)
-  bool darkMode = (cs == GLOBAL_COLOR_SCHEME_DUSK ||
-                   cs == GLOBAL_COLOR_SCHEME_NIGHT || g_bDarkDecorations);
-
-  if (wxPlatformInfo::Get().CheckOSVersion(10, 14)) {
-    setAppLevelDarkMode(darkMode);
-  } else if (wxPlatformInfo::Get().CheckOSVersion(10, 12)) {
-    setWindowLevelDarkMode(MacGetTopLevelWindowRef(), darkMode);
-  }
-#endif
 
   g_pauidockart->SetMetric(wxAUI_DOCKART_GRADIENT_TYPE, wxAUI_GRADIENT_NONE);
 
@@ -6594,10 +6579,10 @@ bool MyFrame::UpdateChartDatabaseInplace(ArrayOfCDI &DirArray, bool b_force,
   ChartData->SaveBinary(ChartListFileName);
   wxLogMessage(_T("Finished chart database Update"));
   wxLogMessage(_T("   "));
-  if (gWorldMapLocation
-          .empty()) {  // Last resort. User might have deleted all GSHHG data,
-                       // but we still might have the default dataset distributed
-                       // with OpenCPN or from the package repository...
+  if (gWorldMapLocation.empty()) {  // Last resort. User might have deleted all
+                                    // GSHHG data, but we still might have the
+                                    // default dataset distributed with OpenCPN
+                                    // or from the package repository...
     gWorldMapLocation = gDefaultWorldMapLocation;
     gshhg_chart_loc = wxEmptyString;
   }
@@ -8856,8 +8841,7 @@ void MyFrame::OnEvtOCPN_NMEA(OCPN_DataStreamEvent &event) {
               !wxIsNaN(m_NMEA0183.Vtg.TrackDegreesTrue)) {
             setCourseOverGround(m_NMEA0183.Vtg.TrackDegreesTrue);
 >>>>>>> 1f7f17e0a7cd430bc7d73457a91958a3d01eecfa
-#endif
-            cog_sog_valid = true;
+#endif cog_sog_valid = true;
           }
           break;
 
@@ -10612,7 +10596,8 @@ double AnchorDistFix(double const d, double const AnchorPointMinDist,
 //      Auto timed popup Window implementation
 
 BEGIN_EVENT_TABLE(TimedPopupWin, wxWindow)
-EVT_PAINT(TimedPopupWin::OnPaint) EVT_TIMER(POPUP_TIMER, TimedPopupWin::OnTimer)
+EVT_PAINT(TimedPopupWin::OnPaint)
+EVT_TIMER(POPUP_TIMER, TimedPopupWin::OnTimer)
 
     END_EVENT_TABLE()
 

@@ -1157,17 +1157,6 @@ if (OCPN_USE_GARMINHOST)
 endif ()
 
 
-if (APPLE)
-  if (DARWIN_VERSION LESS 16)
-    message(
-      STATUS "DarkMode not included, requires Mac build host Darwin >= 16"
-    )
-  else ()
-    list(APPEND SRCS src/DarkMode.mm src/DarkMode.h)
-    add_definitions(-DOCPN_USE_DARKMODE)
-  endif ()
-endif (APPLE)
-
 if (LINUX)
   list(APPEND SRCS src/linux_devices.cpp src/udev_rule_mgr.cpp)
   list(APPEND HDRS include/linux_devices.h include/udev_rule_mgr.h)

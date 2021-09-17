@@ -93,10 +93,6 @@
 #include "androidUTIL.h"
 #endif
 
-#ifdef __WXOSX__
-#include "DarkMode.h"
-#endif
-
 //    Statics
 
 extern OCPNPlatform *g_Platform;
@@ -448,7 +444,6 @@ extern bool g_useMUI;
 
 int g_nCPUCount;
 
-extern bool g_bDarkDecorations;
 extern unsigned int g_canvasConfig;
 extern arrayofCanvasConfigPtr g_canvasConfigArray;
 extern wxString g_lastAppliedTemplateGUID;
@@ -794,8 +789,6 @@ int MyConfig::LoadMyConfigRaw(bool bAsTemplate) {
   Read(_T ( "InlandEcdis" ),
        &g_bInlandEcdis);  // First read if in iENC mode as this will override
                           // some config settings
-
-  Read(_T ("DarkDecorations" ), &g_bDarkDecorations);
 
   Read(_T( "SpaceDropMark" ), &g_bSpaceDropMark);
 
@@ -2278,8 +2271,6 @@ void MyConfig::UpdateSettings() {
   Write(_T ( "NavMessageShown" ), n_NavMessageShown);
   Write(_T ( "InlandEcdis" ), g_bInlandEcdis);
 
-  Write(_T ( "DarkDecorations"), g_bDarkDecorations);
-
   Write(_T ( "AndroidVersionCode" ), g_AndroidVersionCode);
 
   Write(_T ( "UIexpert" ), g_bUIexpert);
@@ -3169,7 +3160,7 @@ void SwitchInlandEcdisMode(bool Switch) {
     // g_toolbarConfig = _T ( ".....XXXX.X...XX.XXXXXXXXXXXX" );
     g_iDistanceFormat = 2;  // 0 = "Nautical miles"), 1 = "Statute miles", 2 =
                             // "Kilometers", 3 = "Meters"
-    g_iSpeedFormat = 2;  // 0 = "kts"), 1 = "mph", 2 = "km/h", 3 = "m/s"
+    g_iSpeedFormat = 2;     // 0 = "kts"), 1 = "mph", 2 = "km/h", 3 = "m/s"
     if (ps52plib) ps52plib->SetDisplayCategory(STANDARD);
     g_bDrawAISSize = false;
     if (gFrame) gFrame->RequestNewToolbars(true);
@@ -4861,18 +4852,6 @@ void DimeControl(wxWindow *ctrl, wxColour col, wxColour window_back_color,
 
     ctrl->SetBackgroundColour(window_back_color);
     if (darkMode) ctrl->SetForegroundColour(text_color);
-
-#if defined(__WXOSX__) && defined(OCPN_USE_DARKMODE)
-    // On macOS 10.12, enable dark mode at the window level if appropriate.
-    // This will enable dark window decorations but will not darken the rest of
-    // the UI.
-    if (wxPlatformInfo::Get().CheckOSVersion(10, 12)) {
-      setWindowLevelDarkMode(ctrl->MacGetTopLevelWindowRef(), darkMode);
-    }
-    // Force consistent coloured UI text; dark in light mode and light in dark
-    // mode.
-    uitext = darkMode ? wxColor(228, 228, 228) : wxColor(0, 0, 0);
-#endif
   }
 
   wxWindowList kids = ctrl->GetChildren();
