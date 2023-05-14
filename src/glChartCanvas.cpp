@@ -73,6 +73,7 @@
 #include "glChartCanvas.h"
 #include "glTexCache.h"
 #include "gshhs.h"
+#include "shapefile_basemap.h"
 #include "lz4.h"
 #include "mbtiles.h"
 #include "mipmap/mipmap.h"
@@ -208,6 +209,7 @@ extern bool b_inCompressAllCharts;
 extern bool g_bGLexpert;
 extern bool g_bcompression_wait;
 extern float g_ShipScaleFactorExp;
+extern WorldShapeBaseChart gShapeBasemap;
 
 float g_GLMinSymbolLineWidth;
 float g_GLMinCartographicLineWidth;
@@ -3572,7 +3574,8 @@ void glChartCanvas::RenderWorldChart(ocpnDC &dc, ViewPort &vp, wxRect &rect,
     }
   }
 
-  m_pParentCanvas->pWorldBackgroundChart->RenderViewOnDC(dc, vp);
+  //m_pParentCanvas->pWorldBackgroundChart->RenderViewOnDC(dc, vp);
+  gShapeBasemap.RenderViewOnDC(dc, vp);
 
   glDisable(GL_SCISSOR_TEST);
 

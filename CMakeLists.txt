@@ -325,8 +325,8 @@ include(GetArch)
 getarch()
 message(STATUS "*** Host Build Architecture is ${ARCH}")
 
-set(CMAKE_CXX_STANDARD 14)
-message(STATUS "Setting C++11 standard via cmake standard mechanism")
+set(CMAKE_CXX_STANDARD 17)
+message(STATUS "Setting C++17 standard via cmake standard mechanism")
 if (NOT MSVC)
   set(OBJ_VISIBILITY "-fvisibility=hidden")
 endif ()
@@ -1412,6 +1412,16 @@ target_link_libraries(${PACKAGE_NAME} PRIVATE ocpn::sqlite)
 
 add_subdirectory("libs/SQLiteCpp")
 target_link_libraries(${PACKAGE_NAME} PRIVATE ocpn::sqlite_cpp)
+
+add_subdirectory("libs/shapelib")
+target_link_libraries(${PACKAGE_NAME} PRIVATE shapelib::shapelib)
+add_subdirectory("libs/ShapefileCpp")
+target_link_libraries(${PACKAGE_NAME} PRIVATE ocpn::ShapefileCpp)
+target_include_directories(${PACKAGE_NAME} PRIVATE ${SHAPEFILECPP_INCLUDE_DIR})
+target_include_directories(${PACKAGE_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/libs/gdal/include/gdal)
+include_directories(${SHAPEFILECPP_INCLUDE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs/gdal/include/gdal)
+
 
 if (UNIX)
   if (NOT QT_ANDROID) # this should be detected by the grib plugin
@@ -3111,6 +3121,10 @@ if (NOT QT_ANDROID)
     opencpn-cmd
     PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/test/include
   )
+
+  target_include_directories(opencpn-cmd PRIVATE ${SHAPEFILECPP_INCLUDE_DIR})
+  target_include_directories(opencpn-cmd PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/libs/gdal/include/gdal)
+
 
   target_compile_definitions(opencpn-cmd PUBLIC CLIAPP USE_MOCK_DEFS)
   if (MSVC)

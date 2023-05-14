@@ -44,6 +44,7 @@
 #include "emboss_data.h"
 #include "S57Sector.h"
 #include "gshhs.h"
+#include "shapefile_basemap.h"
 
 class wxGLContext;
 class GSHHSChart;
@@ -760,6 +761,7 @@ private:
   int m_rollover_popup_timer_msec;
 
   GSHHSChart *pWorldBackgroundChart;
+  WorldShapeBaseChart gShapeBasemap;
 
   ChartBaseBSB *pCBSB;
   wxBitmap *pss_overlay_bmp;
