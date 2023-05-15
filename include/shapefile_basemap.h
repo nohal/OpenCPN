@@ -28,283 +28,55 @@
 #ifndef SHAPEFILE_BASEMAP_H
 #define SHAPEFILE_BASEMAP_H
 
-#include <iostream>
+#include <functional>
+#include <vector>
+#include <unordered_map>
 #include "ShapefileReader.hpp"
-#include "shaders.h"
-#include "chartbase.h"
+#include "poly_math.h"
+#include "ocpndc.h"
 
-
-#ifdef __WXMSW__
-#define __CALL_CONVENTION  //__stdcall
-#else
-#define __CALL_CONVENTION
-#endif
-
-
-typedef union {
-  GLdouble data[6];
-  struct sGLvertex {
-    GLdouble x;
-    GLdouble y;
-    GLdouble z;
-    GLdouble r;
-    GLdouble g;
-    GLdouble b;
-  } info;
-} GLvertexshp;
-#include <list>
-
-  static std::list<float_2Dpt> g_pvshp;
-  static std::list<GLvertexshp *> g_vertexesshp;
-  static int g_typeshp, g_posshp;
-  static float_2Dpt g_p1shp, g_p2shp;
-
-  void __CALL_CONVENTION shpscombineCallback(GLdouble coords[3],
-                                            GLdouble *vertex_data[4],
-                                            GLfloat weight[4],
-                                            GLdouble **dataOut) {
-  GLvertexshp *vertex;
-
-  vertex = new GLvertexshp();
-  g_vertexesshp.push_back(vertex);
-
-  vertex->info.x = coords[0];
-  vertex->info.y = coords[1];
-
-  *dataOut = vertex->data;
-}
-
-void __CALL_CONVENTION shpserrorCallback(GLenum errorCode) {
-  const GLubyte *estring;
-  estring = gluErrorString(errorCode);
-  // wxLogMessage( _T("OpenGL Tessellation Error: %s"), estring );
-}
-
-void __CALL_CONVENTION shpsbeginCallback(GLenum type) {
-  switch (type) {
-    case GL_TRIANGLES:
-    case GL_TRIANGLE_STRIP:
-    case GL_TRIANGLE_FAN:
-      g_typeshp = type;
-      break;
-    default:
-      printf("tess unhandled begin type: %d\n", type);
+class LatLonKey {
+public:
+  LatLonKey(int lat, int lon) {
+    this->lat = lat;
+    this->lon = lon;
   }
+  int lat;
+  int lon;
 
-  g_posshp = 0;
-}
-
-void __CALL_CONVENTION shpsendCallback() {}
-
-void __CALL_CONVENTION shpsvertexCallback(GLvoid *arg) {
-  GLvertexshp *vertex;
-  vertex = (GLvertexshp *)arg;
-  float_2Dpt p;
-  p.y = vertex->info.x;
-  p.x = vertex->info.y;
-
-  // convert strips and fans into triangles
-  if (g_typeshp != GL_TRIANGLES) {
-    if (g_posshp > 2) {
-      g_pvshp.push_back(g_p1shp);
-      g_pvshp.push_back(g_p2shp);
+  bool operator<(const LatLonKey &k) const {
+    if (this->lat < k.lat) {
+      return this->lon < k.lon;
     }
-
-    if (g_typeshp == GL_TRIANGLE_STRIP)
-      g_p1shp = g_p2shp;
-    else if (g_posshp == 0)
-      g_p1shp = p;
-    g_p2shp = p;
+    return this->lat < k.lat;
   }
 
-  g_pvshp.push_back(p);
-  g_posshp++;
-}
+  bool operator==(const LatLonKey &other) const {
+    return (lat == other.lat && lon == other.lon);
+  }
+};
 
+template <>
+struct std::hash<LatLonKey> {
+  std::size_t operator()(const LatLonKey &k) const {
+    return 360 * k.lat + k.lon;
+  }
+};
 
 class WorldShapeBaseChart {
 public:
-  WorldShapeBaseChart()
-      : _reader(
-            "/home/nohal/Downloads/simplified-land-polygons-complete-4326/"
-            "simplified_land_polygons.shp") {
-    std::cout << _reader.getBounds() << " " << _reader.getCount() << " "
-              << _reader.getGeometryType() << std::endl;
-    for (auto const &feature : _reader) {
-      // std::cout << feature.getGeometry()->wkt() << std::endl;
-    }
-  }
+  WorldShapeBaseChart();
+  wxPoint2DDouble GetDoublePixFromLL(ViewPort &vp, double lat, double lon);
 
-  wxPoint2DDouble GetDoublePixFromLL(ViewPort &vp, double lat, double lon) {
-    wxPoint2DDouble p = vp.GetDoublePixFromLL(lat, lon);
-    p.m_x -= vp.rv_rect.x, p.m_y -= vp.rv_rect.y;
-    return p;
-  }
+  void DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp, wxColor const &color);
 
-  void DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp, wxColor const &color) {
-    pnt.SetBrush(color);
-
-    if (_reader.getGeometryType() != shp::GeometryType::Polygon) {
-      std::cerr << "Not a polygon shapefile...";
-      return;
-    }
-    for (auto const &feature : _reader) {
-      auto polygon = static_cast<shp::Polygon *>(feature.getGeometry());
-      auto rings = polygon->getRings().size();
-      for (auto &ring : polygon->getRings()) {
-        wxPoint *poly_pt = new wxPoint[ring.getPoints().size()];
-        size_t cnt{0};
-        for (auto &point : ring.getPoints()) {
-          wxPoint2DDouble q =
-              GetDoublePixFromLL(vp, point.getY(), point.getX());
-          poly_pt[cnt].x = q.m_x;
-          poly_pt[cnt].y = q.m_y;
-          cnt++;
-        }
-        if (cnt > 1) {
-          pnt.DrawPolygonTessellated(cnt, poly_pt, 0, 0);
-        }
-        delete[] poly_pt;
-      }
-    }
-  }
-
-void DrawPolygonFilledGL(ocpnDC &pnt, contour_list *p, float_2Dpt **pv,
-                                        int *pvc, ViewPort &vp,
-                                        wxColor const &color, bool idl) 
-{
-
-  // build the contour vertex array converted to normalized coordinates (if
-  // needed)
-  if (!*pv) {
-    for (unsigned int c = 0; c < p->size(); c++) {
-      if (!p->at(c).size()) continue;
-
-      contour &cp = p->at(c);
-
-      GLUtesselator *tobj = gluNewTess();
-
-      gluTessCallback(tobj, GLU_TESS_VERTEX, (_GLUfuncptr)&shpsvertexCallback);
-      gluTessCallback(tobj, GLU_TESS_BEGIN, (_GLUfuncptr)&shpsbeginCallback);
-      gluTessCallback(tobj, GLU_TESS_END, (_GLUfuncptr)&shpsendCallback);
-      gluTessCallback(tobj, GLU_TESS_COMBINE,
-                      (_GLUfuncptr)&shpscombineCallback);
-      gluTessCallback(tobj, GLU_TESS_ERROR, (_GLUfuncptr)&shpserrorCallback);
-
-      gluTessNormal(tobj, 0, 0, 1);
-      gluTessProperty(tobj, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NONZERO);
-
-      gluTessBeginPolygon(tobj, NULL);
-      gluTessBeginContour(tobj);
-
-      for (unsigned int v = 0; v < p->at(c).size(); v++) {
-        wxRealPoint &ccp = cp.at(v);
-
-        if (v == 0 || ccp != cp.at(v - 1)) {
-          GLvertexshp *vertex = new GLvertexshp();
-          g_vertexesshp.push_back(vertex);
-
-          wxPoint2DDouble q;
-          if (/*TODO glChartCanvas::HasNormalizedViewPort(vp)*/ true)
-            q = GetDoublePixFromLL(vp, ccp.y, ccp.x);
-          else  // tesselation directly from lat/lon
-            q.m_x = ccp.y, q.m_y = ccp.x;
-
-          if (vp.m_projection_type != PROJECTION_POLAR) {
-            // need to correctly pick +180 or -180 longitude for projections
-            // that have a discontiguous date line
-
-            if (idl && ccp.x == 180) {
-              if (vp.m_projection_type == PROJECTION_MERCATOR ||
-                  vp.m_projection_type == PROJECTION_EQUIRECTANGULAR)
-                q.m_x -=
-                    40058986 * 4096.0;  // 360 degrees in normalized viewport
-              else
-                q.m_x -= 360;  // lat/lon coordinates
-            }
-          }
-
-          vertex->info.x = q.m_x;
-          vertex->info.y = q.m_y;
-
-          gluTessVertex(tobj, (GLdouble *)vertex, (GLdouble *)vertex);
-        }
-      }
-
-      gluTessEndContour(tobj);
-      gluTessEndPolygon(tobj);
-      gluDeleteTess(tobj);
-
-      for (std::list<GLvertexshp *>::iterator it = g_vertexesshp.begin();
-           it != g_vertexesshp.end(); it++)
-        delete *it;
-      g_vertexesshp.clear();
-    }
-
-    *pv = new float_2Dpt[g_pvshp.size()];
-    int i = 0;
-    for (std::list<float_2Dpt>::iterator it = g_pvshp.begin(); it != g_pvshp.end();
-         it++)
-      (*pv)[i++] = *it;
-
-    *pvc = g_pvshp.size();
-    g_pvshp.clear();
-  }
-
-#if defined(USE_ANDROID_GLES2) || defined(ocpnUSE_GLSL)
-
-
-  GLuint vbo = 0;
-
-  //  Build the shader viewport transform matrix
-  mat4x4 m, mvp;
-  mat4x4_identity(m);
-  mat4x4_scale_aniso(mvp, m, 2.0 / (float)vp.pix_width,
-                     2.0 / (float)vp.pix_height, 1.0);
-  mat4x4_translate_in_place(mvp, -vp.pix_width / 2, vp.pix_height / 2, 0);
-
-  if (/*TODO glChartCanvas::HasNormalizedViewPort(vp)*/ true) {
-
-  } else {
-    float *pvt = new float[2 * (*pvc)];
-    for (int i = 0; i < *pvc; i++) {
-      float_2Dpt *pc = *pv + i;
-      wxPoint2DDouble q = vp.GetDoublePixFromLL(pc->y, pc->x);
-      pvt[i * 2] = q.m_x;
-      pvt[(i * 2) + 1] = q.m_y;
-    }
-
-    GLShaderProgram *shader = pcolor_tri_shader_program[pnt.m_canvasIndex];
-    shader->Bind();
-
-    float colorv[4];
-    colorv[0] = color.Red() / float(256);
-    colorv[1] = color.Green() / float(256);
-    colorv[2] = color.Blue() / float(256);
-    colorv[3] = 1.0;
-    shader->SetUniform4fv("color", colorv);
-
-    shader->SetAttributePointerf("position", pvt);
-
-    glDrawArrays(GL_TRIANGLES, 0, *pvc);
-
-    delete[] pvt;
-    glDeleteBuffers(1, &vbo);
-    shader->UnBind();
-  }
-
-
-#else
-#endif
-}
-
-
-void RenderViewOnDC(ocpnDC &dc, ViewPort &vp) {
-    DrawPolygonFilled(dc, vp, *wxBLACK);
-}
+  void DrawPolygonFilledGL(ocpnDC &pnt, int *pvc, ViewPort &vp,
+                           wxColor const &color, bool idl);
+  void RenderViewOnDC(ocpnDC &dc, ViewPort &vp);
 
 private:
   shp::ShapefileReader _reader;
+  std::unordered_map<LatLonKey, std::vector<size_t>> _tiles;
 };
 
 #endif

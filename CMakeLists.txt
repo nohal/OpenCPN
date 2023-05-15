@@ -1095,6 +1095,7 @@ set(
   src/FontMgr.cpp
   src/GoToPositionDialog.cpp
   src/gshhs.cpp
+  src/shapefile_basemap.cpp
   src/gui_lib.cpp
   src/IDX_entry.cpp
   src/iENCToolbar.cpp
@@ -1419,8 +1420,6 @@ add_subdirectory("libs/ShapefileCpp")
 target_link_libraries(${PACKAGE_NAME} PRIVATE ocpn::ShapefileCpp)
 target_include_directories(${PACKAGE_NAME} PRIVATE ${SHAPEFILECPP_INCLUDE_DIR})
 target_include_directories(${PACKAGE_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/libs/gdal/include/gdal)
-include_directories(${SHAPEFILECPP_INCLUDE_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs/gdal/include/gdal)
 
 
 if (UNIX)

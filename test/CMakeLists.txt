@@ -35,6 +35,8 @@ target_include_directories(
   ${PROJECT_SOURCE_DIR}/../libs/sound/include
   ${PROJECT_SOURCE_DIR}/../libs/sound/include
   ${PROJECT_SOURCE_DIR}/../buildandroid/libcurl/include
+  ${SHAPEFILECPP_INCLUDE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/../libs/gdal/include/gdal
 )
 
 if (CMAKE_VERSION VERSION_GREATER 3.4)

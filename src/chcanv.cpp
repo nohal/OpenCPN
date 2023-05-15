@@ -82,6 +82,7 @@
 #include "compass.h"
 #include "OCPNRegion.h"
 #include "gshhs.h"
+#include "shapefile_basemap.h"
 #include "canvasMenu.h"
 #include "wx28compat.h"
 #include "track.h"
@@ -225,6 +226,7 @@ extern int g_ENCTextScaleFactor;
 extern int g_maxzoomin;
 
 extern float g_GLMinSymbolLineWidth;
+WorldShapeBaseChart gShapeBasemap;
 bool g_bAllowShipToActive;
 bool g_bShowShipToActive;
 int g_shipToActiveStyle;
