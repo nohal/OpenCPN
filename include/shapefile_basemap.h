@@ -168,88 +168,84 @@ public:
   void RenderViewOnDC(ocpnDC &dc, ViewPort &vp);
   BaseMapQuality& LowestQualityBaseMap() {
     if (_basemap_map.find(Quality::crude) != _basemap_map.end()) {
-      return _basemaps[_basemap_map.at(Quality::crude)];
+      return _basemap_map.at(Quality::crude);
     }
     if (_basemap_map.find(Quality::low) != _basemap_map.end()) {
-      return _basemaps[_basemap_map.at(Quality::low)];
+      return _basemap_map.at(Quality::low);
     }
     if (_basemap_map.find(Quality::medium) != _basemap_map.end()) {
-      return _basemaps[_basemap_map.at(Quality::medium)];
+      return _basemap_map.at(Quality::medium);
     }
     if (_basemap_map.find(Quality::high) != _basemap_map.end()) {
-      return _basemaps[_basemap_map.at(Quality::high)];
+      return _basemap_map.at(Quality::high);
     }
-    return _basemaps[_basemap_map.at(Quality::full)];
+    return _basemap_map.at(Quality::full);
   }
 
   BaseMapQuality& HighestQualityBaseMap() {
     if (_basemap_map.find(Quality::full) != _basemap_map.end()) {
-      return _basemaps[_basemap_map.at(Quality::full)];
+      return _basemap_map.at(Quality::full);
     }
     if (_basemap_map.find(Quality::high) != _basemap_map.end()) {
-      return _basemaps[_basemap_map.at(Quality::high)];
+      return _basemap_map.at(Quality::high);
     }
     if (_basemap_map.find(Quality::medium) != _basemap_map.end()) {
-      return _basemaps[_basemap_map.at(Quality::medium)];
+      return _basemap_map.at(Quality::medium);
     }
     if (_basemap_map.find(Quality::low) != _basemap_map.end()) {
-      return _basemaps[_basemap_map.at(Quality::low)];
+      return _basemap_map.at(Quality::low);
     }
-    return _basemaps[_basemap_map.at(Quality::crude)];
+    return _basemap_map.at(Quality::crude);
   }
 
   BaseMapQuality& SelectBaseMap(const size_t &scale) {
     if (_basemap_map.find(Quality::full) != _basemap_map.end() &&
-        _basemaps[_basemap_map.at(Quality::full)].IsUsable() &&
-        scale <= _basemaps[_basemap_map.at(Quality::full)].MinScale()) {
-      return _basemaps[_basemap_map.at(Quality::full)];
+        _basemap_map.at(Quality::full).IsUsable() &&
+        scale <= _basemap_map.at(Quality::full).MinScale()) {
+      return _basemap_map.at(Quality::full);
     } else if (_basemap_map.find(Quality::high) != _basemap_map.end() &&
-               _basemaps[_basemap_map.at(Quality::high)].IsUsable() &&
-               scale <= _basemaps[_basemap_map.at(Quality::high)].MinScale()) {
-      return _basemaps[_basemap_map.at(Quality::high)];
+               _basemap_map.at(Quality::high).IsUsable() &&
+               scale <= _basemap_map.at(Quality::high).MinScale()) {
+      return _basemap_map.at(Quality::high);
     } else if (_basemap_map.find(Quality::medium) != _basemap_map.end() &&
-               _basemaps[_basemap_map.at(Quality::medium)].IsUsable() &&
-               scale <= _basemaps[_basemap_map.at(Quality::medium)].MinScale()) {
-      return _basemaps[_basemap_map.at(Quality::medium)];
+               _basemap_map.at(Quality::medium).IsUsable() &&
+               scale <= _basemap_map.at(Quality::medium).MinScale()) {
+      return _basemap_map.at(Quality::medium);
     } else if (_basemap_map.find(Quality::low) != _basemap_map.end() &&
-               _basemaps[_basemap_map.at(Quality::low)].IsUsable() &&
-               scale <= _basemaps[_basemap_map.at(Quality::low)].MinScale()) {
-      return _basemaps[_basemap_map.at(Quality::low)];
+               _basemap_map.at(Quality::low).IsUsable() &&
+               scale <= _basemap_map.at(Quality::low).MinScale()) {
+      return _basemap_map.at(Quality::low);
     }
     return LowestQualityBaseMap();
   }
-  bool IsUsable() { return _basemaps.size() > 0; }
+  bool IsUsable() { return LowestQualityBaseMap().IsUsable(); }
 
 private:
   void LoadBasemaps(const std::string &dir) {
     if (std::filesystem::exists(BaseMapQuality::ConstructPath(dir, "crude"))) {
-      _basemaps.push_back(BaseMapQuality(
-          BaseMapQuality::ConstructPath(dir, "crude"), 300000000, *wxBLUE));
-      _basemap_map.insert(std::make_pair(Quality::crude, _basemaps.size()-1));
+            _basemap_map.insert(std::make_pair(Quality::crude, BaseMapQuality(
+          BaseMapQuality::ConstructPath(dir, "crude"), 300000000, *wxBLUE)));
     }
     if (std::filesystem::exists(BaseMapQuality::ConstructPath(dir, "low"))) {
-      _basemaps.push_back(
-          BaseMapQuality(BaseMapQuality::ConstructPath(dir, "low"), 20000000, *wxRED));
-      _basemap_map.insert(std::make_pair(Quality::low, _basemaps.size()-1));
+      
+      _basemap_map.insert(std::make_pair(Quality::low, BaseMapQuality(BaseMapQuality::ConstructPath(dir, "low"), 15000000, *wxBLACK)));
     }
     if (std::filesystem::exists(BaseMapQuality::ConstructPath(dir, "medium"))) {
-      _basemaps.push_back(BaseMapQuality(
-          BaseMapQuality::ConstructPath(dir, "medium"), 1000000, *wxGREEN));
-      _basemap_map.insert(std::make_pair(Quality::medium, _basemaps.size()-1));
+      
+      _basemap_map.insert(std::make_pair(Quality::medium, BaseMapQuality(
+          BaseMapQuality::ConstructPath(dir, "medium"), 1000000, *wxGREEN)));
     }
     if (std::filesystem::exists(BaseMapQuality::ConstructPath(dir, "high"))) {
-      _basemaps.push_back(
-          BaseMapQuality(BaseMapQuality::ConstructPath(dir, "high"), 300000, *wxCYAN));
-      _basemap_map.insert(std::make_pair(Quality::high, _basemaps.size()-1));
+      
+      _basemap_map.insert(std::make_pair(Quality::high, BaseMapQuality(BaseMapQuality::ConstructPath(dir, "high"), 300000, *wxCYAN)));
     }
     if (std::filesystem::exists(BaseMapQuality::ConstructPath(dir, "full"))) {
-      _basemaps.push_back(
-          BaseMapQuality(BaseMapQuality::ConstructPath(dir, "full"), 100000, *wxLIGHT_GREY));
-      _basemap_map.insert(std::make_pair(Quality::full, _basemaps.size()-1));
+      
+      _basemap_map.insert(std::make_pair(Quality::full, BaseMapQuality(BaseMapQuality::ConstructPath(dir, "full"), 100000, *wxLIGHT_GREY)));
     }
   }
-  std::map<Quality, size_t> _basemap_map;
-  std::vector<BaseMapQuality> _basemaps;
+  std::map<Quality, BaseMapQuality> _basemap_map;
+  //std::vector<BaseMapQuality> _basemaps;
 };
 
 #endif
