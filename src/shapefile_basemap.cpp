@@ -115,22 +115,8 @@ void __CALL_CONVENTION shpsvertexCallback(GLvoid *arg) {
   g_posshp++;
 }
 
-WorldShapeBaseChart::WorldShapeBaseChart()
-    : /*_reader("/home/nohal/Downloads/land-polygons-split-4326/land_polygons.shp")*/ _reader("/home/nohal/Downloads/test_lowres_shp.shp") {
-  std::cout << _reader.getBounds() << " " << _reader.getCount() << " "
-            << _reader.getGeometryType() << std::endl;
-  for (auto field : _reader.getFields()) {
-    std::cout << field.getName() << ": " << field.getType() << ", "
-              << field.getWidth() << ", " << field.getNumberOfDecimals()
-              << std::endl;
-  }
-  size_t feat{0};
-  for (auto const &feature : _reader) {
-    _tiles[LatLonKey(std::any_cast<int>(feature.getAttributes()["y"]),
-                     std::any_cast<int>(feature.getAttributes()["x"]))]
-        .push_back(feat);
-    feat++;
-  }
+WorldShapeBaseChart::WorldShapeBaseChart() {
+  LoadBasemaps("/home/nohal/source/shapefiles/data");
 }
 
 wxPoint2DDouble WorldShapeBaseChart::GetDoublePixFromLL(ViewPort &vp,
@@ -141,47 +127,65 @@ wxPoint2DDouble WorldShapeBaseChart::GetDoublePixFromLL(ViewPort &vp,
   return p;
 }
 
-void WorldShapeBaseChart::DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp,
-                                            wxColor const &color) {
+void BaseMapQuality::DoDrawPolygonFilled(ocpnDC &pnt, ViewPort &vp,
+                                         const shp::Feature &feature) {
+  double old_x = -9999999.0, old_y = -9999999.0;
+  auto polygon = static_cast<shp::Polygon *>(feature.getGeometry());
+  for (auto &ring : polygon->getRings()) {
+    wxPoint *poly_pt = new wxPoint[ring.getPoints().size()];
+    size_t cnt{0};
+    for (auto &point : ring.getPoints()) {
+      // if (bbox.ContainsMarge(point.getY(), point.getX(), 0.5)) {
+      wxPoint2DDouble q = WorldShapeBaseChart::GetDoublePixFromLL(
+          vp, point.getY(), point.getX());
+      if (round(q.m_x) != round(old_x) || round(q.m_y) != round(old_y)) {
+        poly_pt[cnt].x = round(q.m_x);
+        poly_pt[cnt].y = round(q.m_y);
+        cnt++;
+      }
+      old_x = q.m_x;
+      old_y = q.m_y;
+      //}
+    }
+    if (cnt > 1) {
+      pnt.DrawPolygonTessellated(cnt, poly_pt, 0, 0);
+    }
+    delete[] poly_pt;
+  }
+}
+
+void BaseMapQuality::DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp,
+                                       wxColor const &color) {
+  if (!_is_usable) {
+    return;
+  }
+  if (!_reader) {
+    if (!LoadSHP()) {
+      return;
+    }
+  }
   pnt.SetBrush(color);
 
   LLBBox bbox = vp.GetBBox();
-  for (int i = floor(bbox.GetMinLat()); i < ceil(bbox.GetMaxLat()); i++) {
-    for (int j = floor(bbox.GetMinLon()); j < ceil(bbox.GetMaxLon()); j++) {
-      for (auto fid : _tiles[LatLonKey(i, j)]) {
-        auto const &feature = _reader.getFeature(fid);
-        double old_x = -9999999.0, old_y = -9999999.0;
-        auto polygon = static_cast<shp::Polygon *>(feature.getGeometry());
-        auto rings = polygon->getRings().size();
-        for (auto &ring : polygon->getRings()) {
-          wxPoint *poly_pt = new wxPoint[ring.getPoints().size()];
-          size_t cnt{0};
-          for (auto &point : ring.getPoints()) {
-            //if (bbox.ContainsMarge(point.getY(), point.getX(), 0.5)) {
-            wxPoint2DDouble q =
-                GetDoublePixFromLL(vp, point.getY(), point.getX());
-            if (round(q.m_x) != round(old_x) || round(q.m_y) != round(old_y)) {
-              poly_pt[cnt].x = round(q.m_x);
-              poly_pt[cnt].y = round(q.m_y);
-              cnt++;
-            }
-            old_x = q.m_x;
-            old_y = q.m_y;
-          //}
-          }
-          if (cnt > 1) {
-            pnt.DrawPolygonTessellated(cnt, poly_pt, 0, 0);
-          }
-          delete[] poly_pt;
+  if (_is_tiled) {
+    for (int i = floor(bbox.GetMinLat()); i < ceil(bbox.GetMaxLat()); i++) {
+      for (int j = floor(bbox.GetMinLon()); j < ceil(bbox.GetMaxLon()); j++) {
+        for (auto fid : _tiles[LatLonKey(i, j)]) {
+          auto const &feature = _reader->getFeature(fid);
+          DoDrawPolygonFilled(pnt, vp,
+                              feature);  // Parallelize using std::async?
         }
       }
+    }
+  } else {
+    for (auto const &feature : *_reader) {
+      DoDrawPolygonFilled(pnt, vp, feature);  // Parallelize using std::async?
     }
   }
 }
 
-void WorldShapeBaseChart::DrawPolygonFilledGL(ocpnDC &pnt, int *pvc,
-                                              ViewPort &vp,
-                                              wxColor const &color, bool idl) {
+void BaseMapQuality::DrawPolygonFilledGL(ocpnDC &pnt, int *pvc, ViewPort &vp,
+                                         wxColor const &color, bool idl) {
 #if 0
   // build the contour vertex array converted to normalized coordinates (if
   // needed)
@@ -309,5 +313,5 @@ void WorldShapeBaseChart::DrawPolygonFilledGL(ocpnDC &pnt, int *pvc,
 }
 
 void WorldShapeBaseChart::RenderViewOnDC(ocpnDC &dc, ViewPort &vp) {
-  DrawPolygonFilled(dc, vp, *wxBLACK);
+  SelectBaseMap(vp.chart_scale)->RenderViewOnDC(dc, vp);
 }
