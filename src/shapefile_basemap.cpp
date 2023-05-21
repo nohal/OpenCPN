@@ -160,8 +160,14 @@ void BaseMapQuality::DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp,
     return;
   }
   if (!_reader) {
-    if (!LoadSHP()) {
-      return;
+    _loading = true;
+    _loaded = std::async(std::launch::async, [&](){bool ret = LoadSHP(); _loading = false; return ret;});
+  }
+  if(_loading) {
+    if(_loaded.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+      _is_usable = _loaded.get();
+    } else {
+      return; // not yet loaded
     }
   }
   pnt.SetBrush(color);
@@ -313,5 +319,5 @@ void BaseMapQuality::DrawPolygonFilledGL(ocpnDC &pnt, int *pvc, ViewPort &vp,
 }
 
 void WorldShapeBaseChart::RenderViewOnDC(ocpnDC &dc, ViewPort &vp) {
-  SelectBaseMap(vp.chart_scale)->RenderViewOnDC(dc, vp);
+  SelectBaseMap(vp.chart_scale).RenderViewOnDC(dc, vp);
 }

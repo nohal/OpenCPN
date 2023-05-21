@@ -3574,7 +3574,7 @@ void glChartCanvas::RenderWorldChart(ocpnDC &dc, ViewPort &vp, wxRect &rect,
     }
   }
 
-  //m_pParentCanvas->pWorldBackgroundChart->RenderViewOnDC(dc, vp);
+  m_pParentCanvas->pWorldBackgroundChart->RenderViewOnDC(dc, vp);
   gShapeBasemap.RenderViewOnDC(dc, vp);
 
   glDisable(GL_SCISSOR_TEST);
