@@ -127,6 +127,114 @@ wxPoint2DDouble WorldShapeBaseChart::GetDoublePixFromLL(ViewPort &vp,
   return p;
 }
 
+BaseMapQuality& WorldShapeBaseChart::LowestQualityBaseMap() {
+    if (_basemap_map.find(Quality::crude) != _basemap_map.end()) {
+      return _basemap_map.at(Quality::crude);
+    }
+    if (_basemap_map.find(Quality::low) != _basemap_map.end()) {
+      return _basemap_map.at(Quality::low);
+    }
+    if (_basemap_map.find(Quality::medium) != _basemap_map.end()) {
+      return _basemap_map.at(Quality::medium);
+    }
+    if (_basemap_map.find(Quality::high) != _basemap_map.end()) {
+      return _basemap_map.at(Quality::high);
+    }
+    return _basemap_map.at(Quality::full);
+  }
+
+  BaseMapQuality& WorldShapeBaseChart::HighestQualityBaseMap() {
+    if (_basemap_map.find(Quality::full) != _basemap_map.end()) {
+      return _basemap_map.at(Quality::full);
+    }
+    if (_basemap_map.find(Quality::high) != _basemap_map.end()) {
+      return _basemap_map.at(Quality::high);
+    }
+    if (_basemap_map.find(Quality::medium) != _basemap_map.end()) {
+      return _basemap_map.at(Quality::medium);
+    }
+    if (_basemap_map.find(Quality::low) != _basemap_map.end()) {
+      return _basemap_map.at(Quality::low);
+    }
+    return _basemap_map.at(Quality::crude);
+  }
+
+  BaseMapQuality& WorldShapeBaseChart::SelectBaseMap(const size_t &scale) {
+    if (_basemap_map.find(Quality::full) != _basemap_map.end() &&
+        _basemap_map.at(Quality::full).IsUsable() &&
+        scale <= _basemap_map.at(Quality::full).MinScale()) {
+      return _basemap_map.at(Quality::full);
+    } else if (_basemap_map.find(Quality::high) != _basemap_map.end() &&
+               _basemap_map.at(Quality::high).IsUsable() &&
+               scale <= _basemap_map.at(Quality::high).MinScale()) {
+      return _basemap_map.at(Quality::high);
+    } else if (_basemap_map.find(Quality::medium) != _basemap_map.end() &&
+               _basemap_map.at(Quality::medium).IsUsable() &&
+               scale <= _basemap_map.at(Quality::medium).MinScale()) {
+      return _basemap_map.at(Quality::medium);
+    } else if (_basemap_map.find(Quality::low) != _basemap_map.end() &&
+               _basemap_map.at(Quality::low).IsUsable() &&
+               scale <= _basemap_map.at(Quality::low).MinScale()) {
+      return _basemap_map.at(Quality::low);
+    }
+    return LowestQualityBaseMap();
+  }
+
+  void WorldShapeBaseChart::LoadBasemaps(const std::string &dir) {
+    if (std::filesystem::exists(BaseMapQuality::ConstructPath(dir, "crude"))) {
+            _basemap_map.insert(std::make_pair(Quality::crude, BaseMapQuality(
+          BaseMapQuality::ConstructPath(dir, "crude"), 300000000, *wxBLUE)));
+    }
+    if (std::filesystem::exists(BaseMapQuality::ConstructPath(dir, "low"))) {
+      
+      _basemap_map.insert(std::make_pair(Quality::low, BaseMapQuality(BaseMapQuality::ConstructPath(dir, "low"), 15000000, *wxBLACK)));
+    }
+    if (std::filesystem::exists(BaseMapQuality::ConstructPath(dir, "medium"))) {
+      
+      _basemap_map.insert(std::make_pair(Quality::medium, BaseMapQuality(
+          BaseMapQuality::ConstructPath(dir, "medium"), 1000000, *wxGREEN)));
+    }
+    if (std::filesystem::exists(BaseMapQuality::ConstructPath(dir, "high"))) {
+      
+      _basemap_map.insert(std::make_pair(Quality::high, BaseMapQuality(BaseMapQuality::ConstructPath(dir, "high"), 300000, *wxCYAN)));
+    }
+    if (std::filesystem::exists(BaseMapQuality::ConstructPath(dir, "full"))) {
+      
+      _basemap_map.insert(std::make_pair(Quality::full, BaseMapQuality(BaseMapQuality::ConstructPath(dir, "full"), 100000, *wxLIGHT_GREY)));
+    }
+  }
+
+
+bool BaseMapQuality::LoadSHP() {
+    _reader = new shp::ShapefileReader(_filename);
+    auto bounds = _reader->getBounds();
+    _is_usable = _reader->getCount() > 1 && bounds.getMaxX() <= 180 &&
+                 bounds.getMinX() >= -180 && bounds.getMinY() >= -90 &&
+                 bounds.getMaxY() <=
+                     90;  // TODO - Do we care whether the planet is covered?
+    _is_usable &= _reader->getGeometryType() == shp::GeometryType::Polygon;
+    bool has_x = false;
+    bool has_y = false;
+    for (auto field : _reader->getFields()) {
+      if (field.getName() == "x") {
+        has_x = true;
+      } else if (field.getName() == "y") {
+        has_y = true;
+      }
+    }
+    _is_tiled = (has_x && has_y);
+    if (_is_usable && _is_tiled) {
+      size_t feat{0};
+      for (auto const &feature : *_reader) {
+        _tiles[LatLonKey(std::any_cast<int>(feature.getAttributes()["y"]),
+                         std::any_cast<int>(feature.getAttributes()["x"]))]
+            .push_back(feat);
+        feat++;
+      }
+    }
+    return _is_usable;
+  }
+
 void BaseMapQuality::DoDrawPolygonFilled(ocpnDC &pnt, ViewPort &vp,
                                          const shp::Feature &feature) {
   double old_x = -9999999.0, old_y = -9999999.0;
@@ -174,9 +282,18 @@ void BaseMapQuality::DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp,
 
   LLBBox bbox = vp.GetBBox();
   if (_is_tiled) {
+    if (bbox.GetMinLon() < -90 && bbox.GetMaxLon() > 90) {
+      std::cout << "IDL" << std::endl;
+    }
     for (int i = floor(bbox.GetMinLat()); i < ceil(bbox.GetMaxLat()); i++) {
       for (int j = floor(bbox.GetMinLon()); j < ceil(bbox.GetMaxLon()); j++) {
-        for (auto fid : _tiles[LatLonKey(i, j)]) {
+          int lon {j};
+          if(j < -180) {
+            lon = j + 360;
+          } else if (j >= 180) {
+            lon = j - 360;
+          }
+        for (auto fid : _tiles[LatLonKey(i, lon)]) {
           auto const &feature = _reader->getFeature(fid);
           DoDrawPolygonFilled(pnt, vp,
                               feature);  // Parallelize using std::async?

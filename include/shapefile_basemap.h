@@ -71,57 +71,31 @@ enum Quality { crude, low, medium, high, full };
 class BaseMapQuality {
 public:
   BaseMapQuality() = delete;
-  BaseMapQuality(const std::string &filename, const size_t &min_scale, const wxColor & color = *wxBLACK)
-      : _loading(false), _is_usable(false), _is_tiled(false),
+  BaseMapQuality(const std::string &filename, const size_t &min_scale,
+                 const wxColor &color = *wxBLACK)
+      : _loading(false),
+        _is_usable(false),
+        _is_tiled(false),
         _min_scale(min_scale),
         _filename(filename),
-        _reader(nullptr),_color(color)
-         {
+        _reader(nullptr),
+        _color(color) {
     _is_usable = std::filesystem::exists(filename);
-    std::cout << filename << " " << _is_usable << std::endl;
   }
 
-  BaseMapQuality(const BaseMapQuality &t)
-  {
+  BaseMapQuality(const BaseMapQuality &t) {
     this->_filename = t._filename;
     this->_is_usable = t._is_usable;
     this->_is_tiled = t._is_tiled;
     this->_min_scale = t._min_scale;
     this->_reader = nullptr;
     this->_color = t._color;
-    std::cout << "Copy" << std::endl;
   }
-  ~BaseMapQuality() { std::cout << "Destroy BaseMapQuality" << std::endl; delete _reader; }
+  ~BaseMapQuality() {
+    delete _reader;
+  }
 
-  bool LoadSHP() {
-    _reader = new shp::ShapefileReader(_filename);
-    auto bounds = _reader->getBounds();
-    _is_usable = _reader->getCount() > 1 && bounds.getMaxX() <= 180 &&
-                 bounds.getMinX() >= -180 && bounds.getMinY() >= -90 &&
-                 bounds.getMaxY() <=
-                     90;  // TODO - Do we care whether the planet is covered?
-    _is_usable &= _reader->getGeometryType() == shp::GeometryType::Polygon;
-    bool has_x = false;
-    bool has_y = false;
-    for (auto field : _reader->getFields()) {
-      if (field.getName() == "x") {
-        has_x = true;
-      } else if (field.getName() == "y") {
-        has_y = true;
-      }
-    }
-    _is_tiled = (has_x && has_y);
-    if (_is_usable && _is_tiled) {
-      size_t feat{0};
-      for (auto const &feature : *_reader) {
-        _tiles[LatLonKey(std::any_cast<int>(feature.getAttributes()["y"]),
-                         std::any_cast<int>(feature.getAttributes()["x"]))]
-            .push_back(feat);
-        feat++;
-      }
-    }
-    return _is_usable;
-  }
+  bool LoadSHP();
   bool IsUsable() { return _is_usable && !_loading; }
   size_t MinScale() { return _min_scale; }
   void RenderViewOnDC(ocpnDC &dc, ViewPort &vp) {
@@ -166,86 +140,17 @@ public:
   void DrawPolygonFilledGL(ocpnDC &pnt, int *pvc, ViewPort &vp,
                            wxColor const &color, bool idl);
   void RenderViewOnDC(ocpnDC &dc, ViewPort &vp);
-  BaseMapQuality& LowestQualityBaseMap() {
-    if (_basemap_map.find(Quality::crude) != _basemap_map.end()) {
-      return _basemap_map.at(Quality::crude);
-    }
-    if (_basemap_map.find(Quality::low) != _basemap_map.end()) {
-      return _basemap_map.at(Quality::low);
-    }
-    if (_basemap_map.find(Quality::medium) != _basemap_map.end()) {
-      return _basemap_map.at(Quality::medium);
-    }
-    if (_basemap_map.find(Quality::high) != _basemap_map.end()) {
-      return _basemap_map.at(Quality::high);
-    }
-    return _basemap_map.at(Quality::full);
-  }
+  BaseMapQuality &LowestQualityBaseMap();
 
-  BaseMapQuality& HighestQualityBaseMap() {
-    if (_basemap_map.find(Quality::full) != _basemap_map.end()) {
-      return _basemap_map.at(Quality::full);
-    }
-    if (_basemap_map.find(Quality::high) != _basemap_map.end()) {
-      return _basemap_map.at(Quality::high);
-    }
-    if (_basemap_map.find(Quality::medium) != _basemap_map.end()) {
-      return _basemap_map.at(Quality::medium);
-    }
-    if (_basemap_map.find(Quality::low) != _basemap_map.end()) {
-      return _basemap_map.at(Quality::low);
-    }
-    return _basemap_map.at(Quality::crude);
-  }
+  BaseMapQuality &HighestQualityBaseMap();
 
-  BaseMapQuality& SelectBaseMap(const size_t &scale) {
-    if (_basemap_map.find(Quality::full) != _basemap_map.end() &&
-        _basemap_map.at(Quality::full).IsUsable() &&
-        scale <= _basemap_map.at(Quality::full).MinScale()) {
-      return _basemap_map.at(Quality::full);
-    } else if (_basemap_map.find(Quality::high) != _basemap_map.end() &&
-               _basemap_map.at(Quality::high).IsUsable() &&
-               scale <= _basemap_map.at(Quality::high).MinScale()) {
-      return _basemap_map.at(Quality::high);
-    } else if (_basemap_map.find(Quality::medium) != _basemap_map.end() &&
-               _basemap_map.at(Quality::medium).IsUsable() &&
-               scale <= _basemap_map.at(Quality::medium).MinScale()) {
-      return _basemap_map.at(Quality::medium);
-    } else if (_basemap_map.find(Quality::low) != _basemap_map.end() &&
-               _basemap_map.at(Quality::low).IsUsable() &&
-               scale <= _basemap_map.at(Quality::low).MinScale()) {
-      return _basemap_map.at(Quality::low);
-    }
-    return LowestQualityBaseMap();
-  }
+  BaseMapQuality &SelectBaseMap(const size_t &scale);
   bool IsUsable() { return LowestQualityBaseMap().IsUsable(); }
 
 private:
-  void LoadBasemaps(const std::string &dir) {
-    if (std::filesystem::exists(BaseMapQuality::ConstructPath(dir, "crude"))) {
-            _basemap_map.insert(std::make_pair(Quality::crude, BaseMapQuality(
-          BaseMapQuality::ConstructPath(dir, "crude"), 300000000, *wxBLUE)));
-    }
-    if (std::filesystem::exists(BaseMapQuality::ConstructPath(dir, "low"))) {
-      
-      _basemap_map.insert(std::make_pair(Quality::low, BaseMapQuality(BaseMapQuality::ConstructPath(dir, "low"), 15000000, *wxBLACK)));
-    }
-    if (std::filesystem::exists(BaseMapQuality::ConstructPath(dir, "medium"))) {
-      
-      _basemap_map.insert(std::make_pair(Quality::medium, BaseMapQuality(
-          BaseMapQuality::ConstructPath(dir, "medium"), 1000000, *wxGREEN)));
-    }
-    if (std::filesystem::exists(BaseMapQuality::ConstructPath(dir, "high"))) {
-      
-      _basemap_map.insert(std::make_pair(Quality::high, BaseMapQuality(BaseMapQuality::ConstructPath(dir, "high"), 300000, *wxCYAN)));
-    }
-    if (std::filesystem::exists(BaseMapQuality::ConstructPath(dir, "full"))) {
-      
-      _basemap_map.insert(std::make_pair(Quality::full, BaseMapQuality(BaseMapQuality::ConstructPath(dir, "full"), 100000, *wxLIGHT_GREY)));
-    }
-  }
+  void LoadBasemaps(const std::string &dir);
+
   std::map<Quality, BaseMapQuality> _basemap_map;
-  //std::vector<BaseMapQuality> _basemaps;
 };
 
 #endif
