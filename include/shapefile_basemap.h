@@ -134,6 +134,8 @@ private:
   void DoDrawPolygonFilledGL(ocpnDC &pnt, ViewPort &vp,
                              const shp::Feature &feature);
   void DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp);
+    void AddPointToTessList(shp::Point &point, ViewPort &vp, GLUtesselator *tobj, bool idl);
+
   std::string _filename;
   shp::ShapefileReader *_reader;
   std::unordered_map<LatLonKey, std::vector<size_t>> _tiles;
@@ -144,7 +146,7 @@ private:
                          const std::pair<double, double> &C,
                          const std::pair<double, double> &D);
 
-  bool PolygonIntersect(const shp::Feature &feature,
+  bool PolygonLineIntersect(const shp::Feature &feature,
                         const std::pair<double, double> &A,
                         const std::pair<double, double> &B);
 };
@@ -178,6 +180,7 @@ private:
                            wxColor const &color, bool idl);
   ShapeBaseChart &LowestQualityBaseMap();
   ShapeBaseChart &HighestQualityBaseMap();
+
   bool _loaded;
 
   std::map<Quality, ShapeBaseChart> _basemap_map;

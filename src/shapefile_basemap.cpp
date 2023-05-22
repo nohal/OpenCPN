@@ -118,7 +118,7 @@ void __CALL_CONVENTION shpsvertexCallback(GLvoid *arg) {
 }
 
 ShapeBaseChartSet::ShapeBaseChartSet() : _loaded(false) {
-  std::string basemap_dir {gWorldMapLocation.c_str()};
+  std::string basemap_dir{gWorldMapLocation.c_str()};
   LoadBasemaps(basemap_dir);
 }
 
@@ -183,7 +183,7 @@ ShapeBaseChart &ShapeBaseChartSet::SelectBaseMap(const size_t &scale) {
 }
 
 void ShapeBaseChartSet::Reset() {
-  std::string basemap_dir {gWorldMapLocation.c_str()};
+  std::string basemap_dir{gWorldMapLocation.c_str()};
   LoadBasemaps(basemap_dir);
 }
 
@@ -262,7 +262,7 @@ void ShapeBaseChart::DoDrawPolygonFilled(ocpnDC &pnt, ViewPort &vp,
     size_t cnt{0};
     auto bbox = vp.GetBBox();
     for (auto &point : ring.getPoints()) {
-      //if (bbox.ContainsMarge(point.getY(), point.getX(), 0.05)) {
+      // if (bbox.ContainsMarge(point.getY(), point.getX(), 0.05)) {
       wxPoint2DDouble q =
           ShapeBaseChartSet::GetDoublePixFromLL(vp, point.getY(), point.getX());
       if (round(q.m_x) != round(old_x) || round(q.m_y) != round(old_y)) {
@@ -279,6 +279,36 @@ void ShapeBaseChart::DoDrawPolygonFilled(ocpnDC &pnt, ViewPort &vp,
     }
     delete[] poly_pt;
   }
+}
+
+void ShapeBaseChart::AddPointToTessList(shp::Point &point, ViewPort &vp,
+                                        GLUtesselator *tobj, bool idl) {
+  wxPoint2DDouble q;
+  if (glChartCanvas::HasNormalizedViewPort(vp)) {
+    q = ShapeBaseChartSet::GetDoublePixFromLL(vp, point.getY(), point.getX());
+  } else {  // tesselation directly from lat/lon
+    q.m_x = point.getY(), q.m_y = point.getX();
+  }
+  GLvertexshp *vertex = new GLvertexshp();
+  g_vertexesshp.push_back(vertex);
+  if (vp.m_projection_type != PROJECTION_POLAR) {
+    // need to correctly pick +180 or -180 longitude for projections
+    // that have a discontiguous date line
+
+    if (idl && (point.getX() == 180)) {
+      if (vp.m_projection_type == PROJECTION_MERCATOR ||
+          vp.m_projection_type == PROJECTION_EQUIRECTANGULAR) {
+        // q.m_x -= 40058986 * 4096.0;  // 360 degrees in normalized
+        // viewport
+      } else {
+        q.m_x -= 360;  // lat/lon coordinates
+      }
+    }
+  }
+  vertex->info.x = q.m_x;
+  vertex->info.y = q.m_y;
+
+  gluTessVertex(tobj, (GLdouble *)vertex, (GLdouble *)vertex);
 }
 
 void ShapeBaseChart::DoDrawPolygonFilledGL(ocpnDC &pnt, ViewPort &vp,
@@ -302,33 +332,7 @@ void ShapeBaseChart::DoDrawPolygonFilledGL(ocpnDC &pnt, ViewPort &vp,
     gluTessBeginPolygon(tobj, NULL);
     gluTessBeginContour(tobj);
     for (auto &point : ring.getPoints()) {
-      wxPoint2DDouble q;  // = ShapeBaseChartSet::GetDoublePixFromLL(vp,
-                          // point.getY(), point.getX());
-      if (glChartCanvas::HasNormalizedViewPort(vp))
-        q = ShapeBaseChartSet::GetDoublePixFromLL(vp, point.getY(),
-                                                  point.getX());
-      else  // tesselation directly from lat/lon
-        q.m_x = point.getY(), q.m_y = point.getX();
-      GLvertexshp *vertex = new GLvertexshp();
-      g_vertexesshp.push_back(vertex);
-      if (vp.m_projection_type != PROJECTION_POLAR) {
-        // need to correctly pick +180 or -180 longitude for projections
-        // that have a discontiguous date line
-
-        if (idl && (point.getX() == 180)) {
-          if (vp.m_projection_type == PROJECTION_MERCATOR ||
-              vp.m_projection_type == PROJECTION_EQUIRECTANGULAR) {
-            // q.m_x -= 40058986 * 4096.0;  // 360 degrees in normalized
-            // viewport
-          } else {
-            q.m_x -= 360;  // lat/lon coordinates
-          }
-        }
-      }
-      vertex->info.x = q.m_x;
-      vertex->info.y = q.m_y;
-
-      gluTessVertex(tobj, (GLdouble *)vertex, (GLdouble *)vertex);
+      AddPointToTessList(point, vp, tobj, idl);
       cnt++;
     }
     gluTessEndContour(tobj);
@@ -440,102 +444,104 @@ void ShapeBaseChart::DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp) {
   }
 }
 
-bool ShapeBaseChart::CrossesLand(double &lat1, double &lon1, double &lat2, double &lon2) {
-    double latmin = std::min(lat1, lat2);
-    double lonmin = std::min(lon1, lon2);
-    double latmax = std::min(lat1, lat2);
-    double lonmax = std::min(lon1, lon2);
+bool ShapeBaseChart::CrossesLand(double &lat1, double &lon1, double &lat2,
+                                 double &lon2) {
+  double latmin = std::min(lat1, lat2);
+  double lonmin = std::min(lon1, lon2);
+  double latmax = std::min(lat1, lat2);
+  double lonmax = std::min(lon1, lon2);
 
-    auto A = std::make_pair(lat1, lon1);
-    auto B = std::make_pair(lat2, lon2);
+  auto A = std::make_pair(lat1, lon1);
+  auto B = std::make_pair(lat2, lon2);
 
-    if (_is_tiled) {
-      for (int i = floor(latmin); i < ceil(latmax); i++) {
-        for (int j = floor(lonmin); j < ceil(lonmax); j++) {
-          int lon{j};
-          if (j < -180) {
-            lon = j + 360;
-          } else if (j >= 180) {
-            lon = j - 360;
-          }
-          for (auto fid : _tiles[LatLonKey(i, lon)]) {
-            auto const &feature = _reader->getFeature(fid);
-            if (PolygonIntersect(feature, A, B)) {
-              return true;
-            }
-          }
+  if (_is_tiled) {
+    for (int i = floor(latmin); i < ceil(latmax); i++) {
+      for (int j = floor(lonmin); j < ceil(lonmax); j++) {
+        int lon{j};
+        if (j < -180) {
+          lon = j + 360;
+        } else if (j >= 180) {
+          lon = j - 360;
         }
-      }
-    } else {
-      for (auto const &feature : *_reader) {
-        if (PolygonIntersect(feature, A, B)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-bool ShapeBaseChart::LineLineIntersect(const std::pair<double, double> &A,
-                         const std::pair<double, double> &B,
-                         const std::pair<double, double> &C,
-                         const std::pair<double, double> &D) {
-    // Line AB represented as a1x + b1y = c1
-    double a1 = B.second - A.second;
-    double b1 = A.first - B.first;
-    double c1 = a1*(A.first) + b1*(A.second);
-
-    // Line CD represented as a2x + b2y = c2
-    double a2 = D.second - C.second;
-    double b2 = C.first - D.first;
-    double c2 = a2*(C.first)+ b2*(C.second);
-
-    double determinant = a1 * b2 - a2 * b1;
-
-    if (determinant == 0) {
-      // The lines are parallel
-      return false;
-    } else {
-      // The lines intersect at x,y
-      double x = (b2*c1 - b1*c2)/determinant;
-      double y = (a1*c2 - a2*c1)/determinant;
-      //x,y must be on both the segments we are checking
-      if (std::min(A.first, B.first) <= x && x <= std::max(A.first, B.first)
-      && std::min(A.second, B.second) <= y && y <= std::max(A.second, B.second)
-      && std::min(C.first, D.first) <= x && x <= std::max(C.first, D.first)
-      && std::min(C.second, D.second) <= y && y <= std::max(C.second, D.second)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  bool ShapeBaseChart::PolygonIntersect(const shp::Feature &feature,
-                        const std::pair<double, double> &A,
-                        const std::pair<double, double> &B) {
-    auto polygon = static_cast<shp::Polygon *>(feature.getGeometry());
-    std::pair<double, double> previous_point;
-    for (auto &ring : polygon->getRings()) {
-      size_t cnt{0};
-      for (auto &point : ring.getPoints()) {
-        auto pnt = std::make_pair(point.getY(), point.getX());
-        if (cnt > 0) {
-          // TODO: Is it faster to first check if we are in the boundong box of
-          // the line?
-          if (LineLineIntersect(A, B, previous_point, pnt)) {
+        for (auto fid : _tiles[LatLonKey(i, lon)]) {
+          auto const &feature = _reader->getFeature(fid);
+          if (PolygonLineIntersect(feature, A, B)) {
             return true;
           }
         }
-        previous_point = pnt;
-        cnt++;
       }
     }
-    return false;
+  } else {
+    for (auto const &feature : *_reader) {
+      if (PolygonLineIntersect(feature, A, B)) {
+        return true;
+      }
+    }
   }
 
+  return false;
+}
+
+bool ShapeBaseChart::LineLineIntersect(const std::pair<double, double> &A,
+                                       const std::pair<double, double> &B,
+                                       const std::pair<double, double> &C,
+                                       const std::pair<double, double> &D) {
+  // Line AB represented as a1x + b1y = c1
+  double a1 = B.second - A.second;
+  double b1 = A.first - B.first;
+  double c1 = a1 * (A.first) + b1 * (A.second);
+
+  // Line CD represented as a2x + b2y = c2
+  double a2 = D.second - C.second;
+  double b2 = C.first - D.first;
+  double c2 = a2 * (C.first) + b2 * (C.second);
+
+  double determinant = a1 * b2 - a2 * b1;
+
+  if (determinant == 0) {
+    // The lines are parallel
+    return false;
+  } else {
+    // The lines intersect at x,y
+    double x = (b2 * c1 - b1 * c2) / determinant;
+    double y = (a1 * c2 - a2 * c1) / determinant;
+    // x,y must be on both the segments we are checking
+    if (std::min(A.first, B.first) <= x && x <= std::max(A.first, B.first) &&
+        std::min(A.second, B.second) <= y &&
+        y <= std::max(A.second, B.second) && std::min(C.first, D.first) <= x &&
+        x <= std::max(C.first, D.first) && std::min(C.second, D.second) <= y &&
+        y <= std::max(C.second, D.second)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool ShapeBaseChart::PolygonLineIntersect(const shp::Feature &feature,
+                                          const std::pair<double, double> &A,
+                                          const std::pair<double, double> &B) {
+  auto polygon = static_cast<shp::Polygon *>(feature.getGeometry());
+  std::pair<double, double> previous_point;
+  for (auto &ring : polygon->getRings()) {
+    size_t cnt{0};
+    for (auto &point : ring.getPoints()) {
+      auto pnt = std::make_pair(point.getY(), point.getX());
+      if (cnt > 0) {
+        // TODO: Is it faster to first check if we are in the boundong box of
+        // the line?
+        if (LineLineIntersect(A, B, previous_point, pnt)) {
+          return true;
+        }
+      }
+      previous_point = pnt;
+      cnt++;
+    }
+  }
+  return false;
+}
+
 void ShapeBaseChartSet::RenderViewOnDC(ocpnDC &dc, ViewPort &vp) {
-  if(IsUsable()) {
+  if (IsUsable()) {
     SelectBaseMap(vp.chart_scale).RenderViewOnDC(dc, vp);
   }
 }
