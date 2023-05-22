@@ -307,6 +307,7 @@ void ShapeBaseChart::DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp) {
 void ShapeBaseChart::DoDrawPolygonFilledGL(ocpnDC &pnt, ViewPort &vp,
                                          const shp::Feature &feature) {
   double old_x = -9999999.0, old_y = -9999999.0;
+  bool idl = vp.GetBBox().GetMinLon() < -180 || vp.GetBBox().GetMaxLon() > 180;
   auto polygon = static_cast<shp::Polygon *>(feature.getGeometry());
   for (auto &ring : polygon->getRings()) {
     size_t cnt{0};
@@ -329,12 +330,12 @@ void ShapeBaseChart::DoDrawPolygonFilledGL(ocpnDC &pnt, ViewPort &vp,
       if (round(q.m_x) != round(old_x) || round(q.m_y) != round(old_y)) {
         GLvertexshp *vertex = new GLvertexshp();
         g_vertexesshp.push_back(vertex);
-        /* TODO
+        /*TODO: Needed?
         if (vp.m_projection_type != PROJECTION_POLAR) {
           // need to correctly pick +180 or -180 longitude for projections
           // that have a discontiguous date line
 
-          if (idl && ccp.x == 180) {
+          if (idl && point.getX() == 180) {
             if (vp.m_projection_type == PROJECTION_MERCATOR ||
                 vp.m_projection_type == PROJECTION_EQUIRECTANGULAR)
               q.m_x -=
