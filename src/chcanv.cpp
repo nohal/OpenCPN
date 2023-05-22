@@ -637,6 +637,7 @@ ChartCanvas::ChartCanvas(wxFrame *frame, int canvasIndex)
 
   //    Create the default world chart
   pWorldBackgroundChart = new GSHHSChart;
+  gShapeBasemap.Reset();
 
   //    Create the default depth unit emboss maps
   m_pEM_Feet = NULL;

@@ -182,7 +182,14 @@ ShapeBaseChart &ShapeBaseChartSet::SelectBaseMap(const size_t &scale) {
   return LowestQualityBaseMap();
 }
 
+void ShapeBaseChartSet::Reset() {
+  std::string basemap_dir {gWorldMapLocation.c_str()};
+  LoadBasemaps(basemap_dir);
+}
+
 void ShapeBaseChartSet::LoadBasemaps(const std::string &dir) {
+  _loaded = false;
+  _basemap_map.clear();
   if (std::filesystem::exists(ShapeBaseChart::ConstructPath(dir, "crude"))) {
     _basemap_map.insert(std::make_pair(
         Quality::crude,
@@ -253,8 +260,9 @@ void ShapeBaseChart::DoDrawPolygonFilled(ocpnDC &pnt, ViewPort &vp,
   for (auto &ring : polygon->getRings()) {
     wxPoint *poly_pt = new wxPoint[ring.getPoints().size()];
     size_t cnt{0};
+    auto bbox = vp.GetBBox();
     for (auto &point : ring.getPoints()) {
-      // if (bbox.ContainsMarge(point.getY(), point.getX(), 0.5)) {
+      //if (bbox.ContainsMarge(point.getY(), point.getX(), 0.05)) {
       wxPoint2DDouble q =
           ShapeBaseChartSet::GetDoublePixFromLL(vp, point.getY(), point.getX());
       if (round(q.m_x) != round(old_x) || round(q.m_y) != round(old_y)) {
@@ -527,5 +535,7 @@ bool ShapeBaseChart::LineLineIntersect(const std::pair<double, double> &A,
   }
 
 void ShapeBaseChartSet::RenderViewOnDC(ocpnDC &dc, ViewPort &vp) {
-  SelectBaseMap(vp.chart_scale).RenderViewOnDC(dc, vp);
+  if(IsUsable()) {
+    SelectBaseMap(vp.chart_scale).RenderViewOnDC(dc, vp);
+  }
 }

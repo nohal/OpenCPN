@@ -157,28 +157,27 @@ public:
   static wxPoint2DDouble GetDoublePixFromLL(ViewPort &vp, double lat,
                                             double lon);
 
-  void DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp, wxColor const &color);
-
-  void DrawPolygonFilledGL(ocpnDC &pnt, int *pvc, ViewPort &vp,
-                           wxColor const &color, bool idl);
   void RenderViewOnDC(ocpnDC &dc, ViewPort &vp);
-  ShapeBaseChart &LowestQualityBaseMap();
-
-  ShapeBaseChart &HighestQualityBaseMap();
 
   ShapeBaseChart &SelectBaseMap(const size_t &scale);
-  bool IsUsable() { return LowestQualityBaseMap().IsUsable(); }
+  bool IsUsable() { return _basemap_map.size() > 0 && LowestQualityBaseMap().IsUsable(); }
 
   bool CrossesLand(double lat1, double lon1, double lat2, double lon2) {
-    return HighestQualityBaseMap().CrossesLand(lat1, lon1, lat2, lon2);
+    if(IsUsable()) {
+      return HighestQualityBaseMap().CrossesLand(lat1, lon1, lat2, lon2);
+    }
+    return false;
   }
 
-  void Reset() {
-    //TODO: Reload data from disk (= Invalidate loaded status)
-  }
+  void Reset();
 
 private:
   void LoadBasemaps(const std::string &dir);
+  void DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp, wxColor const &color);
+  void DrawPolygonFilledGL(ocpnDC &pnt, int *pvc, ViewPort &vp,
+                           wxColor const &color, bool idl);
+  ShapeBaseChart &LowestQualityBaseMap();
+  ShapeBaseChart &HighestQualityBaseMap();
   bool _loaded;
 
   std::map<Quality, ShapeBaseChart> _basemap_map;
