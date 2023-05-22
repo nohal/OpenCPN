@@ -290,7 +290,7 @@ public:
   bool isMarkEditing(void) { return m_bMarkEditing && m_pRoutePointEditTarget; }
 
   GSHHSChart *GetWorldBackgroundChart() { return pWorldBackgroundChart; }
-  void ResetWorldBackgroundChart() { pWorldBackgroundChart->Reset(); }
+  void ResetWorldBackgroundChart();
 
   void SetbTCUpdate(bool f) { m_bTCupdate = f; }
   bool GetbTCUpdate() { return m_bTCupdate; }

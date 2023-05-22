@@ -173,6 +173,10 @@ public:
     return HighestQualityBaseMap().CrossesLand(lat1, lon1, lat2, lon2);
   }
 
+  void Reset() {
+    //TODO: Reload data from disk (= Invalidate loaded status)
+  }
+
 private:
   void LoadBasemaps(const std::string &dir);
   bool _loaded;

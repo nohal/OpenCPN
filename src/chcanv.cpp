@@ -13930,6 +13930,9 @@ void ChartCanvas::RenderAlertMessage(wxDC &dc, const ViewPort &vp) {
   }
 }
 
+void ChartCanvas::ResetWorldBackgroundChart() { pWorldBackgroundChart->Reset(); gShapeBasemap.Reset(); }
+
+
 //--------------------------------------------------------------------------------------------------------
 //    Screen Brightness Control Support Routines
 //

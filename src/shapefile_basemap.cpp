@@ -476,14 +476,12 @@ bool ShapeBaseChart::LineLineIntersect(const std::pair<double, double> &A,
     // Line AB represented as a1x + b1y = c1
     double a1 = B.second - A.second;
     double b1 = A.first - B.first;
-    // double c1 = a1*(A.first) + b1*(A.second); - If we wanted coordinates of
-    // the intersection
+    double c1 = a1*(A.first) + b1*(A.second);
 
     // Line CD represented as a2x + b2y = c2
     double a2 = D.second - C.second;
     double b2 = C.first - D.first;
-    // double c2 = a2*(C.first)+ b2*(C.second); - If we wanted coordinates of
-    // the intersection
+    double c2 = a2*(C.first)+ b2*(C.second);
 
     double determinant = a1 * b2 - a2 * b1;
 
@@ -491,8 +489,18 @@ bool ShapeBaseChart::LineLineIntersect(const std::pair<double, double> &A,
       // The lines are parallel
       return false;
     } else {
-      return true;
+      // The lines intersect at x,y
+      double x = (b2*c1 - b1*c2)/determinant;
+      double y = (a1*c2 - a2*c1)/determinant;
+      //x,y must be on both the segments we are checking
+      if (std::min(A.first, B.first) <= x && x <= std::max(A.first, B.first)
+      && std::min(A.second, B.second) <= y && y <= std::max(A.second, B.second)
+      && std::min(C.first, D.first) <= x && x <= std::max(C.first, D.first)
+      && std::min(C.second, D.second) <= y && y <= std::max(C.second, D.second)) {
+        return true;
+      }
     }
+    return false;
   }
 
   bool ShapeBaseChart::PolygonIntersect(const shp::Feature &feature,
