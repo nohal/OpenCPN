@@ -226,7 +226,7 @@ extern int g_ENCTextScaleFactor;
 extern int g_maxzoomin;
 
 extern float g_GLMinSymbolLineWidth;
-WorldShapeBaseChart gShapeBasemap;
+ShapeBaseChartSet gShapeBasemap;
 bool g_bAllowShipToActive;
 bool g_bShowShipToActive;
 int g_shipToActiveStyle;

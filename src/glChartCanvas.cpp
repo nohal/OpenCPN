@@ -209,7 +209,7 @@ extern bool b_inCompressAllCharts;
 extern bool g_bGLexpert;
 extern bool g_bcompression_wait;
 extern float g_ShipScaleFactorExp;
-extern WorldShapeBaseChart gShapeBasemap;
+extern ShapeBaseChartSet gShapeBasemap;
 
 float g_GLMinSymbolLineWidth;
 float g_GLMinCartographicLineWidth;

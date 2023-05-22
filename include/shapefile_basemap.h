@@ -68,10 +68,13 @@ struct std::hash<LatLonKey> {
 
 enum Quality { crude, low, medium, high, full };
 
-class BaseMapQuality {
+typedef std::vector<wxRealPoint> contour;
+typedef std::vector<contour> contour_list;
+
+class ShapeBaseChart {
 public:
-  BaseMapQuality() = delete;
-  BaseMapQuality(const std::string &filename, const size_t &min_scale,
+  ShapeBaseChart() = delete;
+  ShapeBaseChart(const std::string &filename, const size_t &min_scale,
                  const wxColor &color = *wxBLACK)
       : _loading(false),
         _is_usable(false),
@@ -83,7 +86,7 @@ public:
     _is_usable = std::filesystem::exists(filename);
   }
 
-  BaseMapQuality(const BaseMapQuality &t) {
+  ShapeBaseChart(const ShapeBaseChart &t) {
     this->_filename = t._filename;
     this->_is_usable = t._is_usable;
     this->_is_tiled = t._is_tiled;
@@ -91,7 +94,7 @@ public:
     this->_reader = nullptr;
     this->_color = t._color;
   }
-  ~BaseMapQuality() {
+  ~ShapeBaseChart() {
     delete _reader;
   }
 
@@ -100,9 +103,9 @@ public:
   size_t MinScale() { return _min_scale; }
   void RenderViewOnDC(ocpnDC &dc, ViewPort &vp) {
     if (!dc.GetDC()) {
-      // TODO: DrawPolygonFilledGL
+      DrawPolygonFilledGL(dc, vp);
     } else {
-      DrawPolygonFilled(dc, vp, _color);
+      DrawPolygonFilled(dc, vp);
     }
   }
   static const std::string ConstructPath(const std::string &dir,
@@ -119,19 +122,27 @@ private:
   size_t _min_scale;
   void DoDrawPolygonFilled(ocpnDC &pnt, ViewPort &vp,
                            const shp::Feature &feature);
-  void DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp, wxColor const &color);
-  void DrawPolygonFilledGL(ocpnDC &pnt, int *pvc, ViewPort &vp,
-                           wxColor const &color, bool idl);
+  void DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp);
+  void DoDrawPolygonFilledGL(ocpnDC &pnt, ViewPort &vp,
+                           const shp::Feature &feature);
+  void DrawPolygonFilledGL(ocpnDC &pnt, /*contour_list *p, float_2Dpt **pv, int *pvc,*/
+                           ViewPort &vp);
   std::string _filename;
   shp::ShapefileReader *_reader;
   std::unordered_map<LatLonKey, std::vector<size_t>> _tiles;
   wxColor _color;
+
+  contour_list _poly;
+
+  // used for opengl vertex cache
+  float_2Dpt *_polyv;
+  int _polyc;
 };
 
-class WorldShapeBaseChart {
+class ShapeBaseChartSet {
 public:
-  WorldShapeBaseChart();
-  ~WorldShapeBaseChart() {}
+  ShapeBaseChartSet();
+  ~ShapeBaseChartSet() {}
   static wxPoint2DDouble GetDoublePixFromLL(ViewPort &vp, double lat,
                                             double lon);
 
@@ -140,17 +151,17 @@ public:
   void DrawPolygonFilledGL(ocpnDC &pnt, int *pvc, ViewPort &vp,
                            wxColor const &color, bool idl);
   void RenderViewOnDC(ocpnDC &dc, ViewPort &vp);
-  BaseMapQuality &LowestQualityBaseMap();
+  ShapeBaseChart &LowestQualityBaseMap();
 
-  BaseMapQuality &HighestQualityBaseMap();
+  ShapeBaseChart &HighestQualityBaseMap();
 
-  BaseMapQuality &SelectBaseMap(const size_t &scale);
+  ShapeBaseChart &SelectBaseMap(const size_t &scale);
   bool IsUsable() { return LowestQualityBaseMap().IsUsable(); }
 
 private:
   void LoadBasemaps(const std::string &dir);
 
-  std::map<Quality, BaseMapQuality> _basemap_map;
+  std::map<Quality, ShapeBaseChart> _basemap_map;
 };
 
 #endif
