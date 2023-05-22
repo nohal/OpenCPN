@@ -4,7 +4,7 @@
  * Purpose:  Shapefile basemap
  *
  ***************************************************************************
- *   Copyright (C) 2012 by David S. Register                               *
+ *   Copyright (C) 2012-2023 by David S. Register                          *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -28,6 +28,7 @@
 #include "shapefile_basemap.h"
 #include "shaders.h"
 #include "chartbase.h"
+#include "glChartCanvas.h"
 
 #ifdef __WXMSW__
 #define __CALL_CONVENTION  //__stdcall
@@ -306,8 +307,7 @@ void ShapeBaseChart::DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp) {
 
 void ShapeBaseChart::DoDrawPolygonFilledGL(ocpnDC &pnt, ViewPort &vp,
                                          const shp::Feature &feature) {
-  double old_x = -9999999.0, old_y = -9999999.0;
-  bool idl = vp.GetBBox().GetMinLon() < -180 || vp.GetBBox().GetMaxLon() > 180;
+  bool idl = vp.GetBBox().GetMinLon() <= -180 || vp.GetBBox().GetMaxLon() >= 180;
   auto polygon = static_cast<shp::Polygon *>(feature.getGeometry());
   for (auto &ring : polygon->getRings()) {
     size_t cnt{0};
@@ -326,34 +326,32 @@ void ShapeBaseChart::DoDrawPolygonFilledGL(ocpnDC &pnt, ViewPort &vp,
     gluTessBeginPolygon(tobj, NULL);
     gluTessBeginContour(tobj);
     for (auto &point : ring.getPoints()) {
-      wxPoint2DDouble q = ShapeBaseChartSet::GetDoublePixFromLL(vp, point.getY(), point.getX());
-      if (round(q.m_x) != round(old_x) || round(q.m_y) != round(old_y)) {
+      wxPoint2DDouble q;// = ShapeBaseChartSet::GetDoublePixFromLL(vp, point.getY(), point.getX());
+      if (glChartCanvas::HasNormalizedViewPort(vp))
+            q = ShapeBaseChartSet::GetDoublePixFromLL(vp, point.getY(), point.getX());
+          else  // tesselation directly from lat/lon
+            q.m_x = point.getY(), q.m_y = point.getX();
         GLvertexshp *vertex = new GLvertexshp();
         g_vertexesshp.push_back(vertex);
-        /*TODO: Needed?
         if (vp.m_projection_type != PROJECTION_POLAR) {
           // need to correctly pick +180 or -180 longitude for projections
           // that have a discontiguous date line
 
-          if (idl && point.getX() == 180) {
+          if (idl && (point.getX() == 180)) {
             if (vp.m_projection_type == PROJECTION_MERCATOR ||
-                vp.m_projection_type == PROJECTION_EQUIRECTANGULAR)
-              q.m_x -=
-                  40058986 * 4096.0;  // 360 degrees in normalized viewport
-            else
-              q.m_x -= 360;  // lat/lon coordinates
+                vp.m_projection_type == PROJECTION_EQUIRECTANGULAR) {
+                  //q.m_x -= 40058986 * 4096.0;  // 360 degrees in normalized viewport
+                } else {
+                  q.m_x -= 360;  // lat/lon coordinates
+                }
           }
         }
-        */
         vertex->info.x = q.m_x;
         vertex->info.y = q.m_y;
 
         gluTessVertex(tobj, (GLdouble *)vertex, (GLdouble *)vertex);
         cnt++;
-        old_x = q.m_x;
-        old_y = q.m_y;
       }
-    }
     gluTessEndContour(tobj);
     gluTessEndPolygon(tobj);
     gluDeleteTess(tobj);
@@ -382,7 +380,9 @@ void ShapeBaseChart::DoDrawPolygonFilledGL(ocpnDC &pnt, ViewPort &vp,
     float *pvt = new float[2 * (_polyc)];
     for (int i = 0; i < _polyc; i++) {
       float_2Dpt *pc = _polyv + i;
-      wxPoint2DDouble q(pc->y, pc->x);// = vp.GetDoublePixFromLL(pc->y, pc->x);
+      //wxPoint2DDouble q(pc->y, pc->x);// = vp.GetDoublePixFromLL(pc->y, pc->x);
+      wxPoint2DDouble q = vp.GetDoublePixFromLL(pc->y, pc->x);
+
       pvt[i * 2] = q.m_x;
       pvt[(i * 2) + 1] = q.m_y;
     }
@@ -445,127 +445,6 @@ void ShapeBaseChart::DrawPolygonFilledGL(ocpnDC &pnt, /*contour_list *p, float_2
       DoDrawPolygonFilledGL(pnt, vp, feature);  // Parallelize using std::async?
     }
   }
-
-return; //TODO
-
-  bool idl = vp.GetBBox().GetMinLon() < -180 || vp.GetBBox().GetMaxLon() > 180;
-  int *pvc;
-  // build the contour vertex array converted to normalized coordinates
-  for (unsigned int c = 0; c < _poly.size(); c++) {
-    if (!_poly.at(c).size()) continue;
-
-    contour &cp = _poly.at(c);
-
-    GLUtesselator *tobj = gluNewTess();
-
-    gluTessCallback(tobj, GLU_TESS_VERTEX, (_GLUfuncptr)&shpsvertexCallback);
-    gluTessCallback(tobj, GLU_TESS_BEGIN, (_GLUfuncptr)&shpsbeginCallback);
-    gluTessCallback(tobj, GLU_TESS_END, (_GLUfuncptr)&shpsendCallback);
-    gluTessCallback(tobj, GLU_TESS_COMBINE,
-                    (_GLUfuncptr)&shpscombineCallback);
-    gluTessCallback(tobj, GLU_TESS_ERROR, (_GLUfuncptr)&shpserrorCallback);
-
-    gluTessNormal(tobj, 0, 0, 1);
-    gluTessProperty(tobj, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NONZERO);
-
-    gluTessBeginPolygon(tobj, NULL);
-    gluTessBeginContour(tobj);
-
-    for (unsigned int v = 0; v < _poly.at(c).size(); v++) {
-      wxRealPoint &ccp = cp.at(v);
-
-      if (v == 0 || ccp != cp.at(v - 1)) {
-        GLvertexshp *vertex = new GLvertexshp();
-        g_vertexesshp.push_back(vertex);
-
-        wxPoint2DDouble q;
-        if (/*TODO glChartCanvas::HasNormalizedViewPort(vp)*/ true)
-          q = ShapeBaseChartSet::GetDoublePixFromLL(vp, ccp.y, ccp.x);
-        else  // tesselation directly from lat/lon
-          q.m_x = ccp.y, q.m_y = ccp.x;
-
-        if (vp.m_projection_type != PROJECTION_POLAR) {
-          // need to correctly pick +180 or -180 longitude for projections
-          // that have a discontiguous date line
-
-          if (idl && ccp.x == 180) {
-            if (vp.m_projection_type == PROJECTION_MERCATOR ||
-                vp.m_projection_type == PROJECTION_EQUIRECTANGULAR)
-              q.m_x -=
-                  40058986 * 4096.0;  // 360 degrees in normalized viewport
-            else
-              q.m_x -= 360;  // lat/lon coordinates
-          }
-        }
-
-        vertex->info.x = q.m_x;
-        vertex->info.y = q.m_y;
-
-        gluTessVertex(tobj, (GLdouble *)vertex, (GLdouble *)vertex);
-      }
-    }
-
-    gluTessEndContour(tobj);
-    gluTessEndPolygon(tobj);
-    gluDeleteTess(tobj);
-
-    for (std::list<GLvertexshp *>::iterator it = g_vertexesshp.begin();
-          it != g_vertexesshp.end(); it++)
-      delete *it;
-    g_vertexesshp.clear();
-  }
-
-  _polyv = new float_2Dpt[g_pvshp.size()];
-  int cnt = 0;
-  for (std::list<float_2Dpt>::iterator it = g_pvshp.begin(); it != g_pvshp.end();
-        it++) {
-          _polyv[cnt++] = *it;
-        }
-  _polyc = g_pvshp.size();
-  g_pvshp.clear();
-
-#if defined(USE_ANDROID_GLES2) || defined(ocpnUSE_GLSL)
-  GLuint vbo = 0;
-
-  //  Build the shader viewport transform matrix
-  mat4x4 m, mvp;
-  mat4x4_identity(m);
-  mat4x4_scale_aniso(mvp, m, 2.0 / (float)vp.pix_width,
-                     2.0 / (float)vp.pix_height, 1.0);
-  mat4x4_translate_in_place(mvp, -vp.pix_width / 2, vp.pix_height / 2, 0);
-
-  if (/*TODO glChartCanvas::HasNormalizedViewPort(vp)*/ true) {
-
-  } else {
-    float *pvt = new float[2 * (*pvc)];
-    for (int i = 0; i < *pvc; i++) {
-      float_2Dpt *pc = _polyv + i;
-      wxPoint2DDouble q = vp.GetDoublePixFromLL(pc->y, pc->x);
-      pvt[i * 2] = q.m_x;
-      pvt[(i * 2) + 1] = q.m_y;
-    }
-
-    GLShaderProgram *shader = pcolor_tri_shader_program[pnt.m_canvasIndex];
-    shader->Bind();
-
-    float colorv[4];
-    colorv[0] = _color.Red() / float(256);
-    colorv[1] = _color.Green() / float(256);
-    colorv[2] = _color.Blue() / float(256);
-    colorv[3] = 1.0;
-    shader->SetUniform4fv("color", colorv);
-
-    shader->SetAttributePointerf("position", pvt);
-
-    glDrawArrays(GL_TRIANGLES, 0, *pvc);
-
-    delete[] pvt;
-    glDeleteBuffers(1, &vbo);
-    shader->UnBind();
-  }
-
-#else
-#endif
 }
 
 void ShapeBaseChartSet::RenderViewOnDC(ocpnDC &dc, ViewPort &vp) {

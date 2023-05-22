@@ -4,7 +4,7 @@
  * Purpose:  Shapefile basemap
  *
  ***************************************************************************
- *   Copyright (C) 2012 by David S. Register                               *
+ *   Copyright (C) 2012-2023 by David S. Register                          *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -38,6 +38,7 @@
 #include "poly_math.h"
 #include "ocpndc.h"
 
+/// @brief latitude/longitude key for 1 degree cells
 class LatLonKey {
 public:
   LatLonKey(int lat, int lon) {
@@ -66,11 +67,13 @@ struct std::hash<LatLonKey> {
   }
 };
 
+/// @brief Basemap quality
 enum Quality { crude, low, medium, high, full };
 
 typedef std::vector<wxRealPoint> contour;
 typedef std::vector<contour> contour_list;
 
+/// @brief Basemap
 class ShapeBaseChart {
 public:
   ShapeBaseChart() = delete;
@@ -139,6 +142,7 @@ private:
   int _polyc;
 };
 
+/// @brief Set of basemaps at different resolutions
 class ShapeBaseChartSet {
 public:
   ShapeBaseChartSet();
