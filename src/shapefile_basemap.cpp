@@ -116,7 +116,7 @@ void __CALL_CONVENTION shpsvertexCallback(GLvoid *arg) {
   g_posshp++;
 }
 
-ShapeBaseChartSet::ShapeBaseChartSet() {
+ShapeBaseChartSet::ShapeBaseChartSet() : _loaded(false) {
   LoadBasemaps("/home/nohal/source/shapefiles/data");
 }
 
@@ -203,6 +203,7 @@ ShapeBaseChart& ShapeBaseChartSet::LowestQualityBaseMap() {
       
       _basemap_map.insert(std::make_pair(Quality::full, ShapeBaseChart(ShapeBaseChart::ConstructPath(dir, "full"), 100000, *wxLIGHT_GREY)));
     }
+    _loaded = true;
   }
 
 
@@ -360,12 +361,12 @@ void ShapeBaseChart::DoDrawPolygonFilledGL(ocpnDC &pnt, ViewPort &vp,
       delete ver;
     g_vertexesshp.clear();
   }
-  _polyv = new float_2Dpt[g_pvshp.size()];
+  float_2Dpt * polyv = new float_2Dpt[g_pvshp.size()];
   int cnt = 0;
   for (auto pt : g_pvshp) {
-    _polyv[cnt++] = pt;
+    polyv[cnt++] = pt;
   }
-  _polyc = g_pvshp.size();
+  size_t polycnt = g_pvshp.size();
   g_pvshp.clear();
 
   GLuint vbo = 0;
@@ -377,9 +378,9 @@ void ShapeBaseChart::DoDrawPolygonFilledGL(ocpnDC &pnt, ViewPort &vp,
                      2.0 / (float)vp.pix_height, 1.0);
   mat4x4_translate_in_place(mvp, -vp.pix_width / 2, vp.pix_height / 2, 0);
 
-    float *pvt = new float[2 * (_polyc)];
-    for (int i = 0; i < _polyc; i++) {
-      float_2Dpt *pc = _polyv + i;
+    float *pvt = new float[2 * (polycnt)];
+    for (size_t i = 0; i < polycnt; i++) {
+      float_2Dpt *pc = polyv + i;
       //wxPoint2DDouble q(pc->y, pc->x);// = vp.GetDoublePixFromLL(pc->y, pc->x);
       wxPoint2DDouble q = vp.GetDoublePixFromLL(pc->y, pc->x);
 
@@ -399,7 +400,7 @@ void ShapeBaseChart::DoDrawPolygonFilledGL(ocpnDC &pnt, ViewPort &vp,
 
     shader->SetAttributePointerf("position", pvt);
 
-    glDrawArrays(GL_TRIANGLES, 0, _polyc);
+    glDrawArrays(GL_TRIANGLES, 0, polycnt);
 
     delete[] pvt;
     glDeleteBuffers(1, &vbo);

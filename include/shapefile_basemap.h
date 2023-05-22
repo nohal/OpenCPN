@@ -117,6 +117,20 @@ public:
            quality_suffix + ".shp";
   }
 
+  bool CrossesLand(double lat1, double lon1, double lat2, double lon2) {
+    /* TODO
+    if (!reader) {
+      gshhsCrossesLandInit();
+    }
+    if (lon1 < 0) lon1 += 360;
+    if (lon2 < 0) lon2 += 360;
+
+    wxLineF trajectWorld(lon1, lat1, lon2, lat2);
+    return reader->crossing1(trajectWorld);
+    */
+    return false;
+  }
+
 private:
   std::future<bool> _loaded;
   bool _loading;
@@ -134,12 +148,6 @@ private:
   shp::ShapefileReader *_reader;
   std::unordered_map<LatLonKey, std::vector<size_t>> _tiles;
   wxColor _color;
-
-  contour_list _poly;
-
-  // used for opengl vertex cache
-  float_2Dpt *_polyv;
-  int _polyc;
 };
 
 /// @brief Set of basemaps at different resolutions
@@ -162,8 +170,13 @@ public:
   ShapeBaseChart &SelectBaseMap(const size_t &scale);
   bool IsUsable() { return LowestQualityBaseMap().IsUsable(); }
 
+  bool CrossesLand(double lat1, double lon1, double lat2, double lon2) {
+    return HighestQualityBaseMap().CrossesLand(lat1, lon1, lat2, lon2);
+  }
+
 private:
   void LoadBasemaps(const std::string &dir);
+  bool _loaded;
 
   std::map<Quality, ShapeBaseChart> _basemap_map;
 };

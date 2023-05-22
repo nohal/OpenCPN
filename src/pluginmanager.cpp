@@ -151,6 +151,7 @@ typedef __LA_INT64_T la_int64_t;  //  "older" libarchive versions support
 #include "comm_drv_registry.h"
 #include "comm_drv_n2k.h"
 #include "ocpn_app.h"
+#include "shapefile_basemap.h"
 
 #ifdef __OCPN__ANDROID__
 #include <dlfcn.h>
@@ -236,6 +237,8 @@ extern ChartCanvas *g_overlayCanvas;
 extern bool g_bquiting;
 extern wxString g_catalog_channel;
 extern wxString g_catalog_custom_url;
+
+extern ShapeBaseChartSet gShapeBasemap;
 
 WX_DEFINE_ARRAY_PTR(ChartCanvas *, arrayofCanvasPtr);
 extern arrayofCanvasPtr g_canvasArray;
@@ -3467,13 +3470,7 @@ wxString getUsrTempUnit_Plugin(int unit) { return getUsrTempUnit(unit); }
 
 bool PlugIn_GSHHS_CrossesLand(double lat1, double lon1, double lat2,
                               double lon2) {
-  static bool loaded = false;
-  if (!loaded) {
-    gshhsCrossesLandInit();
-    loaded = true;
-  }
-
-  return gshhsCrossesLand(lat1, lon1, lat2, lon2);
+  return gShapeBasemap.CrossesLand(lat1, lon1, lat2, lon2);
 }
 
 void PlugInPlaySound(wxString &sound_file) {
