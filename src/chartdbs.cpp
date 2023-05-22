@@ -1546,6 +1546,13 @@ bool ChartDatabase::Update(ArrayOfCDI &dir_array, bool bForce,
         gWorldMapLocation = dir_info.fullpath + wxFileName::GetPathSeparator();
       }
     }
+    if (dir_info.fullpath.Find(_T("OSMSHP")) != wxNOT_FOUND) {
+      if (!wxDir::FindFirst(dir_info.fullpath, "basemap_*.shp").empty()) {
+        // If some polygons exist in the directory, set it as the one to use for
+        // OSM Shapefiles
+        gWorldMapLocation = dir_info.fullpath + wxFileName::GetPathSeparator();
+      }
+    }
 
     TraverseDirAndAddCharts(dir_info, pprog, dir_magic, lbForce);
 

@@ -36,6 +36,7 @@
 #define __CALL_CONVENTION
 #endif
 
+extern wxString gWorldMapLocation;
 typedef union {
   GLdouble data[6];
   struct sGLvertex {
@@ -117,7 +118,8 @@ void __CALL_CONVENTION shpsvertexCallback(GLvoid *arg) {
 }
 
 ShapeBaseChartSet::ShapeBaseChartSet() : _loaded(false) {
-  LoadBasemaps("/home/nohal/source/shapefiles/data");
+  std::string basemap_dir {gWorldMapLocation.c_str()};
+  LoadBasemaps(basemap_dir);
 }
 
 wxPoint2DDouble ShapeBaseChartSet::GetDoublePixFromLL(ViewPort &vp, double lat,

@@ -2,13 +2,19 @@
 <ChartCatalog>
   <sections>
     <section>
-      <name>GSHHG basemap</name>
+      <name>Base maps</name>
       <catalogs>
         <catalog>
           <name>All GSHHG basemaps</name>
           <type>GSHHG</type>
           <location>https://raw.githubusercontent.com/chartcatalogs/catalogs/master/GSHHG_Catalog.xml</location>
           <dir>{USERDATA}/GSHHG</dir>
+        </catalog>
+        <catalog>
+          <name>OSM basemap</name>
+          <type>SHP_BASE</type>
+          <location>https://raw.githubusercontent.com/chartcatalogs/catalogs/master/OSMSHP_Catalog.xml</location>
+          <dir>{USERDATA}/OSMSHP</dir>
         </catalog>
       </catalogs>
     </section>
