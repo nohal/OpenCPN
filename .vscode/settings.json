@@ -20,5 +20,6 @@
         "libs/iso8211/include",
         "libs/wxcurl/include",
         "libs/wxJSON/include"
-    ]
+    ],
+    "ansible.python.interpreterPath": "/bin/python"
 }

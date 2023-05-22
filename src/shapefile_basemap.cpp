@@ -120,134 +120,141 @@ ShapeBaseChartSet::ShapeBaseChartSet() : _loaded(false) {
   LoadBasemaps("/home/nohal/source/shapefiles/data");
 }
 
-wxPoint2DDouble ShapeBaseChartSet::GetDoublePixFromLL(ViewPort &vp,
-                                                        double lat,
-                                                        double lon) {
+wxPoint2DDouble ShapeBaseChartSet::GetDoublePixFromLL(ViewPort &vp, double lat,
+                                                      double lon) {
   wxPoint2DDouble p = vp.GetDoublePixFromLL(lat, lon);
   p.m_x -= vp.rv_rect.x, p.m_y -= vp.rv_rect.y;
   return p;
 }
 
-ShapeBaseChart& ShapeBaseChartSet::LowestQualityBaseMap() {
-    if (_basemap_map.find(Quality::crude) != _basemap_map.end()) {
-      return _basemap_map.at(Quality::crude);
-    }
-    if (_basemap_map.find(Quality::low) != _basemap_map.end()) {
-      return _basemap_map.at(Quality::low);
-    }
-    if (_basemap_map.find(Quality::medium) != _basemap_map.end()) {
-      return _basemap_map.at(Quality::medium);
-    }
-    if (_basemap_map.find(Quality::high) != _basemap_map.end()) {
-      return _basemap_map.at(Quality::high);
-    }
-    return _basemap_map.at(Quality::full);
-  }
-
-  ShapeBaseChart& ShapeBaseChartSet::HighestQualityBaseMap() {
-    if (_basemap_map.find(Quality::full) != _basemap_map.end()) {
-      return _basemap_map.at(Quality::full);
-    }
-    if (_basemap_map.find(Quality::high) != _basemap_map.end()) {
-      return _basemap_map.at(Quality::high);
-    }
-    if (_basemap_map.find(Quality::medium) != _basemap_map.end()) {
-      return _basemap_map.at(Quality::medium);
-    }
-    if (_basemap_map.find(Quality::low) != _basemap_map.end()) {
-      return _basemap_map.at(Quality::low);
-    }
+ShapeBaseChart &ShapeBaseChartSet::LowestQualityBaseMap() {
+  if (_basemap_map.find(Quality::crude) != _basemap_map.end()) {
     return _basemap_map.at(Quality::crude);
   }
-
-  ShapeBaseChart& ShapeBaseChartSet::SelectBaseMap(const size_t &scale) {
-    if (_basemap_map.find(Quality::full) != _basemap_map.end() &&
-        _basemap_map.at(Quality::full).IsUsable() &&
-        scale <= _basemap_map.at(Quality::full).MinScale()) {
-      return _basemap_map.at(Quality::full);
-    } else if (_basemap_map.find(Quality::high) != _basemap_map.end() &&
-               _basemap_map.at(Quality::high).IsUsable() &&
-               scale <= _basemap_map.at(Quality::high).MinScale()) {
-      return _basemap_map.at(Quality::high);
-    } else if (_basemap_map.find(Quality::medium) != _basemap_map.end() &&
-               _basemap_map.at(Quality::medium).IsUsable() &&
-               scale <= _basemap_map.at(Quality::medium).MinScale()) {
-      return _basemap_map.at(Quality::medium);
-    } else if (_basemap_map.find(Quality::low) != _basemap_map.end() &&
-               _basemap_map.at(Quality::low).IsUsable() &&
-               scale <= _basemap_map.at(Quality::low).MinScale()) {
-      return _basemap_map.at(Quality::low);
-    }
-    return LowestQualityBaseMap();
+  if (_basemap_map.find(Quality::low) != _basemap_map.end()) {
+    return _basemap_map.at(Quality::low);
   }
-
-  void ShapeBaseChartSet::LoadBasemaps(const std::string &dir) {
-    if (std::filesystem::exists(ShapeBaseChart::ConstructPath(dir, "crude"))) {
-            _basemap_map.insert(std::make_pair(Quality::crude, ShapeBaseChart(
-          ShapeBaseChart::ConstructPath(dir, "crude"), 300000000, *wxBLUE)));
-    }
-    if (std::filesystem::exists(ShapeBaseChart::ConstructPath(dir, "low"))) {
-      
-      _basemap_map.insert(std::make_pair(Quality::low, ShapeBaseChart(ShapeBaseChart::ConstructPath(dir, "low"), 15000000, *wxBLACK)));
-    }
-    if (std::filesystem::exists(ShapeBaseChart::ConstructPath(dir, "medium"))) {
-      
-      _basemap_map.insert(std::make_pair(Quality::medium, ShapeBaseChart(
-          ShapeBaseChart::ConstructPath(dir, "medium"), 1000000, *wxGREEN)));
-    }
-    if (std::filesystem::exists(ShapeBaseChart::ConstructPath(dir, "high"))) {
-      
-      _basemap_map.insert(std::make_pair(Quality::high, ShapeBaseChart(ShapeBaseChart::ConstructPath(dir, "high"), 300000, *wxCYAN)));
-    }
-    if (std::filesystem::exists(ShapeBaseChart::ConstructPath(dir, "full"))) {
-      
-      _basemap_map.insert(std::make_pair(Quality::full, ShapeBaseChart(ShapeBaseChart::ConstructPath(dir, "full"), 100000, *wxLIGHT_GREY)));
-    }
-    _loaded = true;
+  if (_basemap_map.find(Quality::medium) != _basemap_map.end()) {
+    return _basemap_map.at(Quality::medium);
   }
+  if (_basemap_map.find(Quality::high) != _basemap_map.end()) {
+    return _basemap_map.at(Quality::high);
+  }
+  return _basemap_map.at(Quality::full);
+}
 
+ShapeBaseChart &ShapeBaseChartSet::HighestQualityBaseMap() {
+  if (_basemap_map.find(Quality::full) != _basemap_map.end()) {
+    return _basemap_map.at(Quality::full);
+  }
+  if (_basemap_map.find(Quality::high) != _basemap_map.end()) {
+    return _basemap_map.at(Quality::high);
+  }
+  if (_basemap_map.find(Quality::medium) != _basemap_map.end()) {
+    return _basemap_map.at(Quality::medium);
+  }
+  if (_basemap_map.find(Quality::low) != _basemap_map.end()) {
+    return _basemap_map.at(Quality::low);
+  }
+  return _basemap_map.at(Quality::crude);
+}
+
+ShapeBaseChart &ShapeBaseChartSet::SelectBaseMap(const size_t &scale) {
+  if (_basemap_map.find(Quality::full) != _basemap_map.end() &&
+      _basemap_map.at(Quality::full).IsUsable() &&
+      scale <= _basemap_map.at(Quality::full).MinScale()) {
+    return _basemap_map.at(Quality::full);
+  } else if (_basemap_map.find(Quality::high) != _basemap_map.end() &&
+             _basemap_map.at(Quality::high).IsUsable() &&
+             scale <= _basemap_map.at(Quality::high).MinScale()) {
+    return _basemap_map.at(Quality::high);
+  } else if (_basemap_map.find(Quality::medium) != _basemap_map.end() &&
+             _basemap_map.at(Quality::medium).IsUsable() &&
+             scale <= _basemap_map.at(Quality::medium).MinScale()) {
+    return _basemap_map.at(Quality::medium);
+  } else if (_basemap_map.find(Quality::low) != _basemap_map.end() &&
+             _basemap_map.at(Quality::low).IsUsable() &&
+             scale <= _basemap_map.at(Quality::low).MinScale()) {
+    return _basemap_map.at(Quality::low);
+  }
+  return LowestQualityBaseMap();
+}
+
+void ShapeBaseChartSet::LoadBasemaps(const std::string &dir) {
+  if (std::filesystem::exists(ShapeBaseChart::ConstructPath(dir, "crude"))) {
+    _basemap_map.insert(std::make_pair(
+        Quality::crude,
+        ShapeBaseChart(ShapeBaseChart::ConstructPath(dir, "crude"), 300000000,
+                       *wxBLUE)));
+  }
+  if (std::filesystem::exists(ShapeBaseChart::ConstructPath(dir, "low"))) {
+    _basemap_map.insert(std::make_pair(
+        Quality::low, ShapeBaseChart(ShapeBaseChart::ConstructPath(dir, "low"),
+                                     15000000, *wxBLACK)));
+  }
+  if (std::filesystem::exists(ShapeBaseChart::ConstructPath(dir, "medium"))) {
+    _basemap_map.insert(std::make_pair(
+        Quality::medium,
+        ShapeBaseChart(ShapeBaseChart::ConstructPath(dir, "medium"), 1000000,
+                       *wxGREEN)));
+  }
+  if (std::filesystem::exists(ShapeBaseChart::ConstructPath(dir, "high"))) {
+    _basemap_map.insert(std::make_pair(
+        Quality::high,
+        ShapeBaseChart(ShapeBaseChart::ConstructPath(dir, "high"), 300000,
+                       *wxCYAN)));
+  }
+  if (std::filesystem::exists(ShapeBaseChart::ConstructPath(dir, "full"))) {
+    _basemap_map.insert(std::make_pair(
+        Quality::full,
+        ShapeBaseChart(ShapeBaseChart::ConstructPath(dir, "full"), 100000,
+                       *wxLIGHT_GREY)));
+  }
+  _loaded = true;
+}
 
 bool ShapeBaseChart::LoadSHP() {
-    _reader = new shp::ShapefileReader(_filename);
-    auto bounds = _reader->getBounds();
-    _is_usable = _reader->getCount() > 1 && bounds.getMaxX() <= 180 &&
-                 bounds.getMinX() >= -180 && bounds.getMinY() >= -90 &&
-                 bounds.getMaxY() <=
-                     90;  // TODO - Do we care whether the planet is covered?
-    _is_usable &= _reader->getGeometryType() == shp::GeometryType::Polygon;
-    bool has_x = false;
-    bool has_y = false;
-    for (auto field : _reader->getFields()) {
-      if (field.getName() == "x") {
-        has_x = true;
-      } else if (field.getName() == "y") {
-        has_y = true;
-      }
+  _reader = new shp::ShapefileReader(_filename);
+  auto bounds = _reader->getBounds();
+  _is_usable = _reader->getCount() > 1 && bounds.getMaxX() <= 180 &&
+               bounds.getMinX() >= -180 && bounds.getMinY() >= -90 &&
+               bounds.getMaxY() <=
+                   90;  // TODO - Do we care whether the planet is covered?
+  _is_usable &= _reader->getGeometryType() == shp::GeometryType::Polygon;
+  bool has_x = false;
+  bool has_y = false;
+  for (auto field : _reader->getFields()) {
+    if (field.getName() == "x") {
+      has_x = true;
+    } else if (field.getName() == "y") {
+      has_y = true;
     }
-    _is_tiled = (has_x && has_y);
-    if (_is_usable && _is_tiled) {
-      size_t feat{0};
-      for (auto const &feature : *_reader) {
-        _tiles[LatLonKey(std::any_cast<int>(feature.getAttributes()["y"]),
-                         std::any_cast<int>(feature.getAttributes()["x"]))]
-            .push_back(feat);
-        feat++;
-      }
-    }
-    return _is_usable;
   }
+  _is_tiled = (has_x && has_y);
+  if (_is_usable && _is_tiled) {
+    size_t feat{0};
+    for (auto const &feature : *_reader) {
+      _tiles[LatLonKey(std::any_cast<int>(feature.getAttributes()["y"]),
+                       std::any_cast<int>(feature.getAttributes()["x"]))]
+          .push_back(feat);
+      feat++;
+    }
+  }
+  return _is_usable;
+}
 
 void ShapeBaseChart::DoDrawPolygonFilled(ocpnDC &pnt, ViewPort &vp,
                                          const shp::Feature &feature) {
   double old_x = -9999999.0, old_y = -9999999.0;
   auto polygon = static_cast<shp::Polygon *>(feature.getGeometry());
+  pnt.SetBrush(_color);
   for (auto &ring : polygon->getRings()) {
     wxPoint *poly_pt = new wxPoint[ring.getPoints().size()];
     size_t cnt{0};
     for (auto &point : ring.getPoints()) {
       // if (bbox.ContainsMarge(point.getY(), point.getX(), 0.5)) {
-      wxPoint2DDouble q = ShapeBaseChartSet::GetDoublePixFromLL(
-          vp, point.getY(), point.getX());
+      wxPoint2DDouble q =
+          ShapeBaseChartSet::GetDoublePixFromLL(vp, point.getY(), point.getX());
       if (round(q.m_x) != round(old_x) || round(q.m_y) != round(old_y)) {
         poly_pt[cnt].x = round(q.m_x);
         poly_pt[cnt].y = round(q.m_y);
@@ -264,51 +271,10 @@ void ShapeBaseChart::DoDrawPolygonFilled(ocpnDC &pnt, ViewPort &vp,
   }
 }
 
-void ShapeBaseChart::DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp) {
-  if (!_is_usable) {
-    return;
-  }
-  if (!_reader) {
-    _loading = true;
-    _loaded = std::async(std::launch::async, [&](){bool ret = LoadSHP(); _loading = false; return ret;});
-  }
-  if(_loading) {
-    if(_loaded.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
-      _is_usable = _loaded.get();
-    } else {
-      return; // not yet loaded
-    }
-  }
-  pnt.SetBrush(_color);
-
-  LLBBox bbox = vp.GetBBox();
-  if (_is_tiled) {
-    for (int i = floor(bbox.GetMinLat()); i < ceil(bbox.GetMaxLat()); i++) {
-      for (int j = floor(bbox.GetMinLon()); j < ceil(bbox.GetMaxLon()); j++) {
-          int lon {j};
-          if(j < -180) {
-            lon = j + 360;
-          } else if (j >= 180) {
-            lon = j - 360;
-          }
-        for (auto fid : _tiles[LatLonKey(i, lon)]) {
-          auto const &feature = _reader->getFeature(fid);
-          DoDrawPolygonFilled(pnt, vp,
-                              feature);  // Parallelize using std::async?
-        }
-      }
-    }
-  } else {
-    for (auto const &feature : *_reader) {
-      DoDrawPolygonFilled(pnt, vp, feature);  // Parallelize using std::async?
-    }
-  }
-}
-
-
 void ShapeBaseChart::DoDrawPolygonFilledGL(ocpnDC &pnt, ViewPort &vp,
-                                         const shp::Feature &feature) {
-  bool idl = vp.GetBBox().GetMinLon() <= -180 || vp.GetBBox().GetMaxLon() >= 180;
+                                           const shp::Feature &feature) {
+  bool idl =
+      vp.GetBBox().GetMinLon() <= -180 || vp.GetBBox().GetMaxLon() >= 180;
   auto polygon = static_cast<shp::Polygon *>(feature.getGeometry());
   for (auto &ring : polygon->getRings()) {
     size_t cnt{0};
@@ -317,8 +283,7 @@ void ShapeBaseChart::DoDrawPolygonFilledGL(ocpnDC &pnt, ViewPort &vp,
     gluTessCallback(tobj, GLU_TESS_VERTEX, (_GLUfuncptr)&shpsvertexCallback);
     gluTessCallback(tobj, GLU_TESS_BEGIN, (_GLUfuncptr)&shpsbeginCallback);
     gluTessCallback(tobj, GLU_TESS_END, (_GLUfuncptr)&shpsendCallback);
-    gluTessCallback(tobj, GLU_TESS_COMBINE,
-                    (_GLUfuncptr)&shpscombineCallback);
+    gluTessCallback(tobj, GLU_TESS_COMBINE, (_GLUfuncptr)&shpscombineCallback);
     gluTessCallback(tobj, GLU_TESS_ERROR, (_GLUfuncptr)&shpserrorCallback);
 
     gluTessNormal(tobj, 0, 0, 1);
@@ -327,41 +292,43 @@ void ShapeBaseChart::DoDrawPolygonFilledGL(ocpnDC &pnt, ViewPort &vp,
     gluTessBeginPolygon(tobj, NULL);
     gluTessBeginContour(tobj);
     for (auto &point : ring.getPoints()) {
-      wxPoint2DDouble q;// = ShapeBaseChartSet::GetDoublePixFromLL(vp, point.getY(), point.getX());
+      wxPoint2DDouble q;  // = ShapeBaseChartSet::GetDoublePixFromLL(vp,
+                          // point.getY(), point.getX());
       if (glChartCanvas::HasNormalizedViewPort(vp))
-            q = ShapeBaseChartSet::GetDoublePixFromLL(vp, point.getY(), point.getX());
-          else  // tesselation directly from lat/lon
-            q.m_x = point.getY(), q.m_y = point.getX();
-        GLvertexshp *vertex = new GLvertexshp();
-        g_vertexesshp.push_back(vertex);
-        if (vp.m_projection_type != PROJECTION_POLAR) {
-          // need to correctly pick +180 or -180 longitude for projections
-          // that have a discontiguous date line
+        q = ShapeBaseChartSet::GetDoublePixFromLL(vp, point.getY(),
+                                                  point.getX());
+      else  // tesselation directly from lat/lon
+        q.m_x = point.getY(), q.m_y = point.getX();
+      GLvertexshp *vertex = new GLvertexshp();
+      g_vertexesshp.push_back(vertex);
+      if (vp.m_projection_type != PROJECTION_POLAR) {
+        // need to correctly pick +180 or -180 longitude for projections
+        // that have a discontiguous date line
 
-          if (idl && (point.getX() == 180)) {
-            if (vp.m_projection_type == PROJECTION_MERCATOR ||
-                vp.m_projection_type == PROJECTION_EQUIRECTANGULAR) {
-                  //q.m_x -= 40058986 * 4096.0;  // 360 degrees in normalized viewport
-                } else {
-                  q.m_x -= 360;  // lat/lon coordinates
-                }
+        if (idl && (point.getX() == 180)) {
+          if (vp.m_projection_type == PROJECTION_MERCATOR ||
+              vp.m_projection_type == PROJECTION_EQUIRECTANGULAR) {
+            // q.m_x -= 40058986 * 4096.0;  // 360 degrees in normalized
+            // viewport
+          } else {
+            q.m_x -= 360;  // lat/lon coordinates
           }
         }
-        vertex->info.x = q.m_x;
-        vertex->info.y = q.m_y;
-
-        gluTessVertex(tobj, (GLdouble *)vertex, (GLdouble *)vertex);
-        cnt++;
       }
+      vertex->info.x = q.m_x;
+      vertex->info.y = q.m_y;
+
+      gluTessVertex(tobj, (GLdouble *)vertex, (GLdouble *)vertex);
+      cnt++;
+    }
     gluTessEndContour(tobj);
     gluTessEndPolygon(tobj);
     gluDeleteTess(tobj);
 
-    for (auto ver : g_vertexesshp)
-      delete ver;
+    for (auto ver : g_vertexesshp) delete ver;
     g_vertexesshp.clear();
   }
-  float_2Dpt * polyv = new float_2Dpt[g_pvshp.size()];
+  float_2Dpt *polyv = new float_2Dpt[g_pvshp.size()];
   int cnt = 0;
   for (auto pt : g_pvshp) {
     polyv[cnt++] = pt;
@@ -378,49 +345,53 @@ void ShapeBaseChart::DoDrawPolygonFilledGL(ocpnDC &pnt, ViewPort &vp,
                      2.0 / (float)vp.pix_height, 1.0);
   mat4x4_translate_in_place(mvp, -vp.pix_width / 2, vp.pix_height / 2, 0);
 
-    float *pvt = new float[2 * (polycnt)];
-    for (size_t i = 0; i < polycnt; i++) {
-      float_2Dpt *pc = polyv + i;
-      //wxPoint2DDouble q(pc->y, pc->x);// = vp.GetDoublePixFromLL(pc->y, pc->x);
-      wxPoint2DDouble q = vp.GetDoublePixFromLL(pc->y, pc->x);
+  float *pvt = new float[2 * (polycnt)];
+  for (size_t i = 0; i < polycnt; i++) {
+    float_2Dpt *pc = polyv + i;
+    // wxPoint2DDouble q(pc->y, pc->x);// = vp.GetDoublePixFromLL(pc->y, pc->x);
+    wxPoint2DDouble q = vp.GetDoublePixFromLL(pc->y, pc->x);
 
-      pvt[i * 2] = q.m_x;
-      pvt[(i * 2) + 1] = q.m_y;
-    }
+    pvt[i * 2] = q.m_x;
+    pvt[(i * 2) + 1] = q.m_y;
+  }
 
-    GLShaderProgram *shader = pcolor_tri_shader_program[pnt.m_canvasIndex];
-    shader->Bind();
+  GLShaderProgram *shader = pcolor_tri_shader_program[pnt.m_canvasIndex];
+  shader->Bind();
 
-    float colorv[4];
-    colorv[0] = _color.Red() / float(256);
-    colorv[1] = _color.Green() / float(256);
-    colorv[2] = _color.Blue() / float(256);
-    colorv[3] = 1.0;
-    shader->SetUniform4fv("color", colorv);
+  float colorv[4];
+  colorv[0] = _color.Red() / float(256);
+  colorv[1] = _color.Green() / float(256);
+  colorv[2] = _color.Blue() / float(256);
+  colorv[3] = 1.0;
+  shader->SetUniform4fv("color", colorv);
 
-    shader->SetAttributePointerf("position", pvt);
+  shader->SetAttributePointerf("position", pvt);
 
-    glDrawArrays(GL_TRIANGLES, 0, polycnt);
+  glDrawArrays(GL_TRIANGLES, 0, polycnt);
 
-    delete[] pvt;
-    glDeleteBuffers(1, &vbo);
-    shader->UnBind();
+  delete[] pvt;
+  glDeleteBuffers(1, &vbo);
+  shader->UnBind();
 }
 
-void ShapeBaseChart::DrawPolygonFilledGL(ocpnDC &pnt, /*contour_list *p, float_2Dpt **pv, int *pvc,*/
-                           ViewPort &vp) {
+void ShapeBaseChart::DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp) {
   if (!_is_usable) {
     return;
   }
   if (!_reader) {
     _loading = true;
-    _loaded = std::async(std::launch::async, [&](){bool ret = LoadSHP(); _loading = false; return ret;});
+    _loaded = std::async(std::launch::async, [&]() {
+      bool ret = LoadSHP();
+      _loading = false;
+      return ret;
+    });
   }
-  if(_loading) {
-    if(_loaded.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+  if (_loading) {
+    if (_loaded.wait_for(std::chrono::milliseconds(0)) ==
+        std::future_status::ready) {
       _is_usable = _loaded.get();
     } else {
-      return; // not yet loaded
+      return;  // not yet loaded
     }
   }
 
@@ -428,25 +399,122 @@ void ShapeBaseChart::DrawPolygonFilledGL(ocpnDC &pnt, /*contour_list *p, float_2
   if (_is_tiled) {
     for (int i = floor(bbox.GetMinLat()); i < ceil(bbox.GetMaxLat()); i++) {
       for (int j = floor(bbox.GetMinLon()); j < ceil(bbox.GetMaxLon()); j++) {
-          int lon {j};
-          if(j < -180) {
-            lon = j + 360;
-          } else if (j >= 180) {
-            lon = j - 360;
-          }
+        int lon{j};
+        if (j < -180) {
+          lon = j + 360;
+        } else if (j >= 180) {
+          lon = j - 360;
+        }
         for (auto fid : _tiles[LatLonKey(i, lon)]) {
           auto const &feature = _reader->getFeature(fid);
-          DoDrawPolygonFilledGL(pnt, vp,
-                              feature);  // Parallelize using std::async?
+          if (pnt.GetDC()) {
+            DoDrawPolygonFilled(pnt, vp,
+                                feature);  // Parallelize using std::async?
+          } else {
+            DoDrawPolygonFilledGL(pnt, vp,
+                                  feature);  // Parallelize using std::async?
+          }
         }
       }
     }
   } else {
     for (auto const &feature : *_reader) {
-      DoDrawPolygonFilledGL(pnt, vp, feature);  // Parallelize using std::async?
+      if (pnt.GetDC()) {
+        DoDrawPolygonFilled(pnt, vp,
+                            feature);  // Parallelize using std::async?
+      } else {
+        DoDrawPolygonFilledGL(pnt, vp,
+                              feature);  // Parallelize using std::async?
+      }
     }
   }
 }
+
+bool ShapeBaseChart::CrossesLand(double &lat1, double &lon1, double &lat2, double &lon2) {
+    double latmin = std::min(lat1, lat2);
+    double lonmin = std::min(lon1, lon2);
+    double latmax = std::min(lat1, lat2);
+    double lonmax = std::min(lon1, lon2);
+
+    auto A = std::make_pair(lat1, lon1);
+    auto B = std::make_pair(lat2, lon2);
+
+    if (_is_tiled) {
+      for (int i = floor(latmin); i < ceil(latmax); i++) {
+        for (int j = floor(lonmin); j < ceil(lonmax); j++) {
+          int lon{j};
+          if (j < -180) {
+            lon = j + 360;
+          } else if (j >= 180) {
+            lon = j - 360;
+          }
+          for (auto fid : _tiles[LatLonKey(i, lon)]) {
+            auto const &feature = _reader->getFeature(fid);
+            if (PolygonIntersect(feature, A, B)) {
+              return true;
+            }
+          }
+        }
+      }
+    } else {
+      for (auto const &feature : *_reader) {
+        if (PolygonIntersect(feature, A, B)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+bool ShapeBaseChart::LineLineIntersect(const std::pair<double, double> &A,
+                         const std::pair<double, double> &B,
+                         const std::pair<double, double> &C,
+                         const std::pair<double, double> &D) {
+    // Line AB represented as a1x + b1y = c1
+    double a1 = B.second - A.second;
+    double b1 = A.first - B.first;
+    // double c1 = a1*(A.first) + b1*(A.second); - If we wanted coordinates of
+    // the intersection
+
+    // Line CD represented as a2x + b2y = c2
+    double a2 = D.second - C.second;
+    double b2 = C.first - D.first;
+    // double c2 = a2*(C.first)+ b2*(C.second); - If we wanted coordinates of
+    // the intersection
+
+    double determinant = a1 * b2 - a2 * b1;
+
+    if (determinant == 0) {
+      // The lines are parallel
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  bool ShapeBaseChart::PolygonIntersect(const shp::Feature &feature,
+                        const std::pair<double, double> &A,
+                        const std::pair<double, double> &B) {
+    auto polygon = static_cast<shp::Polygon *>(feature.getGeometry());
+    std::pair<double, double> previous_point;
+    for (auto &ring : polygon->getRings()) {
+      size_t cnt{0};
+      for (auto &point : ring.getPoints()) {
+        auto pnt = std::make_pair(point.getY(), point.getX());
+        if (cnt > 0) {
+          // TODO: Is it faster to first check if we are in the boundong box of
+          // the line?
+          if (LineLineIntersect(A, B, previous_point, pnt)) {
+            return true;
+          }
+        }
+        previous_point = pnt;
+        cnt++;
+      }
+    }
+    return false;
+  }
 
 void ShapeBaseChartSet::RenderViewOnDC(ocpnDC &dc, ViewPort &vp) {
   SelectBaseMap(vp.chart_scale).RenderViewOnDC(dc, vp);

@@ -68,7 +68,19 @@ struct std::hash<LatLonKey> {
 };
 
 /// @brief Basemap quality
-enum Quality { crude, low, medium, high, full };
+enum Quality {
+  /// @brief Planetary scale dataset
+  crude,
+  /// @brief Low resolution
+  low,
+  /// @brief Medium resolution
+  medium,
+  /// @brief High resolution
+  high,
+  /// @brief Full resolution of the OSM dataset. Huge dataset, the performance
+  /// on slow machines is low
+  full
+};
 
 typedef std::vector<wxRealPoint> contour;
 typedef std::vector<contour> contour_list;
@@ -97,39 +109,19 @@ public:
     this->_reader = nullptr;
     this->_color = t._color;
   }
-  ~ShapeBaseChart() {
-    delete _reader;
-  }
+  ~ShapeBaseChart() { delete _reader; }
 
   bool LoadSHP();
   bool IsUsable() { return _is_usable && !_loading; }
   size_t MinScale() { return _min_scale; }
-  void RenderViewOnDC(ocpnDC &dc, ViewPort &vp) {
-    if (!dc.GetDC()) {
-      DrawPolygonFilledGL(dc, vp);
-    } else {
-      DrawPolygonFilled(dc, vp);
-    }
-  }
+  void RenderViewOnDC(ocpnDC &dc, ViewPort &vp) { DrawPolygonFilled(dc, vp); }
   static const std::string ConstructPath(const std::string &dir,
                                          const std::string &quality_suffix) {
     return dir + std::filesystem::path::preferred_separator + "basemap_" +
            quality_suffix + ".shp";
   }
 
-  bool CrossesLand(double lat1, double lon1, double lat2, double lon2) {
-    /* TODO
-    if (!reader) {
-      gshhsCrossesLandInit();
-    }
-    if (lon1 < 0) lon1 += 360;
-    if (lon2 < 0) lon2 += 360;
-
-    wxLineF trajectWorld(lon1, lat1, lon2, lat2);
-    return reader->crossing1(trajectWorld);
-    */
-    return false;
-  }
+  bool CrossesLand(double &lat1, double &lon1, double &lat2, double &lon2);
 
 private:
   std::future<bool> _loaded;
@@ -139,15 +131,22 @@ private:
   size_t _min_scale;
   void DoDrawPolygonFilled(ocpnDC &pnt, ViewPort &vp,
                            const shp::Feature &feature);
-  void DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp);
   void DoDrawPolygonFilledGL(ocpnDC &pnt, ViewPort &vp,
-                           const shp::Feature &feature);
-  void DrawPolygonFilledGL(ocpnDC &pnt, /*contour_list *p, float_2Dpt **pv, int *pvc,*/
-                           ViewPort &vp);
+                             const shp::Feature &feature);
+  void DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp);
   std::string _filename;
   shp::ShapefileReader *_reader;
   std::unordered_map<LatLonKey, std::vector<size_t>> _tiles;
   wxColor _color;
+
+  bool LineLineIntersect(const std::pair<double, double> &A,
+                         const std::pair<double, double> &B,
+                         const std::pair<double, double> &C,
+                         const std::pair<double, double> &D);
+
+  bool PolygonIntersect(const shp::Feature &feature,
+                        const std::pair<double, double> &A,
+                        const std::pair<double, double> &B);
 };
 
 /// @brief Set of basemaps at different resolutions
