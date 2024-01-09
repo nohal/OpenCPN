@@ -34,6 +34,9 @@
 #include <queue>  // std::queue
 #include <thread>
 #include <vector>
+#include <string>
+#include <unordered_map>
+#include <chrono>
 
 #include <wx/event.h>
 #include <wx/log.h>
@@ -44,6 +47,7 @@
 #include "model/comm_drv_n0183_serial.h"
 #include "model/comm_navmsg_bus.h"
 #include "model/comm_drv_registry.h"
+#include "model/logger.h"
 
 #ifndef __ANDROID__
 #include "serial/serial.h"
@@ -61,6 +65,136 @@ typedef enum DS_ENUM_BUFFER_STATE {
 class CommDriverN0183Serial;  // fwd
 
 #define MAX_OUT_QUEUE_MESSAGE_LENGTH 100
+
+class n0183_throttling_filter {
+  public:
+  struct sentence {
+    std::string id;
+    std::chrono::time_point<std::chrono::system_clock> last_received;
+    std::chrono::time_point<std::chrono::system_clock> last_sent;
+    double frequency;
+    size_t filter_drop;
+    size_t dropped;
+    sentence() {
+      frequency = 1;
+      filter_drop = 0;
+      dropped = 0;
+    };
+  };
+
+  double fifo_fill_ratio;
+
+  n0183_throttling_filter() {
+    filter_ratio = 1;
+    fifo_fill_ratio = 0;
+    last_ratio_increase = std::chrono::system_clock::now();
+    start = std::chrono::system_clock::now();
+    bytes_total = 0;
+    bytes_passed = 0;
+    msgs_total = 0;
+    msgs_passed = 0;
+  }
+
+  bool should_pass(std::string &message) {
+    msgs_total++;
+    bytes_total += message.size();
+    size_t pos = message.find_first_of(',');
+    if(pos == std::string::npos) {
+      return true; // Should not happen, what we got was not a NME0183 sentence with fields, but we do not want to accumulate total bogus here if it happens to be delivered
+    }
+    std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+    std::string id = message.substr(0, pos);
+    if(known_sentences.find(id) == known_sentences.end()) {
+      sentence stc;
+      stc.id  = id;
+      stc.last_received = now;
+      known_sentences.emplace(id, stc);
+    }
+    sentence &stc = known_sentences[id];
+    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(now - stc.last_received).count();
+    stc.last_received = now;
+    if(milliseconds > 0) {
+      stc.frequency = (stc.frequency * 0.95) + 1000.0 / milliseconds * 0.05; //Smooth the frequency by making the last message have only 5% influence on it
+    }
+    if (fifo_fill_ratio < 0.75) { // Queue less than 75% full, we can deliver the mesage without further checks and perhaps relax the filtering
+      if (std::chrono::duration_cast<std::chrono::milliseconds>(now - last_ratio_increase).count() > 500) { //We do not want to be too fast letting stuff pass
+        if(filter_ratio > 1 && fifo_fill_ratio < 0.5) {
+          filter_ratio--; //FIFO buffer under very low pressure, we can put some more on it if relevant
+          last_ratio_increase = now;
+          DEBUG_LOG << "Serial output FIFO buffer under very low pressure, decreasing filter ratio to " << filter_ratio << std::endl;
+        }
+      }
+      if (stc.filter_drop > 0) {
+        if (stc.filter_drop > max_frequency() / stc.frequency) {
+          stc.filter_drop -= max_frequency() / stc.frequency; //Really low pressure, deliver more messages of this type if we were filtering them
+        } else {
+          stc.filter_drop = 0;
+        }
+        last_ratio_increase = now;
+        DEBUG_LOG << "Serial output FIFO buffer under very low pressure, decreasing drop to " << stc.filter_drop << " for " << stc.id << " received at " << stc.frequency << "Hz" << std::endl;
+      }
+      if (filter_ratio > max_drop()) {
+        filter_ratio = max_drop();
+      }
+    } else { // Pressure on the queue is high
+      if (filter_ratio - stc.filter_drop > max_frequency() / stc.frequency) {
+        stc.filter_drop += stc.frequency;
+        last_ratio_increase = now;
+        DEBUG_LOG << "Serial output FIFO buffer under high pressure, increasing drop to " << stc.filter_drop << " for " << stc.id << " received at " << stc.frequency << "Hz" << std::endl;
+      } else {
+        filter_ratio++;
+        last_ratio_increase = now;
+        DEBUG_LOG << "Serial output FIFO buffer under high pressure, increasing filter ratio to " << filter_ratio << std::endl;
+      }
+    }
+    if(stc.filter_drop > filter_ratio) {
+      stc.filter_drop = filter_ratio * stc.frequency / max_frequency();
+    }
+    if(std::chrono::duration_cast<std::chrono::milliseconds>(now - stc.last_sent).count() > 2000) {
+      stc.filter_drop /= 2; // We do not want to slide too far behind with any messages (the ones coming at high rate would keep taking more penalty), try to keep the maximum latency around 2 seconds. This of course has a tradeof as when halving the planned drop, we lose some messages that won't fit to the FIFO buffer
+    }
+    if (msgs_total % 1000 == 0) {
+      DEBUG_LOG << "NMEA0183 out filter: M: " << msgs_passed << "/" << msgs_total << " B: " << bytes_passed  << "/" <<  bytes_total << " T: " << std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count() << "ms" << std::endl;
+    }
+    if(stc.dropped < stc.filter_drop) {
+      stc.dropped++;
+      return false;
+    }
+    stc.dropped = 0;
+    msgs_passed++;
+    bytes_passed += message.size();
+    DEBUG_LOG<< stc.id << " sent after " << std::chrono::duration_cast<std::chrono::milliseconds>(now - stc.last_sent).count() << "ms (drop: " << stc.filter_drop << "/" << filter_ratio << ", " << stc.frequency << "Hz, " << fifo_fill_ratio << ")" << std::endl;
+    stc.last_sent = now;
+    return true;    
+  }
+  private:
+  double max_frequency() {
+    double m = 0;
+    for (const auto &stc : known_sentences) {
+      if (stc.second.frequency > m) {
+        m = stc.second.frequency;
+      }
+    }
+    return m;
+  }
+  size_t max_drop() {
+    size_t m = 0;
+    for (const auto &stc : known_sentences) {
+      if (stc.second.filter_drop > m) {
+        m = stc.second.filter_drop;
+      }
+    }
+    return m;
+  }
+  std::unordered_map<std::string, sentence> known_sentences;
+  size_t filter_ratio;
+  std::chrono::time_point<std::chrono::system_clock> last_ratio_increase;
+  std::chrono::time_point<std::chrono::system_clock> start;
+  size_t bytes_total;
+  size_t bytes_passed;
+  size_t msgs_total;
+  size_t msgs_passed;
+};
 
 template <typename T>
 class n0183_atomic_queue {
@@ -94,9 +228,6 @@ private:
   std::queue<T> m_queque;
   mutable std::mutex m_mutex;
 };
-
-#define OUT_QUEUE_LENGTH                20
-#define MAX_OUT_QUEUE_MESSAGE_LENGTH    100
 
 wxDEFINE_EVENT(wxEVT_COMMDRIVER_N0183_SERIAL, CommDriverN0183SerialEvent);
 
@@ -139,6 +270,7 @@ private:
   void CloseComPortPhysical();
   size_t WriteComPortPhysical(char* msg);
   size_t WriteComPortPhysical(const wxString& string);
+  size_t OutQueueLength();
 
   CommDriverN0183Serial* m_pParentDriver;
   wxString m_PortName;
@@ -147,6 +279,7 @@ private:
   int m_baud;
 
   n0183_atomic_queue<char*> out_que;
+  n0183_throttling_filter filter;
 
 };
 #endif
@@ -449,9 +582,23 @@ void CommDriverN0183SerialThread::CloseComPortPhysical() {
   }
 }
 
+
+/// @brief Determine size of the output queue based on the baudrate
+/// Maximum size of NME0183 message is 82 bytes
+/// We want to keep maximum of about 1 second of data in the queue, average sentence varies, but is around or under 30 bytes in my samples
+/// @return Size of the output queue 
+size_t CommDriverN0183SerialThread::OutQueueLength() {
+  return m_baud * 3 / 8 / 82;
+}
+
 bool CommDriverN0183SerialThread::SetOutMsg(const wxString &msg)
 {
-  if(out_que.size() < OUT_QUEUE_LENGTH){
+  filter.fifo_fill_ratio = static_cast<double>(out_que.size()) / OutQueueLength();
+  std::string mstr = msg.ToStdString();
+  if (!filter.should_pass(mstr)) {
+    return true; // We do not want to retry here, that would increase the pressure 10 times more...
+  }
+  if(out_que.size() < OutQueueLength()){
     wxCharBuffer buf = msg.ToUTF8();
     if(buf.data()){
       char *qmsg = (char *)malloc(strlen(buf.data()) +1);
@@ -460,8 +607,9 @@ bool CommDriverN0183SerialThread::SetOutMsg(const wxString &msg)
       return true;
     }
   }
-
-    return false;
+  DEBUG_LOG << "Message lost on output: " << mstr.c_str() << std::endl;
+  //return false; //- Same as above, no retry, it is now our responsability not to retry, because retrying in CommDriverN0183Serial::SendMessage floods us with messages
+  return true;
 }
 
 void CommDriverN0183SerialThread::ThreadMessage(const wxString& msg) {
