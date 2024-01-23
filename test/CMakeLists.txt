@@ -134,6 +134,7 @@ endif ()
 
 add_executable(buffer_tests
   buffer_tests.cpp
+  ${MODEL_SRC_DIR}/cmdline.cpp
   ${MODEL_SRC_DIR}/config_vars.cpp
   ${MODEL_SRC_DIR}/comm_out_queue.cpp
   ${MODEL_SRC_DIR}/ocpn_utils.cpp
@@ -147,6 +148,9 @@ target_include_directories(buffer_tests PRIVATE
   ${CMAKE_SOURCE_DIR}/model/include
   ${CMAKE_SOURCE_DIR}/include
   ${CMAKE_SOURCE_DIR}/resources
+)
+target_compile_definitions(
+  buffer_tests PUBLIC TESTDATA="${CMAKE_CURRENT_LIST_DIR}/testdata"
 )
 
 if (LINUX)
