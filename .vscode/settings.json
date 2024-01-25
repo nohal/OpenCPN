@@ -1,6 +1,8 @@
 {
     "files.associations": {
-        "condition_variable": "cpp"
+        "*.gpx": "xml",
+        "condition_variable": "cpp",
+        "ratio": "cpp"
     },
 
        "C_Cpp.default.includePath": [
