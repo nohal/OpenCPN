@@ -2,7 +2,8 @@
     "files.associations": {
         "*.gpx": "xml",
         "condition_variable": "cpp",
-        "ratio": "cpp"
+        "ratio": "cpp",
+        "iosfwd": "cpp"
     },
 
        "C_Cpp.default.includePath": [
