@@ -280,13 +280,17 @@ void FirstUseWizImpl::EnumerateUSB() {
           serial.setBaudrate(sp);
           serial.open();
           serial.setTimeout(500, 500, 0, 500, 0);
+          serial.flushInput();
           std::string data;
-          for (auto i = 0; i < 4; i++) {
+          size_t reads = 0;
+          while (reads < 10 && data.length() < 512) {
             try {
-              data.append(serial.read(64));
+              data.append(serial.read(256));
             } catch (std::exception& e) {
               DEBUG_LOG << "Serial read exception: " << e.what();
             }
+            wxMilliSleep(25);
+            reads++;
           }
           DEBUG_LOG << "Read: " << data;
           if (!data.empty()) {
@@ -366,18 +370,22 @@ void FirstUseWizImpl::EnumerateUDP() {
       continue;
     }
     DEBUG_LOG << "Trying UDP port " << port;
-    size_t len = RECEIVE_BUFFER_LENGTH;
     char buffer[RECEIVE_BUFFER_LENGTH];
-    memset(buffer, 0, len);
+    memset(buffer, 0, RECEIVE_BUFFER_LENGTH);
     sock->SetTimeout(1);
-    sock->WaitForRead(1, 0);
-    sock->Read(&buffer, len);
-    // Binary protocols may contain 0x00 bytes, so we have to treat the buffer as such and avoid string conversion
-    while (len > 0 && buffer[len-1] == 0x00) {
-      len--;
+    std::string data;
+    if (sock->WaitForRead(1, 0)) {
+      size_t reads = 0;
+      while (reads < 10 && data.length() < 512) {
+        sock->Read(&buffer, RECEIVE_BUFFER_LENGTH);
+        if (sock->LastReadCount() > 0) {
+          data.append(buffer, sock->LastReadCount());
+        }
+        wxMilliSleep(25);
+        reads++;
+      }
     }
-    if (len > 0) {
-      std::string data(buffer, len);
+    if (!data.empty()) {
       DEBUG_LOG << "Read: " << data;
       if (auto flavor = SeemsN0183(data); flavor != NMEA0183Flavor::INVALID) {
         ConnectionParams params;
@@ -481,17 +489,21 @@ void FirstUseWizImpl::EnumerateTCP() {
       client->SetTimeout(1);
       if (client->Connect(conn_addr, true)) {
         DEBUG_LOG << "Connected to " << ip << ":" << port;
-        size_t len = RECEIVE_BUFFER_LENGTH;
         char buffer[RECEIVE_BUFFER_LENGTH];
-        memset(buffer, 0, len);
-        client->WaitForRead(1, 0);
-        client->Read(&buffer, len);
-        // Binary protocols may contain 0x00 bytes, so we have to treat the buffer as such and avoid string conversion
-        while (len > 0 && buffer[len-1] == 0x00) {
-          len--;
+        memset(buffer, 0, RECEIVE_BUFFER_LENGTH);
+        std::string data;
+        if (client->WaitForRead(1, 0)) {
+          size_t reads = 0;
+          while (reads < 10 && data.length() < 512) {
+            client->Read(&buffer, RECEIVE_BUFFER_LENGTH);
+            if (client->LastReadCount() > 0) {
+              data.append(buffer, client->LastReadCount());
+            }
+            wxMilliSleep(25);
+            reads++;
+          }
         }
-        if (len > 0) {
-          std::string data(buffer, len);
+        if (!data.empty()) {
           DEBUG_LOG << "Read: " << data;
           if (auto flavor = SeemsN0183(data); flavor != NMEA0183Flavor::INVALID) {
             ConnectionParams params;
