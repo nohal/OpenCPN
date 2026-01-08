@@ -4739,6 +4739,19 @@ void MyFrame::OnInitTimer(wxTimerEvent &event) {
         }
       }
 
+      // Import Layer-wise any .gpx files from /layers directory
+      // The layer objects may be referenced by navobjects, so do this before
+      wxString layerdir = g_Platform->GetPrivateDataDir();
+      appendOSDirSlash(&layerdir);
+      layerdir.Append("layers");
+
+      if (wxDir::Exists(layerdir)) {
+        wxString laymsg;
+        laymsg.Printf("Getting .gpx layer files from: %s", layerdir.c_str());
+        wxLogMessage(laymsg);
+        pConfig->LoadLayers(layerdir);
+      }
+
       NavObj_dB::GetInstance().ImportLegacyNavobj(this);
       NavObj_dB::GetInstance().LoadNavObjects();
 
@@ -4750,17 +4763,6 @@ void MyFrame::OnInitTimer(wxTimerEvent &event) {
         pAnchorWatchPoint2 = pWayPointMan->FindRoutePointByGUID(g_AW2GUID);
       }
 
-      // Import Layer-wise any .gpx files from /layers directory
-      wxString layerdir = g_Platform->GetPrivateDataDir();
-      appendOSDirSlash(&layerdir);
-      layerdir.Append("layers");
-
-      if (wxDir::Exists(layerdir)) {
-        wxString laymsg;
-        laymsg.Printf("Getting .gpx layer files from: %s", layerdir.c_str());
-        wxLogMessage(laymsg);
-        pConfig->LoadLayers(layerdir);
-      }
       break;
     }
 
