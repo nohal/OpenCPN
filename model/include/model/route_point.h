@@ -172,6 +172,8 @@ public:
   void SetUseSca(bool value) { b_UseScamin = value; };
   bool IsDragHandleEnabled() { return m_bDrawDragHandle; }
   void SetPlannedSpeed(double spd);
+  int8_t GetUUIDMethod() { return m_UUID_method; }
+  void SetUUIDMethod(int8_t method) { m_UUID_method = method; }
   /**
    * Return the planned speed associated with this waypoint.
    *
@@ -609,6 +611,14 @@ private:
   bool m_bsharedMark /*m_bKeepXRoute*/;
   unsigned int m_dragIconTexture;
   int m_dragIconTextureWidth, m_dragIconTextureHeight;
+  /**
+   * @brief UUID generation method used for this RoutePoint.
+   * Indicates which algorithm was used to generate the m_GUID value.
+   * 0 = Default. UUIDv5 based on OpenCPN namespace and waypoint name and
+   * coordinates. 1 = UUIDv5 based on OpenCPN namespac and name only.
+   *
+   */
+  int8_t m_UUID_method{0};
 };
 
 using RoutePointList = std::vector<RoutePoint *>;

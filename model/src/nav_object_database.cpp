@@ -66,6 +66,7 @@ RoutePoint *GPXLoadWaypoint1(pugi::xml_node &wpt_node, wxString def_symbol_name,
   long l_iWaypointScaleMin = 2147483646;
   long l_iWaypoinScaleMax = 0;
   bool l_bWaypointUseScale = false;
+  int8_t uuid_method = 0;
   wxColour l_wxcWaypointRangeRingsColour;
   l_wxcWaypointRangeRingsColour.Set("#FFFFFF");
 
@@ -143,6 +144,10 @@ RoutePoint *GPXLoadWaypoint1(pugi::xml_node &wpt_node, wxString def_symbol_name,
             wxString s = wxString::FromUTF8(ext_child.first_child().value());
             long v = 0;
             if (s.ToLong(&v)) bshared = (v != 0);
+          } else if (ext_name == "opencpn:uuid_method") {
+            if (!ext_child.first_child().empty()) {
+              uuid_method = ext_child.first_child().value()[0] - '0';
+            }
           }
           if (ext_name == "opencpn:arrival_radius") {
             wxString::FromUTF8(ext_child.first_child().value())
@@ -195,11 +200,6 @@ RoutePoint *GPXLoadWaypoint1(pugi::xml_node &wpt_node, wxString def_symbol_name,
   }  // for
 
   // Create waypoint
-
-  if (b_layer) {
-    if (GuidString.IsEmpty()) GuidString = pWayPointMan->CreateGUID(NULL);
-  }
-
   pWP = new RoutePoint(rlat, rlon, SymString, NameString, GuidString,
                        false);  // do not add to global WP list yet...
   pWP->m_MarkDescription = DescString;
@@ -210,6 +210,7 @@ RoutePoint *GPXLoadWaypoint1(pugi::xml_node &wpt_node, wxString def_symbol_name,
   pWP->SetWaypointRangeRingsStep(l_fWaypointRangeRingsStep);
   pWP->SetWaypointRangeRingsStepUnits(l_pWaypointRangeRingsStepUnits);
   pWP->SetShowWaypointRangeRings(l_bWaypointRangeRingsVisible);
+  pWP->SetUUIDMethod(uuid_method);
 
   // Migrate from O4.x XML format.
   // In O5, the attribute "range rings visible" is synonymous with ( "range

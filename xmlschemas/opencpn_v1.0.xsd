@@ -44,4 +44,5 @@
         </xs:complexType>
     </xs:element>
     <xs:element name="action" type="xs:boolean" />
+    <xs:element name="uuid_method" type="xs:integer" />
 </xs:schema>

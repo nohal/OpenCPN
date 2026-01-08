@@ -48,6 +48,7 @@
 #include "model/route.h"
 #include "model/routeman.h"
 #include "model/track.h"
+#include "model/uuid_v5.h"
 
 #include "observable_globvar.h"
 
@@ -1354,7 +1355,21 @@ int WayPointman::GetFIconImageListIndex(const wxBitmap *pbm) const {
 
 //  Create the unique identifier
 wxString WayPointman::CreateGUID(RoutePoint *pRP) {
-  return GpxDocument::GetUUID();
+  if (pRP) {
+    switch (pRP->GetUUIDMethod()) {
+      case 1:
+        return UUIDv5::uuid_v5_opencpn(pRP->GetName().ToStdString());
+        break;
+      default:
+        std::stringstream ss;
+        ss << pRP->GetName().ToStdString() << "/" << pRP->m_lat << "/"
+           << pRP->m_lon;
+        return UUIDv5::uuid_v5_opencpn(ss.str());
+        break;
+    }
+  } else {
+    return GpxDocument::GetUUID();
+  }
 }
 
 RoutePoint *WayPointman::FindRoutePointByGUID(const wxString &guid) {
