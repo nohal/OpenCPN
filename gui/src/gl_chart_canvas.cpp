@@ -343,6 +343,10 @@ void glChartCanvas::Init() {
   m_b_BuiltFBO = false;
   m_b_DisableFBO = false;
 
+  m_basemap_tex = 0;
+  m_basemap_fbo = 0;
+  m_basemap_valid = false;
+
   ownship_tex = 0;
   ownship_color = -1;
 
@@ -916,6 +920,16 @@ void glChartCanvas::BuildFBO() {
     m_b_BuiltFBO = false;
   }
 
+  if (m_basemap_fbo) {
+    glDeleteFramebuffers(1, &m_basemap_fbo);
+    m_basemap_fbo = 0;
+  }
+  if (m_basemap_tex) {
+    glDeleteTextures(1, &m_basemap_tex);
+    m_basemap_tex = 0;
+  }
+  m_basemap_valid = false;
+
   if (m_b_DisableFBO) return;
 
   //    int initialSize = 2048;
@@ -958,6 +972,19 @@ void glChartCanvas::BuildFBO() {
 
   // glClear(GL_COLOR_BUFFER_BIT);
   m_b_BuiltFBO = true;
+
+  // Basemap cache FBO: always GL_TEXTURE_2D, same pixel dimensions as screen
+  glGenTextures(1, &m_basemap_tex);
+  glBindTexture(GL_TEXTURE_2D, m_basemap_tex);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_cache_tex_x, m_cache_tex_y, 0,
+               GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glGenFramebuffers(1, &m_basemap_fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_basemap_fbo);
+  glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0,
+                         GL_TEXTURE_2D, m_basemap_tex, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
 
   return;
 }
@@ -2971,6 +2998,7 @@ void glChartCanvas::DisableClipRegion() {
 void glChartCanvas::Invalidate() {
   /* should probably use a different flag for this */
   m_cache_vp.Invalidate();
+  m_basemap_valid = false;
 }
 
 void glChartCanvas::RenderRasterChartRegionGL(ChartBase *chart, ViewPort &vp,
@@ -3456,6 +3484,11 @@ void glChartCanvas::RenderCharts(ocpnDC &dc, const OCPNRegion &rect_region) {
                        ? m_pParentCanvas->m_pQuilt->GetFullQuiltRegion()
                        : m_pParentCanvas->m_singleChart->GetValidRegion();
 
+  // Refresh basemap cache before rendering background rects
+  if (m_b_BuiltFBO && m_basemap_fbo && gShapeBasemap.IsUsable() &&
+      !m_basemap_valid)
+    RenderCanvasBackingChart(dc, vp);
+
   bool world_view = false;
   for (OCPNRegionIterator upd(rect_region); upd.HaveRects(); upd.NextRect()) {
     wxRect rect = upd.GetRect();
@@ -3562,7 +3595,20 @@ void glChartCanvas::RenderWorldChart(ocpnDC &dc, ViewPort &vp, wxRect &rect,
   }
 
   // m_pParentCanvas->pWorldBackgroundChart->RenderViewOnDC(dc, vp);
-  gShapeBasemap.RenderViewOnDC(dc, vp);
+  if (m_basemap_valid && m_basemap_tex) {
+    // Blit cached basemap texture; scissor (set by caller) clips to the
+    // background region naturally.
+    float sx = vp.pix_width, sy = vp.pix_height;
+    float coords[8] = {0, 0, sx, 0, sx, sy, 0, sy};
+    // ponytail: Y-flip UVs — FBO y=0 is at bottom, screen y=0 is at top
+    float uv[8] = {0, 1, 1, 1, 1, 0, 0, 0};
+    glBindTexture(GL_TEXTURE_2D, m_basemap_tex);
+    glEnable(GL_TEXTURE_2D);
+    RenderTextures(dc, coords, uv, 4, &vp);
+    glDisable(GL_TEXTURE_2D);
+  } else {
+    gShapeBasemap.RenderViewOnDC(dc, vp);
+  }
 
   glDisable(GL_SCISSOR_TEST);
 }
@@ -4714,46 +4760,21 @@ void glChartCanvas::RenderMBTilesOverlay(ViewPort &VPoint) {
   }
 }
 
-#if 0
-void glChartCanvas::RenderCanvasBackingChart(ocpnDC &dc,
-                                             OCPNRegion valid_region) {
-  //  Fill the FBO with the current gshhs world chart
-  int w, h;
-  GetClientSize(&w, &h);
+void glChartCanvas::RenderCanvasBackingChart(ocpnDC &dc, ViewPort &vp) {
+  GLint prev_fbo;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prev_fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_basemap_fbo);
 
-  glViewport(0, 0, (GLint)m_cache_tex_x, (GLint)m_cache_tex_y);
-#if !defined(USE_ANDROID_GLES2) && !defined(ocpnUSE_GLSL)
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
+  wxColour water = m_pParentCanvas->pWorldBackgroundChart->water;
+  glClearColor(water.Red() / 256.f, water.Green() / 256.f, water.Blue() / 256.f,
+               1.f);
+  glClear(GL_COLOR_BUFFER_BIT);
 
-  glOrtho(0, m_cache_tex_x, m_cache_tex_y, 0, -1, 1);
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-#endif
+  gShapeBasemap.RenderViewOnDC(dc, vp);
 
-  wxRect rtex(0, 0, m_cache_tex_x, m_cache_tex_y);
-  ViewPort cvp =
-      m_pParentCanvas->GetVP().BuildExpandedVP(m_cache_tex_x, m_cache_tex_y);
-
-  bool world_view = false;
-  RenderWorldChart(dc, cvp, rtex, world_view);
-  gShapeBasemap.RenderViewOnDC(dc, cvp);
-
-  //    dc.SetPen(wxPen(wxColour(254,254,0), 3));
-  //    dc.DrawLine( 0, 0, m_cache_tex_x, m_cache_tex_y);
-
-  //  Reset matrices
-  glViewport(0, 0, (GLint)w, (GLint)h);
-#if !defined(USE_ANDROID_GLES2) && !defined(ocpnUSE_GLSL)
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-
-  glOrtho(0, (GLint)w, (GLint)h, 0, -1, 1);
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-#endif
+  glBindFramebuffer(GL_FRAMEBUFFER_EXT, prev_fbo);
+  m_basemap_valid = true;
 }
-#endif
 
 void glChartCanvas::FastPan(int dx, int dy) {
 #if !defined(USE_ANDROID_GLES2) && !defined(ocpnUSE_GLSL)

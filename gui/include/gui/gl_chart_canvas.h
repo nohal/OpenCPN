@@ -153,9 +153,8 @@ public:
   void FastPan(int dx, int dy);
   void FastZoom(float factor, float cp_x, float cp_y, float post_x,
                 float post_y);
-  //    void RenderCanvasBackingChart( ocpnDC dc, OCPNRegion chart_get_region);
   //    void FastZoom(float factor);
-  void RenderCanvasBackingChart(ocpnDC &dc, OCPNRegion chart_get_region);
+  void RenderCanvasBackingChart(ocpnDC &dc, ViewPort &vp);
 
 #ifdef __OCPN__ANDROID__
   void OnEvtPanGesture(wxQT_PanGestureEvent &event);
@@ -281,6 +280,10 @@ protected:
   GLuint m_cache_page;
   int m_cache_tex_x;
   int m_cache_tex_y;
+
+  GLuint m_basemap_tex;
+  GLuint m_basemap_fbo;
+  bool m_basemap_valid;
 
   GLuint ownship_tex;
   int ownship_color;
