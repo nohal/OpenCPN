@@ -28,6 +28,7 @@
 #include <future>
 #include <map>
 #include <thread>
+#include <unordered_map>
 #include <vector>
 
 #include "gl_headers.h"
@@ -134,6 +135,7 @@ public:
         _loading(false),
         _is_usable(false),
         _is_tiled(false),
+        _cache_tris(min_scale >= 3000000),
         _min_scale(min_scale),
         _filename(filename),
         _reader(nullptr),
@@ -145,6 +147,7 @@ public:
     this->_filename = t._filename;
     this->_is_usable = t._is_usable;
     this->_is_tiled = t._is_tiled;
+    this->_cache_tris = t._cache_tris;
     this->_min_scale = t._min_scale;
     this->_reader = nullptr;
     this->_color = t._color;
@@ -224,6 +227,8 @@ private:
    * contains feature indexes grouped by LatLonKey.
    */
   bool _is_tiled;
+  /** True for crude/low/medium: triangles are pre-tessellated at load time. */
+  bool _cache_tris;
   /**
    * The minimum scale threshold at which this chart should be displayed. Lower
    * quality charts are used for smaller scales (more zoomed out), and higher
@@ -238,6 +243,8 @@ private:
 #ifdef ocpnUSE_GL
   void AddPointToTessList(shp::Point &point, ViewPort &vp, GLUtesselator *tobj,
                           bool idl);
+  void PreTessellate(size_t fid, const shp::Feature &feature);
+  void DrawCachedTris(ocpnDC &pnt, ViewPort &vp, size_t fid);
 #endif
 
   /**
@@ -259,6 +266,8 @@ private:
    * for efficient spatial queries.
    */
   std::unordered_map<LatLonKey, std::vector<size_t>> _tiles;
+  /** Pre-tessellated triangles in lat/lon space, keyed by feature index. */
+  std::unordered_map<size_t, std::vector<float_2Dpt>> _tris;
   /**
    * The color used for rendering land areas in this specific chart instance.
    * Initially set during construction from the parent ShapeBaseChartSet's

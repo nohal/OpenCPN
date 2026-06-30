@@ -75,10 +75,12 @@ typedef union {
   } info;
 } GLvertexshp;
 
-static std::list<float_2Dpt> g_pvshp;
-static std::list<GLvertexshp *> g_vertexesshp;
-static int g_typeshp, g_posshp;
-static float_2Dpt g_p1shp, g_p2shp;
+// ponytail: thread_local lets LoadSHP() pre-tessellate on the async thread
+// without conflicting with render-thread tessellation for high/full fallback.
+thread_local std::list<float_2Dpt> g_pvshp;
+thread_local std::list<GLvertexshp *> g_vertexesshp;
+thread_local int g_typeshp, g_posshp;
+thread_local float_2Dpt g_p1shp, g_p2shp;
 
 void __CALL_CONVENTION shpscombineCallback(GLdouble coords[3],
                                            GLdouble *vertex_data[4],
@@ -313,6 +315,9 @@ bool ShapeBaseChart::LoadSHP() {
       _tiles[LatLonKey(std::any_cast<int>(feature.getAttributes()["y"]),
                        std::any_cast<int>(feature.getAttributes()["x"]))]
           .push_back(feat);
+#ifdef ocpnUSE_GL
+      if (_cache_tris) PreTessellate(feat, feature);
+#endif
       feat++;
     }
   }
@@ -380,6 +385,63 @@ void ShapeBaseChart::AddPointToTessList(shp::Point &point, ViewPort &vp,
   vertex->info.y = q.m_y;
 
   gluTessVertex(tobj, (GLdouble *)vertex, (GLdouble *)vertex);
+}
+
+void ShapeBaseChart::PreTessellate(size_t fid, const shp::Feature &feature) {
+  auto polygon = static_cast<shp::Polygon *>(feature.getGeometry());
+  for (auto &ring : polygon->getRings()) {
+    GLUtesselator *tobj = gluNewTess();
+    gluTessCallback(tobj, GLU_TESS_VERTEX, (_GLUfuncptr)&shpsvertexCallback);
+    gluTessCallback(tobj, GLU_TESS_BEGIN, (_GLUfuncptr)&shpsbeginCallback);
+    gluTessCallback(tobj, GLU_TESS_END, (_GLUfuncptr)&shpsendCallback);
+    gluTessCallback(tobj, GLU_TESS_COMBINE, (_GLUfuncptr)&shpscombineCallback);
+    gluTessCallback(tobj, GLU_TESS_ERROR, (_GLUfuncptr)&shpserrorCallback);
+    gluTessNormal(tobj, 0, 0, 1);
+    gluTessProperty(tobj, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NONZERO);
+    gluTessBeginPolygon(tobj, NULL);
+    gluTessBeginContour(tobj);
+    for (auto &point : ring.getPoints()) {
+      GLvertexshp *vertex = new GLvertexshp();
+      g_vertexesshp.push_back(vertex);
+      vertex->info.x = point.getY();  // lat
+      vertex->info.y = point.getX();  // lon
+      gluTessVertex(tobj, (GLdouble *)vertex, (GLdouble *)vertex);
+    }
+    gluTessEndContour(tobj);
+    gluTessEndPolygon(tobj);
+    gluDeleteTess(tobj);
+    for (auto ver : g_vertexesshp) delete ver;
+    g_vertexesshp.clear();
+  }
+  auto &v = _tris[fid];
+  v.reserve(g_pvshp.size());
+  for (auto &pt : g_pvshp) v.push_back(pt);
+  g_pvshp.clear();
+}
+
+void ShapeBaseChart::DrawCachedTris(ocpnDC &pnt, ViewPort &vp, size_t fid) {
+  auto it = _tris.find(fid);
+  if (it == _tris.end() || it->second.empty()) return;
+  const auto &tris = it->second;
+  size_t polycnt = tris.size();
+
+  thread_local std::vector<float> pvt;
+  pvt.resize(2 * polycnt);
+  for (size_t i = 0; i < polycnt; i++) {
+    wxPoint2DDouble q =
+        ShapeBaseChartSet::GetDoublePixFromLL(vp, tris[i].y, tris[i].x);
+    pvt[i * 2] = q.m_x;
+    pvt[i * 2 + 1] = q.m_y;
+  }
+
+  GLShaderProgram *shader = pcolor_tri_shader_program[pnt.m_canvasIndex];
+  shader->Bind();
+  float colorv[4] = {_color.Red() / 256.f, _color.Green() / 256.f,
+                     _color.Blue() / 256.f, 1.0f};
+  shader->SetUniform4fv("color", colorv);
+  shader->SetAttributePointerf("position", pvt.data());
+  glDrawArrays(GL_TRIANGLES, 0, polycnt);
+  shader->UnBind();
 }
 
 #endif
@@ -516,13 +578,18 @@ void ShapeBaseChart::DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp) {
           lon = j - 360;
         }
         for (auto fid : _tiles[LatLonKey(i, lon)]) {
-          auto const &feature = _reader->getFeature(fid);
           if (pnt.GetDC()) {
-            DoDrawPolygonFilled(pnt, vp,
-                                feature);  // Parallelize using std::async?
+            auto const &feature = _reader->getFeature(fid);
+            DoDrawPolygonFilled(pnt, vp, feature);
           } else {
-            DoDrawPolygonFilledGL(pnt, vp,
-                                  feature);  // Parallelize using std::async?
+#ifdef ocpnUSE_GL
+            if (_cache_tris) {
+              DrawCachedTris(pnt, vp, fid);
+            } else {
+              auto const &feature = _reader->getFeature(fid);
+              DoDrawPolygonFilledGL(pnt, vp, feature);
+            }
+#endif
           }
         }
       }
@@ -530,11 +597,11 @@ void ShapeBaseChart::DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp) {
   } else {
     for (auto const &feature : *_reader) {
       if (pnt.GetDC()) {
-        DoDrawPolygonFilled(pnt, vp,
-                            feature);  // Parallelize using std::async?
+        DoDrawPolygonFilled(pnt, vp, feature);
       } else {
-        DoDrawPolygonFilledGL(pnt, vp,
-                              feature);  // Parallelize using std::async?
+#ifdef ocpnUSE_GL
+        DoDrawPolygonFilledGL(pnt, vp, feature);
+#endif
       }
     }
   }
