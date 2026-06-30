@@ -51,6 +51,7 @@
 
 #ifdef ocpnUSE_GL
 #include "shaders.h"
+#include "tesselator.h"
 #endif
 
 #ifdef __WXMSW__
@@ -389,34 +390,35 @@ void ShapeBaseChart::AddPointToTessList(shp::Point &point, ViewPort &vp,
 
 void ShapeBaseChart::PreTessellate(size_t fid, const shp::Feature &feature) {
   auto polygon = static_cast<shp::Polygon *>(feature.getGeometry());
-  for (auto &ring : polygon->getRings()) {
-    GLUtesselator *tobj = gluNewTess();
-    gluTessCallback(tobj, GLU_TESS_VERTEX, (_GLUfuncptr)&shpsvertexCallback);
-    gluTessCallback(tobj, GLU_TESS_BEGIN, (_GLUfuncptr)&shpsbeginCallback);
-    gluTessCallback(tobj, GLU_TESS_END, (_GLUfuncptr)&shpsendCallback);
-    gluTessCallback(tobj, GLU_TESS_COMBINE, (_GLUfuncptr)&shpscombineCallback);
-    gluTessCallback(tobj, GLU_TESS_ERROR, (_GLUfuncptr)&shpserrorCallback);
-    gluTessNormal(tobj, 0, 0, 1);
-    gluTessProperty(tobj, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NONZERO);
-    gluTessBeginPolygon(tobj, NULL);
-    gluTessBeginContour(tobj);
-    for (auto &point : ring.getPoints()) {
-      GLvertexshp *vertex = new GLvertexshp();
-      g_vertexesshp.push_back(vertex);
-      vertex->info.x = point.getY();  // lat
-      vertex->info.y = point.getX();  // lon
-      gluTessVertex(tobj, (GLdouble *)vertex, (GLdouble *)vertex);
-    }
-    gluTessEndContour(tobj);
-    gluTessEndPolygon(tobj);
-    gluDeleteTess(tobj);
-    for (auto ver : g_vertexesshp) delete ver;
-    g_vertexesshp.clear();
-  }
   auto &v = _tris[fid];
-  v.reserve(g_pvshp.size());
-  for (auto &pt : g_pvshp) v.push_back(pt);
-  g_pvshp.clear();
+  for (auto &ring : polygon->getRings()) {
+    const auto &points = ring.getPoints();
+    if (points.size() < 3) continue;
+    std::vector<TESSreal> coords;
+    coords.reserve(points.size() * 2);
+    for (auto &point : points) {
+      coords.push_back((TESSreal)point.getY());  // lat
+      coords.push_back((TESSreal)point.getX());  // lon
+    }
+    TESStesselator *tess = tessNewTess(NULL);
+    tessAddContour(tess, 2, coords.data(), 2 * sizeof(TESSreal),
+                   (int)points.size());
+    if (tessTesselate(tess, TESS_WINDING_NONZERO, TESS_POLYGONS, 3, 2, NULL)) {
+      const TESSreal *verts = tessGetVertices(tess);
+      const TESSindex *elems = tessGetElements(tess);
+      int ntris = tessGetElementCount(tess);
+      v.reserve(v.size() + ntris * 3);
+      for (int i = 0; i < ntris * 3; i++) {
+        TESSindex idx = elems[i];
+        if (idx == TESS_UNDEF) continue;
+        float_2Dpt pt;
+        pt.y = verts[idx * 2];      // lat
+        pt.x = verts[idx * 2 + 1];  // lon
+        v.push_back(pt);
+      }
+    }
+    tessDeleteTess(tess);
+  }
 }
 
 void ShapeBaseChart::DrawCachedTris(ocpnDC &pnt, ViewPort &vp, size_t fid) {
@@ -425,6 +427,65 @@ void ShapeBaseChart::DrawCachedTris(ocpnDC &pnt, ViewPort &vp, size_t fid) {
   const auto &tris = it->second;
   size_t polycnt = tris.size();
 
+  float colorv[4] = {_color.Red() / 256.f, _color.Green() / 256.f,
+                     _color.Blue() / 256.f, 1.0f};
+
+#if defined(USE_ANDROID_GLES2) || defined(ocpnUSE_GLSL)
+  GLShaderProgram *shader = pbasemap_shader_program[pnt.m_canvasIndex];
+  // Only use GPU projection for Mercator (the overwhelming common case).
+  bool use_gpu = shader && (vp.m_projection_type == PROJECTION_MERCATOR ||
+                            vp.m_projection_type == PROJECTION_WEB_MERCATOR);
+
+  if (use_gpu) {
+    // Lazy VBO upload on render thread
+    if (_vbos.find(fid) == _vbos.end()) {
+      GLuint vbo;
+      glGenBuffers(1, &vbo);
+      glBindBuffer(GL_ARRAY_BUFFER, vbo);
+      // ponytail: GL_STATIC_DRAW — lat/lon never changes after tessellation
+      glBufferData(GL_ARRAY_BUFFER, tris.size() * sizeof(float_2Dpt),
+                   tris.data(), GL_STATIC_DRAW);
+      glBindBuffer(GL_ARRAY_BUFFER, 0);
+      _vbos[fid] = vbo;
+    }
+
+    shader->Bind();
+
+    // VP projection uniforms
+    double clat_r = vp.clat * M_PI / 180.0;
+    double s0 = sin(clat_r);
+    float y30 = (float)(0.5 * log((1.0 + s0) / (1.0 - s0)) * 6375585.7452);
+    shader->SetUniform1f("u_clon", (float)vp.clon);
+    shader->SetUniform1f("u_y30", y30);
+    shader->SetUniform1f("u_scale", (float)vp.view_scale_ppm);
+    shader->SetUniform1f("u_pix_w", (float)vp.pix_width);
+    shader->SetUniform1f("u_pix_h", (float)vp.pix_height);
+    shader->SetUniform1f("u_rot_cos", (float)cos(vp.rotation));
+    shader->SetUniform1f("u_rot_sin", (float)sin(vp.rotation));
+
+    mat4x4 I;
+    mat4x4_identity(I);
+    shader->SetUniformMatrix4fv("MVMatrix", (GLfloat *)vp.vp_matrix_transform);
+    shader->SetUniformMatrix4fv("TransformMatrix", (GLfloat *)I);
+    shader->SetUniform4fv("color", colorv);
+
+    glBindBuffer(GL_ARRAY_BUFFER, _vbos[fid]);
+    GLint aloc = glGetAttribLocation(shader->programId(), "aLatLon");
+    // float_2Dpt is {float y; float x;} == {lat, lon} in memory
+    glVertexAttribPointer(aloc, 2, GL_FLOAT, GL_FALSE, sizeof(float_2Dpt),
+                          nullptr);
+    glEnableVertexAttribArray(aloc);
+
+    glDrawArrays(GL_TRIANGLES, 0, polycnt);
+
+    glDisableVertexAttribArray(aloc);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    shader->UnBind();
+    return;
+  }
+#endif
+
+  // CPU fallback: non-Mercator projection or no basemap shader
   thread_local std::vector<float> pvt;
   pvt.resize(2 * polycnt);
   for (size_t i = 0; i < polycnt; i++) {
@@ -433,15 +494,12 @@ void ShapeBaseChart::DrawCachedTris(ocpnDC &pnt, ViewPort &vp, size_t fid) {
     pvt[i * 2] = q.m_x;
     pvt[i * 2 + 1] = q.m_y;
   }
-
-  GLShaderProgram *shader = pcolor_tri_shader_program[pnt.m_canvasIndex];
-  shader->Bind();
-  float colorv[4] = {_color.Red() / 256.f, _color.Green() / 256.f,
-                     _color.Blue() / 256.f, 1.0f};
-  shader->SetUniform4fv("color", colorv);
-  shader->SetAttributePointerf("position", pvt.data());
+  GLShaderProgram *fallback = pcolor_tri_shader_program[pnt.m_canvasIndex];
+  fallback->Bind();
+  fallback->SetUniform4fv("color", colorv);
+  fallback->SetAttributePointerf("position", pvt.data());
   glDrawArrays(GL_TRIANGLES, 0, polycnt);
-  shader->UnBind();
+  fallback->UnBind();
 }
 
 #endif
@@ -586,8 +644,12 @@ void ShapeBaseChart::DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp) {
             if (_cache_tris) {
               DrawCachedTris(pnt, vp, fid);
             } else {
-              auto const &feature = _reader->getFeature(fid);
-              DoDrawPolygonFilledGL(pnt, vp, feature);
+              // ponytail: lazy tessellate on first render, VBO thereafter
+              if (!_tris.count(fid)) {
+                auto const &feature = _reader->getFeature(fid);
+                PreTessellate(fid, feature);
+              }
+              DrawCachedTris(pnt, vp, fid);
             }
 #endif
           }

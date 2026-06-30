@@ -227,6 +227,58 @@ static const GLchar *ring_fragment_shader_source =
     "}\n"
     "}\n";
 
+// Basemap Mercator projection shader
+// Vertex data is raw lat/lon (degrees): first float = lat, second = lon.
+// All VP geometry math happens on the GPU so no CPU transform loop is needed.
+static const GLchar *basemap_vertex_shader_source =
+    "precision highp float;\n"
+    "attribute vec2 aLatLon;\n"  // .x=lat .y=lon (degrees)
+    "uniform mat4 MVMatrix;\n"
+    "uniform mat4 TransformMatrix;\n"
+    "uniform vec4 color;\n"
+    "varying vec4 fragColor;\n"
+    "uniform float u_clon;\n"   // center lon, degrees
+    "uniform float u_y30;\n"    // Mercator Y for center lat, meters
+    "uniform float u_scale;\n"  // view_scale_ppm
+    "uniform float u_pix_w;\n"
+    "uniform float u_pix_h;\n"
+    "uniform float u_rot_cos;\n"
+    "uniform float u_rot_sin;\n"
+    "const float PI = 3.14159265358979;\n"
+    "const float DEG = PI / 180.0;\n"
+    // 6378137.0 * 0.9996 — WGS84 Mercator scale factor
+    "const float MERCZ = 6375585.7452;\n"
+    "void main() {\n"
+    "    float lat = aLatLon.x;\n"
+    "    float lon = aLatLon.y;\n"
+    // phase-correct longitude to same side as clon
+    "    float dlon = lon - u_clon;\n"
+    "    if (dlon >  180.0) dlon -= 360.0;\n"
+    "    if (dlon < -180.0) dlon += 360.0;\n"
+    // Mercator easting / northing (meters)
+    "    float x_m = dlon * DEG * MERCZ;\n"
+    "    float s   = sin(lat * DEG);\n"
+    "    float y_m = 0.5 * log((1.0 + s) / (1.0 - s)) * MERCZ - u_y30;\n"
+    // scale to pixels
+    "    float epix = x_m * u_scale;\n"
+    "    float npix = y_m * u_scale;\n"
+    // apply VP rotation
+    "    float dxr = epix * u_rot_cos + npix * u_rot_sin;\n"
+    "    float dyr = npix * u_rot_cos - epix * u_rot_sin;\n"
+    // pixel coordinates
+    "    float px = u_pix_w * 0.5 + dxr;\n"
+    "    float py = u_pix_h * 0.5 - dyr;\n"
+    "    fragColor = color;\n"
+    "    gl_Position = MVMatrix * TransformMatrix * vec4(px, py, 0.0, 1.0);\n"
+    "}\n";
+
+static const GLchar *basemap_fragment_shader_source =
+    "precision lowp float;\n"
+    "varying vec4 fragColor;\n"
+    "void main() {\n"
+    "   gl_FragColor = fragColor;\n"
+    "}\n";
+
 // Alpha 2D texture shader
 static const GLchar *Android_texture_2DA_vertex_shader_source =
     "attribute vec2 aPos;\n"
@@ -249,6 +301,7 @@ static const GLchar *Android_texture_2DA_fragment_shader_source =
     "}\n";
 
 GLShaderProgram *pAALine_shader_program[2];
+GLShaderProgram *pbasemap_shader_program[2];
 GLShaderProgram *pcolor_tri_shader_program[2];
 GLShaderProgram *ptexture_2D_shader_program[2];
 GLShaderProgram *pcircle_filled_shader_program[2];
@@ -281,6 +334,16 @@ bool loadShaders(int index) {
     shaderProgram->linkProgram();
 
     if (shaderProgram->isOK()) pcolor_tri_shader_program[index] = shaderProgram;
+  }
+
+  if (!pbasemap_shader_program[index]) {
+    GLShaderProgram *shaderProgram = new GLShaderProgram;
+    shaderProgram->addShaderFromSource(basemap_vertex_shader_source,
+                                       GL_VERTEX_SHADER);
+    shaderProgram->addShaderFromSource(basemap_fragment_shader_source,
+                                       GL_FRAGMENT_SHADER);
+    shaderProgram->linkProgram();
+    if (shaderProgram->isOK()) pbasemap_shader_program[index] = shaderProgram;
   }
 
   if (!ptexture_2D_shader_program[index]) {

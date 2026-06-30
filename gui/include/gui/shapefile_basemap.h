@@ -157,6 +157,9 @@ public:
   ~ShapeBaseChart() {
     CancelLoading();  // Ensure async operation is done before cleanup.
     delete _reader;
+#ifdef ocpnUSE_GL
+    for (auto &kv : _vbos) glDeleteBuffers(1, &kv.second);
+#endif
   }
 
   void SetColor(wxColor color) { _color = color; }
@@ -268,6 +271,8 @@ private:
   std::unordered_map<LatLonKey, std::vector<size_t>> _tiles;
   /** Pre-tessellated triangles in lat/lon space, keyed by feature index. */
   std::unordered_map<size_t, std::vector<float_2Dpt>> _tris;
+  /** GPU VBOs for lat/lon triangle data, lazily uploaded on first draw. */
+  std::unordered_map<size_t, GLuint> _vbos;
   /**
    * The color used for rendering land areas in this specific chart instance.
    * Initially set during construction from the parent ShapeBaseChartSet's

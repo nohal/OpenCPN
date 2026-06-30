@@ -39,6 +39,7 @@
 class GLShaderProgram;  // forward
 
 extern GLShaderProgram *pAALine_shader_program[2];
+extern GLShaderProgram *pbasemap_shader_program[2];
 extern GLShaderProgram *pcolor_tri_shader_program[2];
 extern GLShaderProgram *ptexture_2D_shader_program[2];
 extern GLShaderProgram *pcircle_filled_shader_program[2];
