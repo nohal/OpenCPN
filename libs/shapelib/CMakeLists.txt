@@ -23,8 +23,8 @@ if (TARGET ocpn::shapelib)
 endif ()
 
 set(shapelib "https://github.com/OSGeo/shapelib")
-set(src_url "${shapelib}/archive/refs/tags/v1.6.1.tar.gz")
-set(src_hash MD5=ccdcabbc685eb575120fa3eb61003280)
+set(src_url "${shapelib}/archive/refs/tags/v1.6.3.tar.gz")
+set(src_hash MD5=e2cb784e816ba9ded0b81564f3d32fec)
 
 list(APPEND patches
   0001-cmake-Add-guard-for-multiple-inclusions.patch
