@@ -25,6 +25,7 @@
 #define __GLCHARTCANVAS_H__
 
 #include <array>
+#include <chrono>
 #include <string>
 #include <unordered_map>
 
@@ -284,6 +285,7 @@ protected:
   GLuint m_basemap_tex;
   GLuint m_basemap_fbo;
   bool m_basemap_valid;
+  std::chrono::steady_clock::time_point m_basemap_force_time;
 
   GLuint ownship_tex;
   int ownship_color;

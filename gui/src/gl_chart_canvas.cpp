@@ -32,6 +32,7 @@
 #include "dychart.h"
 
 #include <algorithm>
+#include <chrono>
 #include <stdint.h>
 #include <vector>
 
@@ -346,6 +347,7 @@ void glChartCanvas::Init() {
   m_basemap_tex = 0;
   m_basemap_fbo = 0;
   m_basemap_valid = false;
+  m_basemap_force_time = std::chrono::steady_clock::time_point();
 
   ownship_tex = 0;
   ownship_color = -1;
@@ -3979,6 +3981,18 @@ void glChartCanvas::Render() {
 #endif
 
     if (b_newview) {
+      // The basemap FBO cache can otherwise stay stale for the whole
+      // duration of a continuous pan/zoom/rotate (only guaranteed to
+      // refresh once movement fully stops, in ChartCanvas::StopMovement).
+      // Force it to refresh a couple of times a second while the view is
+      // actively changing, so an in-progress pan is never more than ~0.5s
+      // out of date.
+      auto now = std::chrono::steady_clock::now();
+      if (now - m_basemap_force_time > std::chrono::milliseconds(500)) {
+        m_basemap_valid = false;
+        m_basemap_force_time = now;
+      }
+
       float dx = 0;
       float dy = 0;
 
