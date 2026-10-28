@@ -1,5 +1,5 @@
 /**************************************************************************
- *   Copyright (C) 2010 by David S. Register                               *
+ *   Copyright (C) 2010-2026 by David S. Register                          *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -531,6 +531,7 @@ int MyConfig::LoadMyConfigRaw(bool bAsTemplate) {
   Read("LookAheadMode", &g_bLookAhead);
   Read("SkewToNorthUp", &g_bskew_comp);
   Read("TenHzUpdate", &g_btenhertz, 0);
+  Read("ShapefileLandCrossing", &g_bShapefileLandCrossing, false);
   Read("DeclutterAnchorage", &g_declutter_anchorage, 0);
 
   Read("NMEAAPBPrecision", &g_NMEAAPBPrecision);
@@ -1984,6 +1985,7 @@ void MyConfig::UpdateSettings() {
   Write("CourseUpMode", g_bCourseUp);
   if (!g_bInlandEcdis) Write("LookAheadMode", g_bLookAhead);
   Write("TenHzUpdate", g_btenhertz);
+  Write("ShapefileLandCrossing", g_bShapefileLandCrossing);
 
   Write("COGUPAvgSeconds", g_COGAvgSec);
   Write("UseMagAPB", g_bMagneticAPB);

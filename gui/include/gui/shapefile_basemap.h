@@ -1,5 +1,5 @@
 /**************************************************************************
- *   Copyright (C) 2012-2023 by David S. Register                          *
+ *   Copyright (C) 2012-2026 by David S. Register                          *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -24,9 +24,12 @@
 #ifndef SHAPEFILE_BASEMAP_H
 #define SHAPEFILE_BASEMAP_H
 
+#include <atomic>
 #include <functional>
 #include <future>
 #include <map>
+#include <mutex>
+#include <shared_mutex>
 #include <thread>
 #include <vector>
 
@@ -35,6 +38,7 @@
 #include <wx/gdicmn.h>
 
 #include "ShapefileReader.hpp"
+#include "shapefile_land.h"
 #include "poly_math.h"
 #include "ocpndc.h"
 #include "std_filesystem.h"
@@ -44,60 +48,6 @@ typedef std::vector<contour> contour_list;
 
 class ShapeBaseChartSet;                 // forward
 extern ShapeBaseChartSet gShapeBasemap;  ///< Global instance
-
-/**
- * A latitude/longitude key for 1x1 or 10x10 degree grid tiles.
- * Used for indexing geographical data in a grid-based system where each tile
- * represents a 1x1 degree area. The lat/lon values represent the top-left
- * corner of each grid tile. For example, a coordinate of (lat=45.7,
- * lon=-120.3) would be in the tile with LatLonKey(45, -121).
- *
- * The tiles are 1x1 degree, except the crude resolution which is 10x10 to
- * minimize the number of polygons needed to draw the planetary scale basemap.
- * This logic is inherited from the workflow used by the source dataset
- * https://osmdata.openstreetmap.de/data/land-polygons.html
- */
-class LatLonKey {
-public:
-  /**
-   * Constructor for creating a LatLonKey.
-   * @param lat Integer latitude value indicating the north edge of latitude
-   * band.
-   * @param lon Integer longitude value indicating the west edge of a longitude
-   * band.
-   */
-  LatLonKey(int lat, int lon) {
-    this->lat = lat;
-    this->lon = lon;
-  }
-  /**
-   * Integer latitude value representing the northern (top) boundary of a
-   * latitude band. For example, lat=45 represents the area between 45°N and
-   * 44°N.
-   */
-  int lat;
-  /**
-   * Integer longitude value representing the western (left) boundary of a
-   * longitude band. For example, lon=-120 represents the area between 120°W and
-   * 119°W.
-   */
-  int lon;
-
-  bool operator<(const LatLonKey &k) const {
-    return lat < k.lat || (lat == k.lat && lon < k.lon);
-  }
-
-  bool operator==(const LatLonKey &other) const {
-    return (lat == other.lat && lon == other.lon);
-  }
-};
-
-template <>
-struct std::hash<LatLonKey> {
-  std::size_t operator()(const LatLonKey &k) const {
-    return 360 * k.lat + k.lon;
-  }
-};
 
 /// @brief Basemap quality
 enum Quality {
@@ -140,13 +90,13 @@ public:
 
   ShapeBaseChart(const ShapeBaseChart &t) {
     this->_filename = t._filename;
-    this->_is_usable = t._is_usable;
+    this->_is_usable = t._is_usable.load();
     this->_is_tiled = t._is_tiled;
     this->_min_scale = t._min_scale;
     this->_reader = nullptr;
     this->_color = t._color;
     this->_dmod = t._dmod;
-    this->_loading = t._loading;
+    this->_loading = t._loading.load();
   }
   ~ShapeBaseChart() {
     CancelLoading();  // Ensure async operation is done before cleanup.
@@ -208,30 +158,34 @@ public:
 
   /**
    * Determines if a line segment between two geographical points intersects any
-   * land mass represented in the chart.
-   *
-   * @param lat1 Latitude of the first point of the line segment.
-   * @param lon1 Longitude of the first point of the line segment.
-   * @param lat2 Latitude of the second point of the line segment.
-   * @param lon2 Longitude of the second point of the line segment.
+   * land mass represented in the chart. Thread safe, see ShapeLandQuery.
    * @return true if the line segment crosses any polygon in the shapefile,
    * false if the chart is not loaded yet, the line segment is entirely over
    * water, or the line segment is entirely over land.
-   *
-   * @note The longitude of the line segment coordinates are normalized to the
-   * -180 to 180 range before performing the intersection test. This ensures
-   * that the line segment and polygon edges use the same longitude convention,
-   * which is necessary for accurate intersection detection.
    */
-  bool CrossesLand(double &lat1, double &lon1, double &lat2, double &lon2);
+  bool CrossesLand(double lat1, double lon1, double lat2, double lon2);
+
+  /**
+   * Start loading the shapefile if needed. Thread safe.
+   * @return true once the chart is loaded and usable.
+   */
+  bool EnsureLoaded();
 
   /** Cancel the chart loading operation. */
   void CancelLoading();
 
 private:
   std::future<bool> _loaded;
-  bool _loading;
-  bool _is_usable;
+  /** Makes EnsureLoaded() start the load once, from whichever thread. */
+  std::once_flag _load_once;
+  std::atomic<bool> _loading;
+  std::atomic<bool> _is_usable;
+  /**
+   * Set once LoadSHP() has finished successfully. Everything LoadSHP() fills
+   * in (_reader, _tiles, _land, ...) is read only after this is true and
+   * never changes afterwards.
+   */
+  std::atomic<bool> _ready{false};
   /**
    * Indicates whether the shapefile uses a tiled organization where features
    * are associated with specific 1-degree cells. When true, the _tiles map
@@ -249,8 +203,6 @@ private:
   void DoDrawPolygonFilled(ocpnDC &pnt, ViewPort &vp,
                            const shp::Feature &feature);
   std::vector<LatLonKey> DrawPolygonFilled(ocpnDC &pnt, ViewPort &vp);
-  /** Start loading the shapefile if needed. @return true once usable. */
-  bool EnsureLoaded();
   /** Key of the tile covering a cell given by its north and west edges. */
   LatLonKey TileKey(const LatLonKey &cell) const;
 #ifdef ocpnUSE_GL
@@ -298,7 +250,9 @@ private:
    * that belong to that cell. Only populated when _is_tiled is true and used
    * for efficient spatial queries.
    */
-  std::unordered_map<LatLonKey, std::vector<size_t>> _tiles;
+  TileIndex _tiles;
+  /** Land crossing queries on _tiles, created by LoadSHP(). */
+  std::unique_ptr<ShapeLandQuery> _land;
   /**
    * The color used for rendering land areas in this specific chart instance.
    * Initially set during construction from the parent ShapeBaseChartSet's
@@ -306,55 +260,6 @@ private:
    * filled polygons representing land masses.
    */
   wxColor _color;
-
-  /**
-   * Calculates whether two line segments intersect. Uses the coordinate system
-   * of the input points, typically in (latitude, longitude) format.
-   *
-   * @note This function assumes that the line segment coordinates and the
-   * polygon feature coordinates use the same longitude convention (e.g., both
-   * in -180 to 180 range). No normalization is performed on the coordinates
-   * before the intersection test, which may lead to false negatives if the line
-   * segment and polygon edges use different longitude ranges or if either
-   * crosses the international date line.
-   *
-   * @param A First endpoint of the first line segment as (latitude, longitude)
-   * pair.
-   * @param B Second endpoint of the first line segment as (latitude, longitude)
-   * pair.
-   * @param C First endpoint of the second line segment as (latitude, longitude)
-   * pair.
-   * @param D Second endpoint of the second line segment as (latitude,
-   * longitude) pair.
-   * @return true if the line segments intersect at a point that lies within
-   * both segments.
-   */
-  bool LineLineIntersect(const std::pair<double, double> &A,
-                         const std::pair<double, double> &B,
-                         const std::pair<double, double> &C,
-                         const std::pair<double, double> &D);
-
-  /**
-   * Tests if a line segment intersects with any edge of a polygon feature.
-   * Iterates through all points in all rings of the polygon, testing each edge
-   * against the line segment.
-   *
-   * @note This function assumes that the line segment coordinates and the
-   * polygon feature coordinates use the same longitude convention (e.g., both
-   * in -180 to 180 range). No normalization is performed on the coordinates
-   * before the intersection test, which may lead to false negatives if the line
-   * segment and polygon edges use different longitude ranges or if either
-   * crosses the international date line.
-   *
-   * @param feature The shapefile polygon feature to test against.
-   * @param A First endpoint of the line segment as (latitude, longitude) pair.
-   * @param B Second endpoint of the line segment as (latitude, longitude) pair.
-   * @return true if the line segment intersects any edge of any ring in the
-   * polygon.
-   */
-  bool PolygonLineIntersect(const shp::Feature &feature,
-                            const std::pair<double, double> &A,
-                            const std::pair<double, double> &B);
 };
 
 /**
@@ -385,24 +290,35 @@ public:
   }
 
   /**
+   * Start loading the highest quality chart for land queries if needed.
+   * Thread safe.
+   * @return true once CrossesLand() answers from the basemap.
+   */
+  bool LandQueryReady() {
+    std::shared_lock lock(_charts_mutex);
+    return !_basemap_map.empty() && HighestQualityBaseMap().EnsureLoaded();
+  }
+
+  /**
    * Determines if a line segment between two geographical points crosses any
    * land mass. Uses the highest quality chart available for the test to get the
-   * most accurate result.
+   * most accurate result. Thread safe, called by plugins from their threads.
    * @param lat1 Latitude of the first point of the line segment.
    * @param lon1 Longitude of the first point of the line segment.
    * @param lat2 Latitude of the second point of the line segment.
    * @param lon2 Longitude of the second point of the line segment.
    * @return true if the line segment crosses land according to the highest
-   * quality chart, false if no crossing is detected or if no charts are usable.
+   * quality chart, false if no crossing is detected or if the chart is not
+   * loaded yet (see LandQueryReady()).
    */
   bool CrossesLand(double lat1, double lon1, double lat2, double lon2) {
-    if (IsUsable()) {
-      return HighestQualityBaseMap().CrossesLand(lat1, lon1, lat2, lon2);
-    }
-    return false;
+    std::shared_lock lock(_charts_mutex);
+    return !_basemap_map.empty() &&
+           HighestQualityBaseMap().CrossesLand(lat1, lon1, lat2, lon2);
   }
 
   void Cleanup() {
+    std::unique_lock lock(_charts_mutex);
     for (auto &pair : _basemap_map) {
       pair.second.CancelLoading();
     }
@@ -442,6 +358,12 @@ private:
   wxColor land_color;
 
   std::map<Quality, ShapeBaseChart> _basemap_map;
+  /**
+   * Guards _basemap_map against Reset()/Cleanup() while plugin threads run
+   * land queries. Drawing runs on the GUI thread like Reset(), so it does not
+   * lock.
+   */
+  std::shared_mutex _charts_mutex;
 };
 
 extern ShapeBaseChartSet gShapeBasemap; /**< global instance */

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2023 - 2025 Alec Leamas                                 *
+ *   Copyright (C) 2023 - 2026 Alec Leamas                                 *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -101,6 +101,11 @@ extern bool g_bShowOutlines;
 extern bool g_bShowRouteTotal;
 extern bool g_bShowShipToActive;
 extern bool g_bShowStatusBar;
+/**
+ * Answer the plugin API land crossing test (PlugIn_GSHHS_CrossesLand) from
+ * the shapefile basemap instead of GSHHG. Config file only, no GUI.
+ */
+extern bool g_bShapefileLandCrossing;
 extern bool g_bShowTide;  ///< not used
 extern bool g_bShowTrackPointTime;
 extern bool g_bShowTrue;

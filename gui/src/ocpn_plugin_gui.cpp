@@ -1,5 +1,5 @@
 /**************************************************************************
- *   Copyright (C) 2024 by David S. Register                               *
+ *   Copyright (C) 2024-2026 by David S. Register                          *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -40,6 +40,7 @@
 #include "model/ais_decoder.h"
 #include "model/comm_bridge.h"
 #include "model/comm_navmsg_bus.h"
+#include "model/config_vars.h"
 #include "model/gui_vars.h"
 #include "model/idents.h"
 #include "model/multiplexer.h"
@@ -735,18 +736,16 @@ double fromDMM_PlugIn(wxString sdms) { return fromDMM(sdms); }
 
 bool PlugIn_GSHHS_CrossesLand(double lat1, double lon1, double lat2,
                               double lon2) {
-  // TODO: Enable call to gShapeBasemap.CrossesLand after fixing performance
-  // issues. if (gShapeBasemap.IsUsable()) {
-  //   return gShapeBasemap.CrossesLand(lat1, lon1, lat2, lon2);
-  // } else {
-  //  Fall back to the GSHHS data.
+  if (g_bShapefileLandCrossing && gShapeBasemap.LandQueryReady()) {
+    return gShapeBasemap.CrossesLand(lat1, lon1, lat2, lon2);
+  }
+  // GSHHS data by default, and while the basemap loads or if there is none.
   static bool loaded = false;
   if (!loaded) {
     gshhsCrossesLandInit();
     loaded = true;
   }
   return gshhsCrossesLand(lat1, lon1, lat2, lon2);
-  //}
 }
 
 void PlugInPlaySound(wxString& sound_file) {

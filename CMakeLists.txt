@@ -1027,6 +1027,7 @@ set(GUI_SRC
     ${GUI_SRC_DIR}/send_to_gps_dlg.cpp
     ${GUI_SRC_DIR}/send_to_peer_dlg.cpp
     ${GUI_SRC_DIR}/shapefile_basemap.cpp
+    ${GUI_SRC_DIR}/shapefile_land.cpp
     ${GUI_SRC_DIR}/station_data.cpp
     ${GUI_SRC_DIR}/styles.cpp
     ${GUI_SRC_DIR}/svg_icons.cpp

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2023 - 2025 Alec Leamas                                 *
+ *   Copyright (C) 2023 - 2026 Alec Leamas                                 *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -89,6 +89,7 @@ bool g_bShowStatusBar = false;
 bool g_bShowTide = false;
 bool g_bShowTrackPointTime = false;
 bool g_bShowTrue = false;
+bool g_bShapefileLandCrossing = false;
 bool g_bShowWptName = false;
 bool g_bsimplifiedScalebar = false;
 bool g_bskew_comp = false;
